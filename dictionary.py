@@ -251,6 +251,43 @@ def _jieba_cut(text):
     return [t for t in jieba.cut(text) if t.strip()]
 
 
+def _trad_only_chars(dictionary):
+    """Chu chi co o dang phon the (臺 灣 學...) - tinh mot lan roi giu lai."""
+    cached = getattr(dictionary, "_trad_chars", None)
+    if cached is None:
+        cached = {ch for src in (dictionary.vi_trad, dictionary.en_trad)
+                  for w in src for ch in w
+                  if ch not in dictionary.vi_simp and ch not in dictionary.en_simp}
+        dictionary._trad_chars = cached
+    return cached
+
+
+def _merge_traditional(toks, dictionary):
+    """jieba hoc tren chu gian the nen hay cat vun tu phon the
+    (臺灣 -> 臺 / 灣, 為什麼 -> 為 / 什麼).
+
+    Gop lai cac manh lien nhau (co it nhat mot chu don - dau hieu jieba cat
+    hong) neu ghep thanh tu co trong tu dien VA co chu phon the - de khong
+    dung den ket qua tach chu gian the cua jieba."""
+    trad = _trad_only_chars(dictionary)
+    out, i, n = [], 0, len(toks)
+    while i < n:
+        merged = False
+        for k in range(min(4, n - i), 1, -1):
+            parts = toks[i:i + k]
+            word = "".join(parts)
+            if (len(word) <= 6 and any(len(p) == 1 for p in parts)
+                    and any(ch in trad for ch in word) and dictionary.has(word)):
+                out.append(word)
+                i += k
+                merged = True
+                break
+        if not merged:
+            out.append(toks[i])
+            i += 1
+    return out
+
+
 def segment(text, dictionary=None):
     """Tach chuoi tieng Trung thanh danh sach tu.
 
@@ -262,7 +299,7 @@ def segment(text, dictionary=None):
         return []
     toks = _jieba_cut(text)
     if toks is not None:
-        return toks
+        return _merge_traditional(toks, dictionary) if dictionary else toks
     if dictionary is None:
         return list(text)
     out, i, n = [], 0, len(text)

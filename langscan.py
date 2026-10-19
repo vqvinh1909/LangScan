@@ -425,6 +425,14 @@ class Popup(object):
         self._canvas, self._inner = canvas, inner
 
         target = self.dst_pref if self.dst_pref != VI else langs.EN
+        # Pinyin lay tu chu GOC: chon nguon 'Trung' thi langs.clean() bo het chu
+        # Latinh, 'wo shi' thanh rong va truoc day bao "Khong tra duoc tu nao".
+        py_text = text if (text and lang != langs.ZH) else " ".join(raw_text.split())
+        want_py = (not is_vi
+                   and bool(re.match(r"^[A-Za-zÀ-ǿ1-5 ']{2,}$", py_text))
+                   and len(py_text.split()) <= 10
+                   and self.src_pref in ("auto", langs.ZH)
+                   and lang in (None, langs.EN, langs.ZH))
         if is_vi:
             self._phrase_line(inner, text, VI, target=target)
         elif not raw_text.strip() and self._hint_empty:
@@ -433,10 +441,11 @@ class Popup(object):
                                  "(yinhang, yín háng) cũng được.")
         elif err:
             self._message(inner, err)
-        elif lang is None:
+        elif lang is None and not want_py:
             self._message(inner, "Vung boi den khong co chu nao tra duoc.")
         elif not cards:
-            self._message(inner, "Khong tra duoc tu nao trong doan nay.")
+            if not want_py:                 # pinyin thi phan tra pinyin ben duoi lo
+                self._message(inner, "Khong tra duoc tu nao trong doan nay.")
         else:
             # Dich ca cau (chay ngam, co cache) - huu ich nhat voi cau dai
             # Dich ca cum khi co tu 2 tu tro len, ke ca khi cac tu phu
@@ -448,13 +457,9 @@ class Popup(object):
             for i, c in enumerate(cards):
                 self._card_block(inner, c, first=(i == 0))
 
-        want_py = (not is_vi
-                   and bool(re.match(r"^[A-Za-z\u00c0-\u01ff1-5 ']{2,}$", text or ""))
-                   and len((text or "").split()) <= 3
-                   and self.src_pref in ("auto", langs.ZH)
-                   and lang in (None, langs.EN, langs.ZH))
         if is_vi or want_py:
-            self._extra_lookup(win, inner, text, is_vi, target, want_py)
+            self._extra_lookup(win, inner, py_text if want_py else text,
+                               is_vi, target, want_py)
 
         foot = tk.Label(outer, text="Esc: dong   |   Enter: dich lai   |   {}: tra lai   |   ep: {} Trung  {} Nhat  {} Han  {} Anh"
                         .format(HOTKEY_LOOKUP.upper(), HOTKEY_ZH.upper()[-1],
@@ -587,7 +592,7 @@ class Popup(object):
         lbl.pack(anchor="w", padx=12, pady=(8, 4))
 
         def work():
-            backward, pinyin, note = [], [], ""
+            backward, pinyin, phrase, note = [], [], [], ""
             try:
                 if self.reverse is None:
                     ui_call(lambda: lbl.winfo_exists() and lbl.config(
@@ -603,7 +608,9 @@ class Popup(object):
                         backward = rv.search(
                             query, only=target if target in (langs.ZH, langs.EN) else None)
                 if want_py:
-                    pinyin = rv.search_pinyin(query)
+                    phrase = rv.pinyin_phrase(query)       # 'wo shi' -> 我 是
+                    if len(query.split()) <= 3:
+                        pinyin = rv.search_pinyin(query)
             except Exception as e:
                 note = str(e)
 
@@ -611,7 +618,7 @@ class Popup(object):
                 try:
                     if self.win is not win or not lbl.winfo_exists():
                         return
-                    if not backward and not pinyin:
+                    if not backward and not pinyin and not phrase:
                         lbl.config(text=note or "không tìm thấy từ tra ngược nào cho '{}'"
                                    .format(query))
                         self._regrow()
@@ -626,8 +633,12 @@ class Popup(object):
                         self._section(inner, title)
                         for i, c in enumerate(backward):
                             self._card_block(inner, c, first=(i == 0))
+                    if phrase:
+                        self._section(inner, "Câu pinyin:  " + " ".join(c.word for c in phrase))
+                        for i, c in enumerate(phrase):
+                            self._card_block(inner, c, first=(i == 0))
                     if pinyin:
-                        self._section(inner, "Đọc như pinyin")
+                        self._section(inner, "Đọc như một từ" if phrase else "Đọc như pinyin")
                         for i, c in enumerate(pinyin):
                             self._card_block(inner, c, first=(i == 0))
                     self._regrow()

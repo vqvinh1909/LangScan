@@ -205,6 +205,83 @@ class Reverse(object):
                 break
         return cards
 
+    def _word_cost(self):
+        """Ham 'chi phi' cua mot tu khi tach cau: tu cang thong dung cang re.
+
+        Co jieba thi dung tan suat that (-log xac suat, kieu Viterbi);
+        khong co thi dua vao cap HSK."""
+        if getattr(self, "_cost_fn", None) is not None:
+            return self._cost_fn
+        import math
+        d = self.analyzer.zh()
+        try:
+            import jieba
+            jieba.dt.check_initialized()
+            freq, total = jieba.dt.FREQ, float(jieba.dt.total)
+
+            def cost(word):
+                return -math.log((freq.get(word, 0) + 1) / total)
+        except Exception:
+            def cost(word):
+                return float(d.hsk_level(word) or 7) + 0.5
+        self._cost_fn = cost
+        return cost
+
+    def pinyin_phrase(self, query):
+        """Tach ca cau pinyin thanh tung tu: 'wo shi xuesheng' -> 我 是 学生.
+
+        search_pinyin coi ca chuoi la MOT tu nen 'wo shi' ra 卧室 (phong ngu).
+        Day chon cach tach ma tong do thong dung cao nhat. Go cach thi chi
+        cat o cho cach; go lien ('woshi') thi cat o bat ky dau.
+        Tra ve [] neu chi ra mot tu (luc do search_pinyin da du).
+        """
+        tokens = [flat_pinyin(t) for t in (query or "").split()]
+        tokens = [t for t in tokens if t]
+        flat = "".join(tokens)
+        if len(flat) < 2 or len(flat) > 60:
+            return []
+        if len(tokens) > 1:                      # chi cat o ranh gioi nguoi dung go
+            cuts, pos = {0}, 0
+            for t in tokens:
+                pos += len(t)
+                cuts.add(pos)
+        else:
+            cuts = set(range(len(flat) + 1))
+        idx = self._build_py()
+        cost = self._word_cost()
+        n = len(flat)
+        best = [None] * (n + 1)                  # best[i] = (chi phi, [tu]) cho flat[:i]
+        best[0] = (0.0, [])
+        for i in range(n):
+            if best[i] is None or i not in cuts:
+                continue
+            for j in range(i + 1, min(n, i + 24) + 1):
+                if j not in cuts:
+                    continue
+                bucket = idx.get(flat[i:j])
+                if not bucket:
+                    continue
+                word = min((b[0] for b in bucket), key=cost)
+                c = best[i][0] + cost(word)
+                if best[j] is None or c < best[j][0]:
+                    best[j] = (c, best[i][1] + [word])
+        if best[n] is None or len(best[n][1]) < 2:
+            return []
+        d = self.analyzer.zh()
+        cards = []
+        for word in best[n][1]:
+            vi = d.lookup(word, "vi")
+            en = d.lookup(word, "en")
+            e = (vi or en)[0]
+            lvl = d.hsk_level(word)
+            cards.append(langs.Card(
+                word=word, reading=e.pinyin,
+                badge="HSK{}".format(lvl) if lvl else "Trung",
+                vi=vi[0].senses[:4] if vi else [],
+                en=en[0].senses[:3] if en else [],
+                speak=word, lang=langs.ZH, tones=e.tones()))
+        return cards
+
     # ---- tra cuu
     def _search_rows(self, rows, needle, limit, raw=""):
         hits = []
