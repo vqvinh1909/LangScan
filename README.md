@@ -1,5 +1,7 @@
 # LangScan — bôi đen là tra từ: Trung · Nhật · Hàn · Anh
 
+> **Chỉ chạy trên Windows 10/11** (cần Python 3.9+). Chưa hỗ trợ macOS và Linux.
+
 Bôi đen chữ ở bất kỳ đâu trên Windows (PDF, trình duyệt, Word, Zalo…), bấm **Ctrl+Alt+D** → popup hiện ngay cạnh con trỏ. App tự nhận ra đó là tiếng Trung, Nhật, Hàn hay Anh rồi tra đúng từ điển.
 
 | | Phiên âm | Nghĩa | Cấp độ | Đưa về dạng gốc |
