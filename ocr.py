@@ -33,6 +33,10 @@ _rapid = [None]          # giu mot ban dung chung, nap model mat vai giay
 # ------------------------------------------------------ OCR cua Windows -----
 def _winrt():
     """Nap cac module WinRT can thiet, tra ve None neu khong co."""
+    # Goi winrt mang theo msvcp140.dll rieng (ban cu). Nap no truoc thi
+    # onnxruntime (RapidOCR) loi "DLL initialization routine failed" -> mat
+    # OCR Trung/Anh. Nen luon nap RapidOCR truoc.
+    rapid_ready()
     try:
         from winrt.windows.media.ocr import OcrEngine
         from winrt.windows.globalization import Language
@@ -193,7 +197,7 @@ def _vocab():
     if "common" not in _VOCAB:
         import json
         import os
-        base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+        from paths import DATA_DIR as base
         rank = {"A1": 0.0, "A2": 0.05, "B1": 0.1, "B2": 0.2, "C1": 0.3, "C2": 0.4}
         common = {}
         try:
@@ -213,8 +217,8 @@ def _full_vocab():
     if "full" not in _VOCAB:
         import os
         full = set()
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            "data", "envi.tsv")
+        from paths import DATA_DIR
+        path = os.path.join(DATA_DIR, "envi.tsv")
         try:
             with open(path, encoding="utf-8") as f:
                 for line in f:

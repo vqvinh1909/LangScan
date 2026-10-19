@@ -23,7 +23,7 @@ import unicodedata
 import langs
 
 MAX_PER_LANG = 12
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+from paths import DATA_DIR
 CACHE_ZH = os.path.join(DATA_DIR, "reverse_zh.pickle")
 CACHE_EN = os.path.join(DATA_DIR, "reverse_en.pickle")
 CACHE_PY = os.path.join(DATA_DIR, "reverse_pinyin.pickle")

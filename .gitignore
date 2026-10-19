@@ -11,3 +11,8 @@ data/jamdict.db
 
 # Kich thuoc popup nguoi dung da keo (luu rieng tung may)
 data/popup.json
+
+# Ket qua dong goi (python build.py)
+dist/
+build/
+data/selftest.txt

@@ -20,7 +20,7 @@ import re
 import sys
 import urllib.request
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+from paths import DATA_DIR
 CEDICT_PATH = os.path.join(DATA_DIR, "cedict.txt")
 CVDICT_PATH = os.path.join(DATA_DIR, "cvdict.u8")
 HSK_PATH = os.path.join(DATA_DIR, "hsk.json")

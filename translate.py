@@ -19,7 +19,7 @@ import threading
 import urllib.parse
 import urllib.request
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+from paths import DATA_DIR
 CACHE_PATH = os.path.join(DATA_DIR, "vi_cache.db")
 TIMEOUT = 8
 HEADERS = {"User-Agent": "Mozilla/5.0 (LangScan)"}

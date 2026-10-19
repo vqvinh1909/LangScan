@@ -55,7 +55,7 @@ BORDER = "#3a4152"
 # Mau theo thanh dieu tieng Trung (kieu Pleco/Hanping)
 TONE_COLORS = {1: "#e5534b", 2: "#e2953a", 3: "#4aa96c", 4: "#4d8ee8", 5: "#8b93a3"}
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+from paths import APP_DIR, DATA_DIR
 AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 LOG_PATH = os.path.join(DATA_DIR, "langscan.log")
 POPUP_PREFS = os.path.join(DATA_DIR, "popup.json")   # kich thuoc popup da keo
@@ -1123,8 +1123,7 @@ class Tray(object):
             Menu.SEPARATOR,
             Item("Khoi dong cung Windows", lambda: self._toggle_autostart(),
                  checked=lambda item: autostart.is_installed()),
-            Item("Mo thu muc cai dat", lambda: self._open(os.path.dirname(
-                os.path.abspath(__file__)))),
+            Item("Mo thu muc cai dat", lambda: self._open(APP_DIR)),
             Item("Xem log", lambda: self._open(LOG_PATH)),
             Menu.SEPARATOR,
             Item("Thoat ({})".format(HOTKEY_QUIT.upper()), lambda: self.app.quit()),
@@ -1279,7 +1278,47 @@ def fatal(msg):
         pass
 
 
+def selftest():
+    """LangScan.exe --selftest: tra thu 4 thu tieng + OCR, ghi ra data/selftest.txt.
+
+    Ban .exe khong co console va khong chay duoc chandoan.bat, nen day la
+    cach kiem tra nhanh sau khi cai (khong mo popup, khong dang ky phim tat)."""
+    setup_logging()                 # .exe khong co console: print() ghi vao log
+    path = os.path.join(DATA_DIR, "selftest.txt")
+    lines, ok = [], True
+    a = langs.Analyzer()
+    for text, force, want in (("我在银行工作", None, "银行"), ("食べました", None, "食べる"),
+                              ("은행에서", None, "은행"), ("studying", None, "study"),
+                              ("tabemashita", langs.JA, "食べる"),
+                              ("annyeonghaseyo", langs.KO, "안녕하세요")):
+        try:
+            lang, cards, err = a.analyze(text, force_lang=force)
+            words = [c.word for c in cards]
+            good = any(want in w for w in words)
+            lines.append("[{}] {} -> {} {}".format("OK" if good else "X ", text,
+                                                    " ".join(words), err))
+        except Exception as e:
+            good = False
+            lines.append("[X ] {} -> loi {}: {}".format(text, type(e).__name__, e))
+        ok = ok and good
+    try:
+        import ocr
+        lines.append("OCR: " + ocr.status_text().replace("\n", " | "))
+    except Exception as e:
+        lines.append("OCR: loi {}".format(e))
+    lines.append("Thu muc app: " + APP_DIR)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+    return 0 if ok else 1
+
+
 def main():
+    # LangScan.exe --autostart install|uninstall: autostart.py goi lai .exe
+    # bang quyen admin de tao/xoa task (ban .py thi goi thang autostart.py)
+    if len(sys.argv) > 2 and sys.argv[1] == "--autostart":
+        return autostart.main([sys.argv[0], sys.argv[2]])
+    if len(sys.argv) > 1 and sys.argv[1] == "--selftest":
+        return selftest()
     setup_logging()
     if already_running():
         print("[=] LangScan da chay san roi - thoat ban thu hai.")

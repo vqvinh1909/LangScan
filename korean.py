@@ -13,7 +13,7 @@ import sys
 
 import langs
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+from paths import DATA_DIR
 KENGDIC_PATH = os.path.join(DATA_DIR, "kengdic.tsv")
 
 # ------------------------------------------------------- phien am Latin -----

@@ -17,7 +17,7 @@ import sys
 
 import langs
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+from paths import DATA_DIR
 ENVI_PATH = os.path.join(DATA_DIR, "envi.tsv")
 IPA_PATH = os.path.join(DATA_DIR, "en_ipa.tsv")
 CEFR_PATH = os.path.join(DATA_DIR, "cefr.json")

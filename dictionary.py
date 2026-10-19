@@ -12,8 +12,7 @@ import pickle
 import re
 import sys
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "data")
+from paths import APP_DIR as BASE_DIR, DATA_DIR
 CEDICT_PATH = os.path.join(DATA_DIR, "cedict.txt")     # Trung -> Anh
 CVDICT_PATH = os.path.join(DATA_DIR, "cvdict.u8")      # Trung -> Viet
 HSK_PATH = os.path.join(DATA_DIR, "hsk.json")

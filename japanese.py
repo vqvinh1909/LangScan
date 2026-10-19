@@ -15,7 +15,7 @@ import threading
 
 import langs
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+from paths import DATA_DIR
 JLPT_PATH = os.path.join(DATA_DIR, "jlpt.json")
 # Goi 'jamdict-data' cai bang pip hay hong tren Windows, nen caidat_tiengnhat.py
 # tai thang file .db ve day. Co file nay thi dung, khong thi dung ban cua pip.

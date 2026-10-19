@@ -40,7 +40,24 @@ Không thích dòng dịch máy thì mở `langscan.py` sửa `TRANSLATE_VI = Fa
 
 ---
 
-## Cài đặt (làm 1 lần)
+## Cài đặt nhanh: file cài đặt (không cần Python)
+
+Tải `LangScan-Setup-x.y.z.exe` ở mục Releases, chạy rồi bấm Next. App cài vào `%LOCALAPPDATA%\Programs\LangScan`, không cần quyền admin, đã kèm sẵn từ điển cả 4 thứ tiếng (kể cả tiếng Nhật). Tick "Khởi động cùng Windows" thì Windows hỏi quyền admin một lần.
+
+Windows có thể hiện cảnh báo SmartScreen ("Windows protected your PC") vì file chưa được ký số. Bấm **More info → Run anyway**.
+
+Kiểm tra sau khi cài: Start menu → **Kiem tra LangScan (selftest)**, rồi mở `data\selftest.txt` trong thư mục cài. Mỗi dòng phải là `[OK]`.
+
+### Tự đóng gói
+
+```
+pip install pyinstaller
+python build.py
+```
+
+Ra `dist\LangScan\LangScan.exe` (chạy thẳng được, không cần cài). Nếu máy có [Inno Setup 6](https://jrsoftware.org/isdl.php) thì ra thêm `dist\LangScan-Setup-x.y.z.exe`. Đổi số phiên bản ở dòng `AppVersion` trong `installer.iss`.
+
+## Cài đặt từ mã nguồn (làm 1 lần)
 
 1. Cài Python 3.9+ : https://www.python.org/downloads/ — nhớ tick **"Add Python to PATH"**
 2. Nháy đúp **`setup.bat`**, trả lời 3 câu hỏi:

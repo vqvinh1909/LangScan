@@ -17,9 +17,11 @@ import subprocess
 import sys
 import time
 
+from paths import APP_DIR, FROZEN
+
 TASK_NAME = "LangScan"
 OLD_TASK_NAMES = ("ChineseScan",)   # ban cu - go bo khi cai lai
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = APP_DIR
 SCRIPT = os.path.join(BASE_DIR, "langscan.py")
 
 # Khong hien cua so console den khi goi schtasks
@@ -67,9 +69,11 @@ def is_admin():
 def _elevate(action):
     """Goi lai chinh file nay bang quyen admin (hien hop thoai UAC)."""
     import ctypes
-    params = '"{}" {}'.format(os.path.abspath(__file__), action)
-    rc = ctypes.windll.shell32.ShellExecuteW(
-        None, "runas", python_exe(), params, BASE_DIR, 0)
+    if FROZEN:                         # LangScan.exe --autostart install
+        exe, params = sys.executable, "--autostart {}".format(action)
+    else:
+        exe, params = python_exe(), '"{}" {}'.format(os.path.abspath(__file__), action)
+    rc = ctypes.windll.shell32.ShellExecuteW(None, "runas", exe, params, BASE_DIR, 0)
     if rc <= 32:                       # <=32 = nguoi dung bam No hoac loi
         return False
     want = (action == "install")
@@ -89,7 +93,8 @@ def install():
         return _elevate("install")
     for old in OLD_TASK_NAMES:            # don task cua ban cu neu con
         _run(["schtasks", "/Delete", "/TN", old, "/F"])
-    cmd = '"{}" "{}"'.format(pythonw_exe(), SCRIPT)
+    cmd = ('"{}"'.format(sys.executable) if FROZEN
+           else '"{}" "{}"'.format(pythonw_exe(), SCRIPT))
     r = _run(["schtasks", "/Create", "/TN", TASK_NAME, "/SC", "ONLOGON",
               "/RL", "HIGHEST", "/F", "/TR", cmd])
     if r.returncode != 0:
@@ -99,10 +104,27 @@ def install():
     return True
 
 
+def task_command():
+    """Lenh ma task dang chay (de biet task co phai cua ban nay khong)."""
+    try:
+        r = _run(["schtasks", "/Query", "/TN", TASK_NAME, "/XML"])
+        if r.returncode != 0:
+            return ""
+        import re
+        m = re.search(r"<Command>(.*?)</Command>", r.stdout or "", re.S)
+        return (m.group(1) if m else "").strip().strip('"')
+    except Exception:
+        return ""
+
+
 def uninstall():
     if os.name != "nt":
         return False
     if not is_installed():
+        return True
+    # Ban .exe go cai dat: chi xoa task tro vao CHINH file .exe nay. Task cua
+    # ban chay bang Python (hoac ban cai o thu muc khac) thi de nguyen.
+    if FROZEN and os.path.normcase(task_command()) != os.path.normcase(sys.executable):
         return True
     if not is_admin():
         return _elevate("uninstall")
