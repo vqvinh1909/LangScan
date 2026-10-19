@@ -11,6 +11,7 @@ import json
 import os
 import re
 import sys
+import threading
 
 import langs
 
@@ -84,6 +85,83 @@ def to_romaji(kana):
     return "".join(out)
 
 
+def _build_kana_table():
+    """Bang nguoc romaji -> hiragana, ca kieu Hepburn lan Kunrei va kieu go phim."""
+    table = {}
+    for kana, r in _ROMAJI.items():
+        if r and kana not in "ゃゅょぁぃぅぇぉ" and r not in table:
+            table[r] = kana
+    for kana, r in list(_ROMAJI.items()):        # am chap: kya sha cha ja
+        if r.endswith("i") and len(r) > 1 and kana not in "いぃ":
+            stem = r[:-1]
+            for small, y in _YOON.items():
+                key = stem + y[1:] if stem in ("sh", "ch", "j") else stem + y
+                table.setdefault(key, kana + small)
+    table.update({
+        "si": "し", "ti": "ち", "tu": "つ", "hu": "ふ", "zi": "じ", "di": "ぢ",
+        "du": "づ", "sya": "しゃ", "syu": "しゅ", "syo": "しょ", "tya": "ちゃ",
+        "tyu": "ちゅ", "tyo": "ちょ", "zya": "じゃ", "zyu": "じゅ", "zyo": "じょ",
+        "jya": "じゃ", "jyu": "じゅ", "jyo": "じょ", "she": "しぇ", "che": "ちぇ",
+        "je": "じぇ", "fa": "ふぁ", "fi": "ふぃ", "fe": "ふぇ", "fo": "ふぉ",
+        "ti-": "てぃ", "n'": "ん", "-": "ー",
+    })
+    return table
+
+
+_KANA_TABLE = _build_kana_table()
+_KANA_MAX = max(len(k) for k in _KANA_TABLE)
+_MACRON = str.maketrans({"ā": "aa", "ī": "ii", "ū": "uu", "ē": "ee", "ō": "ou",
+                         "â": "aa", "î": "ii", "û": "uu", "ê": "ee", "ô": "ou"})
+
+
+# Tro tu dung rieng viet theo cach doc nhung chu kana thi khac
+_PARTICLES = {"wa": "は", "e": "へ", "o": "を"}
+
+
+def from_romaji(text):
+    """'tabemashita' -> 'たべました', 'watashi wa' -> 'わたし は'.
+
+    Tra ve '' neu con chu Latin khong chuyen duoc (vd 'hello' -> へllo),
+    de khong doan bua chu tieng Anh thanh tieng Nhat."""
+    words = (text or "").lower().translate(_MACRON).split()
+    if len(words) > 1:
+        parts = [_PARTICLES.get(w) or from_romaji(w) for w in words]
+        return " ".join(parts) if all(parts) else ""
+    s = words[0] if words else ""
+    out, i = [], 0
+    while i < len(s):
+        ch = s[i]
+        if ch == "n" and (i + 1 == len(s) or s[i + 1] not in "aeiouy"):
+            out.append("ん")             # ん: cuoi tu, truoc phu am, ca 'nn' (onna)
+            i += 1
+            continue
+        if ch == "'":                    # kon'ya: dau tach am sau ん
+            i += 1
+            continue
+        if ch == "m" and i + 1 < len(s) and s[i + 1] in "bpm":
+            out.append("ん")             # Hepburn: shimbun, sempai
+            i += 1
+            continue
+        # phu am doi -> っ (kitte, zasshi, matcha); 'nn' da co trong bang
+        if (ch.isalpha() and ch not in "aeioun" and i + 1 < len(s)
+                and (s[i + 1] == ch or (ch == "t" and s.startswith("ch", i + 1)))):
+            out.append("っ")
+            i += 1
+            continue
+        for size in range(min(_KANA_MAX, len(s) - i), 0, -1):
+            piece = s[i:i + size]
+            if piece in _KANA_TABLE:
+                # 'n' tran truoc nguyen am / y la phu am dau (na, nya), khong phai ん
+                if piece == "n" and i + 1 < len(s) and s[i + 1] in "aeiouy":
+                    continue
+                out.append(_KANA_TABLE[piece])
+                i += size
+                break
+        else:
+            return ""
+    return re.sub(r"\s+", " ", "".join(out)).strip()
+
+
 # ------------------------------------------------------------ tu dien -------
 _POS_VI = [
     ("noun", "danh tu"), ("verb", "dong tu"), ("adjective", "tinh tu"),
@@ -108,6 +186,16 @@ def _split_sense(text):
 
 
 class Japanese(object):
+    @property
+    def jam(self):
+        """Moi luong mot Jamdict rieng: SQLite khong cho dung chung ket noi giua
+        cac luong, ma popup tra nguoc / doc romaji o luong nen. Truoc day luong
+        nen tra tieng Nhat luon ra rong (loi bi nuot trong lookup)."""
+        jam = getattr(self._local, "jam", None)
+        if jam is None:
+            jam = self._local.jam = self._make_jam()
+        return jam
+
     def __init__(self):
         try:
             from jamdict import Jamdict
@@ -115,9 +203,10 @@ class Japanese(object):
             raise ImportError("chua cai tu dien tieng Nhat - nhay dup file"
                               " caidat_tiengnhat.bat")
         if os.path.exists(LOCAL_DB) and os.path.getsize(LOCAL_DB) > 10 * 1024 * 1024:
-            self.jam = Jamdict(db_file=LOCAL_DB)
+            self._make_jam = lambda: Jamdict(db_file=LOCAL_DB)
         else:
-            self.jam = Jamdict()
+            self._make_jam = Jamdict
+        self._local = threading.local()
         try:                              # kiem tra du lieu da co chua
             if not self.jam.lookup("水").entries:
                 raise RuntimeError("tra thu khong ra ket qua")
@@ -166,6 +255,24 @@ class Japanese(object):
         except Exception:
             return None
 
+    def _rank(self, entries):
+        """Tu dong am (かみ: 佳味 / 加味 / 紙...): uu tien tu co trong JLPT."""
+        def key(item):
+            i, e = item
+            lv = max([self.jlpt.get(str(k), 0) for k in e.kanji_forms] or [0])
+            return (-lv, i)
+        return [e for _i, e in sorted(enumerate(entries), key=key)]
+
+    @staticmethod
+    def _written_form(e, kana_word):
+        """Tu go bang kana -> hien chu Kanji (がっこう -> 学校), tru tu JMdict
+        ghi la 'thuong chi viet kana' (これ, ありがとう)."""
+        if not e.kanji_forms or not e.senses:
+            return kana_word
+        if any("kana alone" in str(m) for m in (e.senses[0].misc or [])):
+            return kana_word
+        return str(e.kanji_forms[0])
+
     def card(self, surface, base, reading, pos):
         res = self.lookup(base)
         word = base                      # dong tu chia duoi -> hien dang goc
@@ -177,6 +284,12 @@ class Japanese(object):
         kana = ""
         senses_en, notes = [], []
         if entries:
+            if not langs.RE_HAN.search(word):          # go kana (thuong la tu romaji)
+                entries = self._rank(entries)
+                written = self._written_form(entries[0], word)
+                if written != word:
+                    word = written
+                    res = self.lookup(written) or res  # de co nghia tung chu Kanji
             e = entries[0]
             kana = str(e.kana_forms[0]) if e.kana_forms else ""
             for s in e.senses[:4]:
@@ -241,6 +354,81 @@ class Japanese(object):
                 reading="{} · {}".format(kana, romaji) if kana and kana != shown else romaji,
                 badge="N{}".format(lvl) if lvl else "Nhật",
                 en=senses[:4], speak=shown, lang=langs.JA))
+        return out
+
+    @staticmethod
+    def _long_vowel_variants(kana, limit=60):
+        """'ときょ' -> 'とうきょう', 'おさか' -> 'おおさか': nguoi go romaji hay
+        bo truong am (tokyo, osaka). -> [(so cho them, chuoi)], khong gom ban goc."""
+        spots = []
+        for i, ch in enumerate(kana):
+            if kana[i + 1:i + 2] in ("う", "お", "ー"):
+                continue
+            r = to_romaji(ch)
+            if r.endswith("o") or ch == "ょ":
+                spots.append((i, "うお"))
+            elif r.endswith("u") or ch == "ゅ":
+                spots.append((i, "う"))
+        spots = spots[:4]
+        out = []
+
+        def walk(k, s, shift, added):
+            if len(out) >= limit:
+                return
+            if k == len(spots):
+                if added:
+                    out.append((added, s))
+                return
+            walk(k + 1, s, shift, added)
+            pos = spots[k][0] + shift + 1
+            for ext in spots[k][1]:
+                walk(k + 1, s[:pos] + ext + s[pos:], shift + 1, added + 1)
+
+        walk(0, kana, 0, 0)
+        return out
+
+    def _commonness(self, kana):
+        """Do thong dung cua tu go bang kana: cap JLPT cao nhat (N5 = 5), 0 = khong co."""
+        res = self.lookup(kana)
+        entries = getattr(res, "entries", None)
+        if not entries:
+            return None
+        best = 0
+        for e in entries:
+            for k in list(e.kanji_forms) + list(e.kana_forms):
+                best = max(best, self.jlpt.get(str(k), 0))
+        return best
+
+    def romaji_cards(self, text, max_words=25):
+        """Go romaji: 'gakkou' -> 学校, 'tabemashita' -> 食べる, 'tokyo' -> 東京.
+
+        janome tach cau toan hiragana rat te (がっこう -> が/っ/こう), nen tra
+        nguyen tung tu truoc, khong ra moi nho janome bo duoi dong tu."""
+        kana_text = from_romaji(text)
+        if not kana_text:
+            return []
+        out, seen = [], set()
+        for token in kana_text.split():
+            if token in "はへを":                   # tro tu dung rieng
+                continue
+            tries = [(0, token)] + ([(0, token[:-1] + "は")] if token.endswith("わ") else [])
+            tries += self._long_vowel_variants(token)
+            # Chon tu thong dung nhat (JLPT), hoa thi it sua nhat: 'dozo' -> どうぞ
+            # chu khong phai どうぞう (銅像) du ca hai deu co trong tu dien
+            scored = []
+            for added, t in tries:
+                common = self._commonness(t)
+                if common is not None:
+                    scored.append((-common, added, t))
+            hit = min(scored)[2] if scored else None
+            found = [self.card(hit, hit, "", "")] if hit else \
+                [c for c in self.cards(token, max_words) if c.found]
+            for c in found:
+                if c.word not in seen:
+                    seen.add(c.word)
+                    out.append(c)
+            if len(out) >= max_words:
+                break
         return out
 
     def cards(self, text, max_words=25):

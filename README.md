@@ -94,6 +94,13 @@ Thấy vướng thì mở `langscan.py` sửa `DOUBLE_CTRL_SEARCH = False`, lúc
 | `Nhật → Việt` | `食べる` | to eat + dịch Việt |
 | `Hàn → Việt` | `일해요` | 일하다 - to work |
 | `Anh → Việt` | `deploy` | triển khai |
+| `Trung → Việt` | `wo shi xuesheng` | 我 · 是 · 学生 (tách câu pinyin) |
+| `Nhật → Việt` | `tabemashita`, `tokyo` | 食べる, 東京 (gõ romaji) |
+| `Hàn → Việt` | `annyeonghaseyo` | 안녕하세요 (gõ phiên âm Latin) |
+
+**Gõ phiên âm thay cho chữ gốc**: chọn nguồn Trung / Nhật / Hàn rồi gõ pinyin, romaji hay phiên âm Latin tiếng Hàn đều được. Để nguồn **Tự động** thì app chỉ thử đọc như romaji / phiên âm Hàn khi chữ đó không phải từ tiếng Anh. Romaji bỏ trường âm vẫn nhận (`tokyo`, `gakko`); phiên âm Hàn nhận cả kiểu chuẩn (`gamsahamnida`) lẫn kiểu cũ (`kamsahamnida`).
+
+**Di chuyển và chỉnh cỡ popup**: giữ chuột vào chỗ trống ở thanh trên, thanh chọn ngôn ngữ hoặc dòng chữ nhỏ dưới cùng rồi kéo để di chuyển. Kéo góc **◢** ở dưới bên phải để phóng to, thu nhỏ. Cỡ đã chỉnh được nhớ cho các lần sau (lưu ở `data/popup.json`, xoá file này để về cỡ mặc định).
 
 **Dán cả câu thì nó dịch cả câu**, rồi bên dưới vẫn tách ra từng từ để bạn học. Ô nhập cao 2 dòng, Shift+Enter xuống dòng, Enter là dịch.
 

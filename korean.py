@@ -65,6 +65,74 @@ def romanize(text):
     return "".join(out)
 
 
+# ------------------------------------------------ phien am Latin -> Hangul --
+# Go 'annyeonghaseyo' / 'eunhaeng' -> 안녕하세요 / 은행. Kho vi RR viet phu am
+# cuoi noi sang am sau (한국어 = han-gu-geo), nen sinh nhieu cach doc roi de
+# tu dien chon. Moi lua chon 'kem chuan' bi cong diem phat, thu re nhat truoc.
+_R_VOWELS = {v: i for i, v in enumerate(_JUNG)}
+# phu am dau: chuoi Latin -> [(chi so, diem phat)]; k/t/p/ch cung thu ㄱ/ㄷ/ㅂ/ㅈ
+# vi nhieu sach dung kieu cu (kamsahamnida thay vi gamsahamnida)
+_R_INITIAL = {"g": [(0, 0)], "kk": [(1, 0)], "n": [(2, 0)], "d": [(3, 0)],
+              "tt": [(4, 0)], "r": [(5, 0)], "l": [(5, 1)], "m": [(6, 0)],
+              "b": [(7, 0)], "pp": [(8, 0)], "s": [(9, 0)], "ss": [(10, 0)],
+              "j": [(12, 0)], "jj": [(13, 0)], "ch": [(14, 0), (12, 1)],
+              "k": [(15, 0), (0, 1)], "t": [(16, 0), (3, 1)], "p": [(17, 0), (7, 1)],
+              "h": [(18, 0)]}
+# phu am cuoi: chuoi Latin -> [chi so jong]
+_R_FINAL = {"k": [1], "g": [1], "kk": [2], "n": [4], "t": [7, 19, 22, 23, 25],
+            "d": [7], "l": [8], "r": [8], "m": [16], "p": [17], "b": [17],
+            "s": [19], "ss": [20], "ng": [21], "j": [22], "ch": [23], "h": [27]}
+# Dong hoa am mui: RR viet theo cach doc, phu am cuoi dung truoc n/m doi am
+# (합니다 hamnida, 있는 inneun, 한국말 hangungmal) -> thu ca phu am goc
+_R_FINAL_NASAL = {"m": [17], "ng": [1], "n": [20, 19, 7, 22, 23, 25]}
+_R_MAX_PARSES = 400
+
+
+def _romaja_parses(text):
+    """Moi cach doc chuoi Latin thanh Hangul -> [(diem phat, chuoi Hangul)]."""
+    text = re.sub(r"[^a-z]", "", text.lower())
+    results = []
+
+    def vowel_at(i):
+        return [(v, i + len(v)) for v in _R_VOWELS if text.startswith(v, i)]
+
+    def walk(i, out, cost):
+        if len(results) >= _R_MAX_PARSES * 4 or cost > 6:
+            return
+        if i == len(text):
+            if out:
+                results.append((cost, "".join(out)))
+            return
+        inits = [(c, k, p) for c in _R_INITIAL if text.startswith(c, i)
+                 for k, p in _R_INITIAL[c]] + [("", 11, 0)]
+        for c, cho, p_init in inits:
+            for v, j in vowel_at(i + len(c)):
+                jung = _R_VOWELS[v]
+                walk(j, out + [_syl(cho, jung)], cost + p_init)
+                for f, idxs in _R_FINAL.items():
+                    if not text.startswith(f, j):
+                        continue
+                    nxt = j + len(f)
+                    # phu am cuoi dung truoc nguyen am = kieu noi am cua RR
+                    # (한국어 hangugeo): duoc, nhung kem uu tien hon
+                    linked = bool(vowel_at(nxt))
+                    for n_idx, jong in enumerate(idxs):
+                        walk(nxt, out + [_syl(cho, jung, jong)],
+                             cost + p_init + (1 if linked else 0) + n_idx)
+                    if f in _R_FINAL_NASAL and text.startswith(("n", "m"), nxt):
+                        for jong in _R_FINAL_NASAL[f]:
+                            walk(nxt, out + [_syl(cho, jung, jong)], cost + p_init + 1)
+
+    walk(0, [], 0)
+    results.sort(key=lambda r: (r[0], len(r[1])))
+    seen, uniq = set(), []
+    for cost, h in results:
+        if h not in seen:
+            seen.add(h)
+            uniq.append((cost, h))
+    return uniq[:_R_MAX_PARSES]
+
+
 # --------------------------------------------------- tach tu / bo duoi ------
 # Tro tu hay gap - cat bo de tim tu goc
 PARTICLES = ["으로부터", "에게서", "한테서", "이라고", "라고", "에서", "에게", "한테",
@@ -200,8 +268,9 @@ class Korean(object):
     def lookup(self, word):
         return self.index.get(word, [])
 
-    def lookup_deep(self, word):
-        key, hits = self._lookup_deep(word)
+    def lookup_deep(self, word, trim=True):
+        """trim=False: khong dung cach cuoi 'cat dan tu phai' (doan mo)."""
+        key, hits = self._lookup_deep(word, trim)
         # Muc chi la loi chi dan ('봐' -> 'see 보다', '그래다' -> 'see 그렇다'):
         # hien thang tu goc cho nguoi hoc
         if hits and all(g.startswith("see ") for g, _h in hits):
@@ -210,7 +279,7 @@ class Korean(object):
                 return target, self.lookup(target)
         return key, hits
 
-    def _lookup_deep(self, word):
+    def _lookup_deep(self, word, trim=True):
         """Thu nguyen tu -> bo tro tu -> ve dang '~다' -> cat dan tu phai."""
         if self.lookup(word):
             return word, self.lookup(word)
@@ -246,11 +315,34 @@ class Korean(object):
         if word.endswith("요") and len(word) > 1 and self.lookup(word[:-1]):
             return word[:-1], self.lookup(word[:-1])         # 학교요
 
+        if not trim:
+            return word, []
         for end in range(len(word) - 1, 1, -1):
             cand = word[:end]
             if self.lookup(cand):
                 return cand, self.lookup(cand)
         return word, []
+
+    def _strong_hit(self, hangul):
+        """Tra duoc ma KHONG phai nho cat bot duoi tu (cach cuoi cua lookup_deep)."""
+        return bool(self.lookup_deep(hangul, trim=False)[1])
+
+    def from_romaja(self, text):
+        """'annyeonghaseyo' -> '안녕하세요', 'jeoneun haksaeng' -> '저는 학생'.
+
+        Moi tu (cach nhau boi dau cach) thu cac cach doc tu chuan RR nhat
+        tro di, lay cach dau tien tra ra tu that. '' neu khong tu nao ra."""
+        out, found = [], False
+        for token in text.split():
+            pick = None
+            for _cost, hangul in _romaja_parses(token):
+                if self._strong_hit(hangul):
+                    pick = hangul
+                    break
+            if pick:
+                found = True
+                out.append(pick)
+        return " ".join(out) if found else ""
 
     def han_viet(self, hanja):
         """Nghia tieng Viet cua phan Han tu, lay tu tu dien Trung-Viet.

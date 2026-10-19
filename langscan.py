@@ -41,8 +41,9 @@ TRANSLATE_VI = True     # dich Viet qua mang cho Nhat/Han va tu tieng Anh la
                         # (co cache, tra roi thi lan sau khong can mang)
 # True = bam ra ngoai popup thi popup tu dong dong
 CLOSE_ON_FOCUS_OUT = os.environ.get("SCAN_KEEP_OPEN") != "1"
-POPUP_WIDTH = 470
+POPUP_WIDTH = 470       # co mac dinh; keo goc ◢ cua popup de doi, app nho lai
 POPUP_MAX_HEIGHT = 600
+POPUP_MIN_SIZE = (340, 160)
 
 BG = "#1c1f26"
 BG_ALT = "#242833"
@@ -57,6 +58,7 @@ TONE_COLORS = {1: "#e5534b", 2: "#e2953a", 3: "#4aa96c", 4: "#4d8ee8", 5: "#8b93
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 LOG_PATH = os.path.join(DATA_DIR, "langscan.log")
+POPUP_PREFS = os.path.join(DATA_DIR, "popup.json")   # kich thuoc popup da keo
 LOCK_PORT = 50521       # cong cuc bo dung de chan chay 2 ban cung luc
 
 # Tkinter chi duoc dung tu luong chinh. Luong phu (dich online, tra nguoc)
@@ -239,6 +241,9 @@ class Popup(object):
         self._menu_open = False
         self.reverse = None         # chi so tra nguoc (dung lan dau, ~10 giay)
         self._hint_empty = False    # mo o go tay trong: hien huong dan
+        # Kich thuoc nguoi dung keo: user_h None = tu co gian theo noi dung
+        self.width, self.user_h = POPUP_WIDTH, None
+        self._load_size()
 
     def close(self, _=None):
         if self.win is not None:
@@ -274,6 +279,12 @@ class Popup(object):
             lang, cards, err = self.analyzer.analyze(
                 raw_text, force_lang=eff_force, max_words=MAX_WORDS)
             text = langs.clean(raw_text, lang) if lang else ""
+            if not text and cards and lang in (langs.JA, langs.KO):
+                # go phien am: dich ca cau tren chu kana / Hangul da doi lai
+                try:
+                    text = self.analyzer.romanized_text(raw_text, lang)
+                except Exception:
+                    text = ""
 
         win = tk.Toplevel(self.root)
         self.win = win
@@ -403,13 +414,17 @@ class Popup(object):
         # ---- than: danh sach the tu, cuon duoc
         body = tk.Frame(outer, bg=BG)
         body.pack(fill="both", expand=True)
-        canvas = tk.Canvas(body, bg=BG, highlightthickness=0, width=POPUP_WIDTH)
+        canvas = tk.Canvas(body, bg=BG, highlightthickness=0, width=self.width)
         scroll = tk.Scrollbar(body, orient="vertical", command=canvas.yview,
                               bg=BG, troughcolor=BG, bd=0, highlightthickness=0)
         inner = tk.Frame(canvas, bg=BG)
         inner.bind("<Configure>",
                    lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-        canvas.create_window((0, 0), window=inner, anchor="nw", width=POPUP_WIDTH)
+        inner_id = canvas.create_window((0, 0), window=inner, anchor="nw", width=self.width)
+        self._laid_w = self.width
+        # Keo goc doi co -> canvas rong/hep ra: noi dung va cac dong chu chay theo
+        canvas.bind("<Configure>",
+                    lambda e, c=canvas, i=inner_id: self._on_resize(c, i, e.width))
         canvas.configure(yscrollcommand=scroll.set)
         canvas.pack(side="left", fill="both", expand=True)
         scroll.pack(side="right", fill="y")
@@ -433,6 +448,10 @@ class Popup(object):
                    and len(py_text.split()) <= 10
                    and self.src_pref in ("auto", langs.ZH)
                    and lang in (None, langs.EN, langs.ZH))
+        # Tu dong ma tieng Anh khong ra gi ('taberu', 'annyeong'): thu doc nhu
+        # romaji tieng Nhat / phien am tieng Han
+        want_rom = (want_py and self.src_pref == "auto" and lang == langs.EN
+                    and not any(c.found for c in cards))
         if is_vi:
             self._phrase_line(inner, text, VI, target=target)
         elif not raw_text.strip() and self._hint_empty:
@@ -459,7 +478,7 @@ class Popup(object):
 
         if is_vi or want_py:
             self._extra_lookup(win, inner, py_text if want_py else text,
-                               is_vi, target, want_py)
+                               is_vi, target, want_py, want_rom)
 
         foot = tk.Label(outer, text="Esc: dong   |   Enter: dich lai   |   {}: tra lai   |   ep: {} Trung  {} Nhat  {} Han  {} Anh"
                         .format(HOTKEY_LOOKUP.upper(), HOTKEY_ZH.upper()[-1],
@@ -467,6 +486,18 @@ class Popup(object):
                                 HOTKEY_EN.upper()[-1]),
                         bg=BG_ALT, fg=FG_DIM, font=("Segoe UI", 8))
         foot.pack(fill="x", ipady=3)
+
+        # Popup khong co thanh tieu de (overrideredirect) nen tu lam: keo vung
+        # trong cua thanh tren / thanh ngon ngu / dong duoi de di chuyen,
+        # keo goc ◢ de doi co.
+        for w in (head, bar, foot):
+            self._draggable(w, win)
+        grip = tk.Label(outer, text="◢", bg=BG_ALT, fg=FG_DIM, cursor="size_nw_se",
+                        font=("Segoe UI", 9))
+        grip.place(relx=1.0, rely=1.0, anchor="se")
+        grip.bind("<ButtonPress-1>", lambda e, w=win: self._resize_start(e, w))
+        grip.bind("<B1-Motion>", lambda e, w=win: self._resize_move(e, w))
+        grip.bind("<ButtonRelease-1>", lambda e: self._resize_end())
 
         self._place(win)
         win.bind("<Escape>", self.close)
@@ -514,7 +545,7 @@ class Popup(object):
 
     def _message(self, parent, msg):
         tk.Label(parent, text=msg, bg=BG, fg=FG_DIM, font=("Segoe UI", 10),
-                 wraplength=POPUP_WIDTH - 30, justify="left").pack(
+                 wraplength=self.width - 30, justify="left").pack(
                      anchor="w", padx=14, pady=14)
 
     # ---- khung dich ca cau (noi bat, co nut Sao chep)
@@ -530,7 +561,7 @@ class Popup(object):
                  bg=BG_ALT, fg=ACCENT, font=("Segoe UI", 8, "bold")).pack(side="left")
         lbl = tk.Label(box, text="đang dịch...", bg=BG_ALT, fg=FG_DIM,
                        font=("Microsoft YaHei", 13),
-                       wraplength=POPUP_WIDTH - 40, justify="left")
+                       wraplength=self.width - 40, justify="left")
         copy_btn = tk.Button(top, text="Sao chép", bg=BG_ALT, fg=ACCENT, bd=0,
                              activebackground=BORDER, activeforeground=ACCENT,
                              cursor="hand2", font=("Segoe UI", 8))
@@ -565,6 +596,89 @@ class Popup(object):
         tk.Label(parent, text=title.upper(), bg=BG, fg=ACCENT,
                  font=("Segoe UI", 8, "bold")).pack(anchor="w", padx=12, pady=(10, 0))
 
+    # ---- keo di chuyen / doi co popup
+    def _load_size(self):
+        try:
+            import json
+            with open(POPUP_PREFS, encoding="utf-8") as f:
+                d = json.load(f)
+            self.width = max(POPUP_MIN_SIZE[0], int(d.get("width", POPUP_WIDTH)))
+            h = d.get("height")
+            self.user_h = max(POPUP_MIN_SIZE[1], int(h)) if h else None
+        except Exception:
+            pass
+
+    def _save_size(self):
+        try:
+            import json
+            with open(POPUP_PREFS, "w", encoding="utf-8") as f:
+                json.dump({"width": self.width, "height": self.user_h}, f)
+        except Exception:
+            pass
+
+    @staticmethod
+    def _draggable(widget, win):
+        """Giu chuot trai vao vung trong cua widget roi keo -> di chuyen popup.
+        Chi bat su kien tren chinh widget, nen bam nut / o nhap ben trong van binh thuong."""
+        def press(e):
+            widget._drag = (e.x_root - win.winfo_x(), e.y_root - win.winfo_y())
+
+        def move(e):
+            dx, dy = getattr(widget, "_drag", (0, 0))
+            win.geometry("+{}+{}".format(e.x_root - dx, e.y_root - dy))
+        widget.bind("<ButtonPress-1>", press)
+        widget.bind("<B1-Motion>", move)
+        widget.configure(cursor="fleur")
+
+    def _resize_start(self, e, win):
+        self._rs = (e.x_root, e.y_root, win.winfo_width(), win.winfo_height())
+        self._resizing = True
+
+    def _resize_end(self):
+        self._resizing = False
+        self._save_size()
+
+    def _resize_move(self, e, win):
+        x0, y0, w0, h0 = self._rs
+        w = max(POPUP_MIN_SIZE[0] + 18, w0 + e.x_root - x0)
+        h = max(POPUP_MIN_SIZE[1], h0 + e.y_root - y0)
+        self.user_h = h                      # tu gio giu co nay, khong tu co gian nua
+        win.geometry("{}x{}".format(w, h))
+
+    def _on_resize(self, canvas, item, width):
+        """Canvas doi be rong: keo khung noi dung theo va ngat dong lai chu."""
+        if width < 50:
+            return
+        try:
+            canvas.itemconfigure(item, width=width)
+        except tk.TclError:
+            return
+        delta = width - self._laid_w
+        if not delta:
+            return
+        self._laid_w = width
+        # Chi nho be rong khi nguoi dung dang keo: canvas thuc te lech vai diem
+        # anh so voi self.width (thanh cuon, vien), nho moi lan se hep dan
+        if getattr(self, "_resizing", False):
+            self.width = width
+
+        def walk(w):
+            for c in w.winfo_children():
+                if isinstance(c, tk.Label):
+                    try:
+                        wl = int(str(c.cget("wraplength")))
+                        if wl > 0:
+                            c.configure(wraplength=max(120, wl + delta))
+                    except (tk.TclError, ValueError):
+                        pass
+                walk(c)
+        walk(self._inner)
+
+    def _height(self, win):
+        if self.user_h:
+            return self.user_h
+        return min(win.winfo_reqheight(), POPUP_MAX_HEIGHT)
+
     def _regrow(self):
         """Noi dung vua dai ra (dich xong, tra nguoc xong): gian popup cho vua."""
         win = self.win
@@ -575,8 +689,8 @@ class Popup(object):
             need = self._inner.winfo_reqheight()
             self._canvas.configure(height=max(90, min(need, POPUP_MAX_HEIGHT - 60)))
             win.update_idletasks()
-            h = min(win.winfo_reqheight(), POPUP_MAX_HEIGHT)
-            w = POPUP_WIDTH + 18
+            h = self._height(win)
+            w = self.width + 18
             sh = win.winfo_screenheight()
             x, y = win.winfo_x(), win.winfo_y()
             if y + h > sh - 40:
@@ -586,13 +700,23 @@ class Popup(object):
             pass
 
     # ---- tra nguoc Viet -> ngoai ngu / go pinyin (chay ngam, khong lam treo popup)
-    def _extra_lookup(self, win, inner, query, is_vi, target, want_py):
+    def _extra_lookup(self, win, inner, query, is_vi, target, want_py, want_rom=False):
         lbl = tk.Label(inner, text="đang tìm từ trong chỉ mục...", bg=BG, fg=FG_DIM,
                        font=("Segoe UI", 9, "italic"))
         lbl.pack(anchor="w", padx=12, pady=(8, 4))
 
         def work():
             backward, pinyin, phrase, note = [], [], [], ""
+            romans = []                 # [(tieu de, danh sach the)]
+            if want_rom:
+                for rlang, title in ((langs.JA, "Đọc như romaji tiếng Nhật"),
+                                     (langs.KO, "Đọc như phiên âm tiếng Hàn")):
+                    try:            # chua cai tu dien Nhat thi bo qua, khong bao loi
+                        found = [c for c in self.analyzer.romanized(query, rlang) if c.found]
+                    except Exception:
+                        found = []
+                    if found:
+                        romans.append((title, found))
             try:
                 if self.reverse is None:
                     ui_call(lambda: lbl.winfo_exists() and lbl.config(
@@ -618,7 +742,7 @@ class Popup(object):
                 try:
                     if self.win is not win or not lbl.winfo_exists():
                         return
-                    if not backward and not pinyin and not phrase:
+                    if not backward and not pinyin and not phrase and not romans:
                         lbl.config(text=note or "không tìm thấy từ tra ngược nào cho '{}'"
                                    .format(query))
                         self._regrow()
@@ -632,6 +756,10 @@ class Popup(object):
                             title += "  ({})".format(note)
                         self._section(inner, title)
                         for i, c in enumerate(backward):
+                            self._card_block(inner, c, first=(i == 0))
+                    for title, rcards in romans:
+                        self._section(inner, title)
+                        for i, c in enumerate(rcards):
                             self._card_block(inner, c, first=(i == 0))
                     if phrase:
                         self._section(inner, "Câu pinyin:  " + " ".join(c.word for c in phrase))
@@ -649,7 +777,7 @@ class Popup(object):
 
     # ---- mot the tu
     def _card_block(self, parent, card, first=False, width=None):
-        width = width or POPUP_WIDTH
+        width = width or self.width
         block = tk.Frame(parent, bg=BG)
         block.pack(fill="x", padx=12, pady=(10 if first else 6, 2))
 
@@ -706,7 +834,7 @@ class Popup(object):
     def _sense(self, block, text, color, size, width=None):
         lbl = tk.Label(block, text=text, bg=block["bg"], fg=color,
                        font=("Segoe UI", size),
-                       wraplength=(width or POPUP_WIDTH) - 40,
+                       wraplength=(width or self.width) - 40,
                        justify="left")
         lbl.pack(anchor="w", pady=(1, 0))
         return lbl
@@ -745,8 +873,8 @@ class Popup(object):
             win.update_idletasks()
         except Exception:
             pass
-        h = min(win.winfo_reqheight(), POPUP_MAX_HEIGHT)
-        w = POPUP_WIDTH + 18
+        h = self._height(win)
+        w = self.width + 18
         sw, sh = win.winfo_screenwidth(), win.winfo_screenheight()
         if getattr(self, "_pos", None):          # dich lai: giu nguyen cho cu
             x, y = self._pos

@@ -46,3 +46,22 @@ def test_hanja_meaning(ko):
     card = ko.card("은행")
     assert "銀行" in card.note
     assert "ngân hàng" in card.note
+
+
+@pytest.mark.parametrize("romaja, hangul", [
+    ("eunhaeng", "은행"), ("annyeonghaseyo", "안녕하세요"), ("hangugeo", "한국어"),
+    ("meogeosseoyo", "먹었어요"), ("saranghae", "사랑해"),
+    ("gamsahamnida", "감사합니다"),          # 합니다 doc thanh hamnida
+    ("kamsahamnida", "감사합니다"),          # kieu cu: k thay vi g
+    ("hangungmal", "한국말"),
+    ("mannaseo bangapseumnida", "만나서 반갑습니다"),
+    ("test", ""),
+])
+def test_from_romaja(ko, romaja, hangul):
+    assert ko.from_romaja(romaja) == hangul
+
+
+def test_romanized_analyze(analyzer):
+    import langs
+    _lang, cards, _err = analyzer.analyze("eunhaeng", force_lang=langs.KO)
+    assert [c.word for c in cards] == ["은행"]

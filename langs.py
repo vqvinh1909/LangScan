@@ -128,6 +128,24 @@ class Analyzer(object):
             self._en = english.English()
         return self._en
 
+    def romanized_text(self, text, lang):
+        """'tabemashita' -> 'たべました', 'annyeong' -> '안녕' ('' neu khong doc duoc)."""
+        if lang == JA:
+            import japanese
+            return japanese.from_romaji(text)
+        if lang == KO:
+            return self.ko().from_romaja(text)
+        return ""
+
+    def romanized(self, text, lang, max_words=25):
+        """Doc chu Latin nhu romaji (Nhat) / phien am RR (Han) -> danh sach Card."""
+        if lang == JA:
+            return self.ja().romaji_cards(text, max_words)
+        if lang == KO:
+            hangul = self.ko().from_romaja(text)
+            return self.ko().cards(hangul, max_words) if hangul else []
+        return []
+
     # ---- tra cuu
     def analyze(self, raw_text, force_lang=None, max_words=25):
         """-> (ma_ngon_ngu, danh sach Card, thong bao loi neu co)."""
@@ -135,9 +153,13 @@ class Analyzer(object):
         if lang is None:
             return None, [], ""
         text = clean(raw_text, lang)
-        if not text:
-            return lang, [], ""
         try:
+            if not text and lang in (JA, KO) and RE_LATIN.search(raw_text or ""):
+                # Chon nguon Nhat/Han ma go chu Latin = go phien am
+                # ('tabemashita' -> 食べる, 'annyeonghaseyo' -> 안녕하세요)
+                return lang, self.romanized(raw_text, lang, max_words), ""
+            if not text:
+                return lang, [], ""
             if lang == ZH:
                 import dictionary
                 return lang, dictionary.cards(text, self.zh(), max_words), ""
