@@ -1,0 +1,316 @@
+# Thuat ngu IT / System Administration / DevOps - nghia tieng Viet theo ngu canh nghe
+# Dinh dang:  thuat_ngu <TAB> nghia tieng Viet <TAB> ghi chu (co the de trong)
+# Uu tien hon tu dien Anh-Viet thong thuong.
+offline	không kết nối mạng; ở chế độ rời mạng	máy/dịch vụ đang không online, không phải "ngoại tuyến"
+online	đang kết nối mạng; đang hoạt động
+firewall	tường lửa - thiết bị/phần mềm lọc lưu lượng mạng theo luật
+server	máy chủ
+client	máy khách; phía người dùng
+host	máy chủ vật lý/máy trạm trong mạng; đặt (dịch vụ) lên máy nào đó
+hostname	tên máy trong mạng
+localhost	chính máy đang chạy (127.0.0.1)
+network	mạng máy tính
+subnet	mạng con - phần chia nhỏ của một dải IP
+subnet mask	mặt nạ mạng con, xác định phần nào của IP là địa chỉ mạng
+gateway	cổng ra mạng - thiết bị dẫn gói tin sang mạng khác
+router	bộ định tuyến
+switch	bộ chuyển mạch (thiết bị mạng lớp 2)
+bridge	cầu nối mạng
+packet	gói tin
+payload	phần dữ liệu thật trong gói tin/yêu cầu (không tính phần đầu)
+header	phần đầu (của gói tin, request HTTP...) chứa thông tin mô tả
+protocol	giao thức
+handshake	bắt tay - thủ tục thiết lập kết nối giữa hai bên
+latency	độ trễ - thời gian gói tin đi từ A đến B
+throughput	thông lượng - lượng dữ liệu xử lý được trong một đơn vị thời gian
+bandwidth	băng thông
+port	cổng (dịch vụ) - số hiệu phân biệt các dịch vụ trên cùng một máy
+socket	đầu nối mạng - cặp IP + cổng của một kết nối
+endpoint	điểm cuối - địa chỉ URL/dịch vụ để gọi tới
+DNS	hệ thống phân giải tên miền thành địa chỉ IP
+DHCP	giao thức tự cấp phát IP cho máy trong mạng
+NAT	kỹ thuật chuyển đổi địa chỉ mạng, cho nhiều máy dùng chung một IP công cộng
+VPN	mạng riêng ảo - đường hầm mã hoá qua Internet
+VLAN	mạng LAN ảo - chia một switch vật lý thành nhiều mạng logic
+proxy	máy trung gian đứng giữa client và server
+reverse proxy	proxy nghịch - đứng trước máy chủ, nhận request thay cho máy chủ
+load balancer	bộ cân bằng tải - chia lưu lượng cho nhiều máy chủ
+failover	chuyển đổi dự phòng - tự chuyển sang máy dự phòng khi máy chính hỏng
+redundancy	dự phòng - nhân đôi thành phần để không có điểm chết đơn lẻ
+uptime	thời gian hệ thống chạy liên tục không gián đoạn
+downtime	thời gian hệ thống ngừng hoạt động
+outage	sự cố mất dịch vụ trên diện rộng
+incident	sự cố cần xử lý
+postmortem	báo cáo hậu sự cố - phân tích nguyên nhân sau khi khắc phục xong
+rollback	quay lui về phiên bản trước
+rollout	triển khai dần ra diện rộng
+deploy	triển khai (đưa mã lên môi trường chạy)
+deployment	việc triển khai; bản triển khai
+release	phát hành (một phiên bản)
+build	quá trình biên dịch/đóng gói; bản dựng
+pipeline	dây chuyền tự động (build - test - deploy)
+CI	tích hợp liên tục - tự động build và test mỗi lần đẩy mã	Continuous Integration
+CD	triển khai liên tục - tự động đưa mã đã test lên môi trường chạy	Continuous Delivery/Deployment
+staging	môi trường thử nghiệm giống hệt môi trường thật
+production	môi trường thật, đang phục vụ người dùng
+environment	môi trường chạy (dev/staging/production)
+provisioning	cấp phát và cài đặt sẵn hạ tầng/máy chủ
+orchestration	điều phối - tự động quản lý nhiều thành phần phối hợp với nhau
+container	container - gói ứng dụng kèm môi trường chạy, nhẹ hơn máy ảo
+image	ảnh - bản mẫu đóng gói sẵn để tạo container/máy ảo
+registry	kho chứa image
+volume	ổ lưu trữ gắn vào container/máy ảo
+namespace	không gian tên - vùng tách biệt để tránh trùng tên/tài nguyên
+pod	pod - đơn vị nhỏ nhất trong Kubernetes, chứa một hoặc vài container
+cluster	cụm máy chủ hoạt động như một hệ thống
+node	nút - một máy trong cụm
+replica	bản sao chạy song song của một dịch vụ
+scaling	mở rộng quy mô hệ thống
+autoscaling	tự động tăng giảm số máy/bản sao theo tải
+horizontal scaling	mở rộng ngang - thêm máy
+vertical scaling	mở rộng dọc - tăng cấu hình máy sẵn có
+hypervisor	phần mềm tạo và quản lý máy ảo
+virtual machine	máy ảo
+snapshot	ảnh chụp trạng thái tại một thời điểm, dùng để khôi phục
+backup	sao lưu
+restore	khôi phục từ bản sao lưu
+disaster recovery	khôi phục sau thảm hoạ
+high availability	tính sẵn sàng cao - hệ thống gần như không bao giờ chết
+SLA	cam kết mức chất lượng dịch vụ
+kernel	nhân hệ điều hành
+shell	trình thông dịch dòng lệnh (bash, zsh...)
+daemon	tiến trình chạy nền thường trực
+process	tiến trình
+thread	luồng
+service	dịch vụ - chương trình chạy nền phục vụ yêu cầu
+package	gói phần mềm
+repository	kho (chứa mã nguồn hoặc gói phần mềm)
+dependency	phụ thuộc - thư viện/gói mà phần mềm cần có mới chạy được
+mount	gắn kết một ổ đĩa/thư mục vào cây thư mục
+unmount	tháo gắn kết
+partition	phân vùng ổ đĩa
+filesystem	hệ thống tập tin
+permission	quyền truy cập
+owner	chủ sở hữu (của tập tin/tiến trình)
+root	tài khoản quản trị cao nhất trên Linux; thư mục gốc
+sudo	lệnh chạy quyền quản trị tạm thời
+symlink	liên kết mềm trỏ tới tập tin/thư mục khác
+cron	bộ hẹn giờ chạy lệnh định kỳ trên Linux
+crontab	bảng lịch chạy lệnh định kỳ
+log	nhật ký hệ thống
+logging	việc ghi nhật ký
+monitoring	giám sát hệ thống
+alerting	cảnh báo tự động khi vượt ngưỡng
+metric	chỉ số đo được (CPU, RAM, số request...)
+dashboard	bảng theo dõi trực quan
+tracing	truy vết đường đi của một request qua nhiều dịch vụ
+debug	gỡ lỗi
+troubleshoot	chẩn đoán và xử lý sự cố
+bottleneck	điểm nghẽn làm chậm cả hệ thống
+overhead	chi phí phụ trội (tài nguyên tốn thêm ngoài công việc chính)
+cache	bộ nhớ đệm - lưu tạm kết quả để lần sau lấy nhanh
+buffer	vùng đệm tạm giữ dữ liệu
+queue	hàng đợi
+throttling	bóp băng thông/giới hạn tốc độ xử lý
+rate limit	giới hạn số lượt gọi trong một khoảng thời gian
+timeout	hết thời gian chờ
+retry	thử lại
+idempotent	gọi nhiều lần cho kết quả như gọi một lần
+stateless	không lưu trạng thái giữa các lần gọi
+stateful	có lưu trạng thái
+session	phiên làm việc
+cookie	mẩu dữ liệu trình duyệt lưu để nhận diện phiên
+token	mã thông báo dùng để xác thực
+authentication	xác thực - kiểm tra bạn là ai
+authorization	phân quyền - kiểm tra bạn được làm gì
+credential	thông tin đăng nhập (tài khoản, mật khẩu, khoá)
+encryption	mã hoá
+decryption	giải mã
+hash	băm - biến dữ liệu thành chuỗi đại diện không đảo ngược được
+salt	chuỗi ngẫu nhiên thêm vào mật khẩu trước khi băm
+certificate	chứng chỉ số
+SSL	giao thức mã hoá kết nối (tiền thân của TLS)
+TLS	giao thức mã hoá kết nối hiện hành
+SSH	giao thức đăng nhập máy chủ từ xa có mã hoá
+key pair	cặp khoá công khai và khoá riêng
+public key	khoá công khai
+private key	khoá riêng, phải giữ bí mật
+vulnerability	lỗ hổng bảo mật
+exploit	mã/kỹ thuật khai thác lỗ hổng
+patch	bản vá lỗi
+hardening	gia cố hệ thống cho khó bị tấn công
+audit	rà soát, kiểm toán (nhật ký, quyền, cấu hình)
+compliance	tuân thủ quy định
+malware	phần mềm độc hại
+ransomware	mã độc tống tiền, mã hoá dữ liệu đòi chuộc
+phishing	lừa đảo giả mạo để lấy thông tin đăng nhập
+brute force	tấn công dò mật khẩu bằng cách thử cạn kiệt
+DDoS	tấn công từ chối dịch vụ phân tán
+sandbox	môi trường cách ly để chạy thử thứ không tin tưởng
+database	cơ sở dữ liệu
+query	truy vấn
+index	chỉ mục - cấu trúc giúp tìm dữ liệu nhanh
+schema	lược đồ - cấu trúc bảng và quan hệ trong cơ sở dữ liệu
+migration	chuyển đổi (dữ liệu/hệ thống); kịch bản đổi cấu trúc cơ sở dữ liệu
+transaction	giao dịch - nhóm thao tác thành công cùng nhau hoặc huỷ cùng nhau
+rollback	huỷ giao dịch, trả dữ liệu về trạng thái trước
+commit	xác nhận ghi (giao dịch); lưu một thay đổi vào Git
+replication	nhân bản dữ liệu sang máy khác
+sharding	chia nhỏ dữ liệu ra nhiều máy
+backup window	khung giờ cho phép chạy sao lưu
+API	giao diện lập trình - cách các phần mềm gọi nhau
+REST	kiểu thiết kế API dựa trên HTTP
+webhook	cơ chế hệ thống khác tự gọi vào URL của bạn khi có sự kiện
+payload size	kích thước dữ liệu gửi kèm
+request	yêu cầu gửi lên máy chủ
+response	phản hồi từ máy chủ
+status code	mã trạng thái HTTP (200, 404, 500...)
+middleware	lớp trung gian xử lý request trước khi tới ứng dụng chính
+frontend	phần giao diện người dùng
+backend	phần xử lý phía máy chủ
+framework	bộ khung lập trình
+library	thư viện
+runtime	môi trường thực thi lúc chạy
+compile	biên dịch
+interpreter	trình thông dịch
+source code	mã nguồn
+binary	tập tin nhị phân đã biên dịch
+executable	tập tin chạy được
+script	tập lệnh
+version control	quản lý phiên bản mã nguồn
+branch	nhánh mã nguồn
+merge	gộp nhánh
+conflict	xung đột khi gộp mã
+pull request	yêu cầu gộp mã kèm review
+clone	sao chép kho mã về máy
+fork	tạo bản rẽ nhánh riêng của một kho mã
+push	đẩy mã lên kho từ xa
+pull	kéo mã mới nhất về
+stash	cất tạm thay đổi chưa commit
+tag	nhãn đánh dấu một phiên bản
+changelog	nhật ký thay đổi giữa các phiên bản
+refactor	viết lại mã cho sạch mà không đổi hành vi
+technical debt	nợ kỹ thuật - phần mã làm vội, sau phải trả giá
+legacy	hệ thống/mã cũ vẫn đang chạy, khó thay
+deprecated	đã lỗi thời, sắp bị bỏ, không nên dùng nữa
+boilerplate	đoạn mã khuôn mẫu lặp đi lặp lại
+scaffold	khung sườn dự án sinh sẵn
+config	cấu hình
+flag	cờ - tuỳ chọn bật/tắt
+feature flag	công tắc bật/tắt tính năng mà không cần triển khai lại
+environment variable	biến môi trường
+hardcode	viết cứng giá trị thẳng trong mã thay vì đưa ra cấu hình
+wildcard	ký tự đại diện (* hoặc ?)
+regex	biểu thức chính quy - mẫu để tìm kiếm chuỗi
+parse	phân tích cú pháp, bóc tách dữ liệu
+serialize	chuyển dữ liệu thành dạng lưu/truyền được (JSON, nhị phân...)
+encode	mã hoá dạng biểu diễn (không phải mã hoá bảo mật)
+decode	giải dạng biểu diễn
+escape	thoát ký tự đặc biệt để không bị hiểu nhầm
+whitelist	danh sách cho phép
+blacklist	danh sách chặn
+allowlist	danh sách cho phép
+throughput test	kiểm thử thông lượng
+benchmark	đo hiệu năng theo chuẩn để so sánh
+profiling	đo xem phần nào của chương trình tốn tài nguyên
+memory leak	rò rỉ bộ nhớ - chiếm RAM mà không trả lại
+garbage collection	thu gom rác - tự giải phóng bộ nhớ không dùng
+race condition	lỗi tranh chấp do thứ tự thực thi không xác định
+deadlock	kẹt chết - hai tiến trình chờ nhau vĩnh viễn
+concurrency	xử lý đồng thời nhiều việc
+parallelism	chạy song song thật sự trên nhiều lõi
+asynchronous	bất đồng bộ - không chờ xong mới làm việc khác
+synchronous	đồng bộ - làm tuần tự, chờ xong mới sang bước sau
+callback	hàm gọi lại khi việc kia xong
+polling	hỏi thăm định kỳ xem có gì mới không
+cron job	việc chạy theo lịch định kỳ
+batch	xử lý theo lô
+stream	luồng dữ liệu chảy liên tục
+pipeline stage	một chặng trong dây chuyền tự động
+artifact	sản phẩm đầu ra của quá trình build (file cài, image...)
+manifest	tệp khai báo cấu hình/thành phần
+template	mẫu
+inventory	danh sách máy chủ được quản lý (Ansible)
+playbook	kịch bản tự động hoá (Ansible)
+idempotency	tính chạy lại nhiều lần vẫn ra cùng kết quả
+infrastructure as code	quản lý hạ tầng bằng mã nguồn thay vì bấm tay
+provision	cấp phát máy chủ/tài nguyên
+tenant	bên thuê - một khách hàng dùng chung hệ thống với khách khác
+multi-tenant	một hệ thống phục vụ nhiều khách hàng tách biệt nhau
+on-premise	đặt máy tại chỗ, tự vận hành (đối lập với cloud)
+cloud	điện toán đám mây
+IaaS	thuê hạ tầng (máy ảo, mạng, lưu trữ)
+PaaS	thuê nền tảng chạy ứng dụng
+SaaS	thuê phần mềm dùng sẵn
+region	vùng địa lý đặt trung tâm dữ liệu
+availability zone	khu vực sẵn sàng - trung tâm dữ liệu tách biệt trong một vùng
+bucket	thùng chứa tập tin trên dịch vụ lưu trữ đám mây
+object storage	lưu trữ dạng đối tượng (S3 và tương tự)
+block storage	lưu trữ dạng khối, gắn vào máy như một ổ đĩa
+CDN	mạng phân phối nội dung, đặt bản sao gần người dùng
+edge	biên - vị trí xử lý gần người dùng cuối
+directory service	dịch vụ thư mục quản lý tài khoản và máy trong tổ chức
+Active Directory	dịch vụ thư mục của Windows Server, quản lý người dùng và máy
+domain controller	máy chủ điều khiển miền, xác thực đăng nhập trong tổ chức
+group policy	chính sách nhóm - áp cấu hình hàng loạt cho máy và người dùng
+LDAP	giao thức truy vấn dịch vụ thư mục
+Kerberos	giao thức xác thực bằng vé trong mạng nội bộ
+single sign-on	đăng nhập một lần dùng được nhiều hệ thống
+provisioning script	kịch bản cài đặt tự động
+patch management	quản lý việc vá lỗi phần mềm
+baseline	mốc chuẩn để so sánh về sau
+capacity planning	hoạch định năng lực - tính trước cần bao nhiêu tài nguyên
+runbook	tài liệu hướng dẫn xử lý theo từng bước
+escalation	chuyển vụ việc lên cấp cao hơn
+ticket	phiếu yêu cầu hỗ trợ
+on-call	trực hệ thống, sẵn sàng xử lý sự cố ngoài giờ
+root cause	nguyên nhân gốc rễ
+workaround	cách khắc phục tạm, chưa xử lý gốc
+mitigation	biện pháp giảm nhẹ hậu quả
+# --- Ten san pham / dich vu hay gap trong nganh (khong dich, chi giai thich la gi)
+OneDrive	dịch vụ lưu trữ đám mây của Microsoft, đồng bộ tệp giữa máy và mạng	tên riêng
+Dropbox	dịch vụ lưu trữ và đồng bộ tệp trên đám mây	tên riêng
+GitHub	nền tảng lưu trữ mã nguồn dùng Git, kèm review và CI/CD	tên riêng
+GitLab	nền tảng lưu trữ mã nguồn và CI/CD, tự cài trên máy chủ riêng được	tên riêng
+Git	hệ thống quản lý phiên bản mã nguồn phân tán	tên riêng
+Docker	công cụ đóng gói và chạy ứng dụng trong container	tên riêng
+Kubernetes	hệ thống điều phối container trên nhiều máy chủ	tên riêng
+Ansible	công cụ tự động hoá cấu hình máy chủ, không cần cài agent	tên riêng
+Terraform	công cụ tạo và quản lý hạ tầng bằng mã nguồn	tên riêng
+Jenkins	máy chủ tự động hoá build và triển khai	tên riêng
+Nginx	máy chủ web kiêm reverse proxy, nhẹ và chịu tải tốt	tên riêng
+Apache	máy chủ web phổ biến của Apache Foundation	tên riêng
+Tomcat	máy chủ ứng dụng chạy Java servlet	tên riêng
+Redis	cơ sở dữ liệu trong bộ nhớ, hay dùng làm cache	tên riêng
+PostgreSQL	hệ quản trị cơ sở dữ liệu quan hệ mã nguồn mở	tên riêng
+MySQL	hệ quản trị cơ sở dữ liệu quan hệ phổ biến	tên riêng
+MariaDB	nhánh mã nguồn mở tách ra từ MySQL	tên riêng
+MongoDB	cơ sở dữ liệu dạng tài liệu, không dùng bảng	tên riêng
+Elasticsearch	công cụ tìm kiếm và phân tích log theo thời gian thực	tên riêng
+Grafana	công cụ vẽ bảng theo dõi từ dữ liệu giám sát	tên riêng
+Prometheus	hệ thống thu thập chỉ số và cảnh báo	tên riêng
+Zabbix	hệ thống giám sát hạ tầng mạng và máy chủ	tên riêng
+VMware	hãng phần mềm ảo hoá; bộ sản phẩm máy ảo doanh nghiệp	tên riêng
+vSphere	nền tảng ảo hoá máy chủ của VMware	tên riêng
+Hyper-V	nền tảng ảo hoá của Microsoft	tên riêng
+Proxmox	nền tảng ảo hoá mã nguồn mở, quản lý máy ảo và container	tên riêng
+Ubuntu	bản phân phối Linux phổ biến, nền Debian	tên riêng
+Debian	bản phân phối Linux ổn định, nền của nhiều bản khác	tên riêng
+CentOS	bản phân phối Linux doanh nghiệp, nhánh cộng đồng của Red Hat	tên riêng
+Fedora	bản phân phối Linux thử nghiệm công nghệ mới của Red Hat	tên riêng
+systemd	bộ quản lý dịch vụ và khởi động của Linux hiện đại	tên riêng
+PowerShell	trình dòng lệnh và ngôn ngữ kịch bản của Windows	tên riêng
+Bash	trình dòng lệnh mặc định của phần lớn bản Linux	tên riêng
+Azure	nền tảng điện toán đám mây của Microsoft	tên riêng
+AWS	nền tảng điện toán đám mây của Amazon	tên riêng
+S3	dịch vụ lưu trữ đối tượng của AWS	tên riêng
+EC2	dịch vụ máy chủ ảo của AWS	tên riêng
+Cloudflare	dịch vụ CDN, DNS và chống tấn công DDoS	tên riêng
+Nextcloud	phần mềm lưu trữ đám mây tự cài trên máy chủ riêng	tên riêng
+Wireshark	công cụ bắt và phân tích gói tin mạng	tên riêng
+Nmap	công cụ quét cổng và dò dịch vụ trên mạng	tên riêng
+OpenVPN	phần mềm tạo mạng riêng ảo mã nguồn mở	tên riêng
+WireGuard	giao thức VPN hiện đại, nhanh và gọn	tên riêng
+Postman	công cụ gọi thử và kiểm thử API	tên riêng
+Jira	phần mềm quản lý công việc và theo dõi lỗi	tên riêng
+Slack	ứng dụng nhắn tin nội bộ cho nhóm làm việc	tên riêng

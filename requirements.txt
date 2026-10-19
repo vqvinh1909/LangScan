@@ -1,0 +1,12 @@
+keyboard>=0.13.5
+pyperclip>=1.8.2
+gTTS>=2.5.0
+pygame>=2.5.0
+pystray>=0.19.5
+pillow>=10.0.0
+# OCR bang bo co san cua Windows (chi cai duoc tren Windows)
+winrt-Windows.Media.Ocr>=3.0; sys_platform == 'win32'
+winrt-Windows.Globalization>=3.0; sys_platform == 'win32'
+winrt-Windows.Graphics.Imaging>=3.0; sys_platform == 'win32'
+winrt-Windows.Storage.Streams>=3.0; sys_platform == 'win32'
+winrt-Windows.Foundation>=3.0; sys_platform == 'win32'

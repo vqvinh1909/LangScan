@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+_backup_cu/
+
+# Du lieu sinh ra khi chay (cache, log, am thanh)
+data/*.pickle
+data/langscan.log
+data/vi_cache.db
+data/audio/
+data/jamdict.db

@@ -1,0 +1,1165 @@
+# -*- coding: utf-8 -*-
+"""
+LangScan - Boi den chu Trung / Nhat / Han / Anh o bat ky dau tren Windows,
+           bam Ctrl+Alt+D -> popup hien phien am, nghia tieng Viet,
+           cap do (HSK / JLPT / CEFR).
+
+Chay:  python langscan.py        (co console)
+       pythonw langscan.py       (chay ngam)
+Thoat: Ctrl+Alt+Q
+"""
+
+import os
+import queue
+import re
+import sys
+import threading
+import time
+import tkinter as tk
+
+import autostart
+import langs
+import reverse as reverse_mod
+import translate as tr
+
+# ------------------------------------------------------------ cau hinh ------
+HOTKEY_LOOKUP = "ctrl+alt+d"        # tu nhan dien ngon ngu
+HOTKEY_ZH = "ctrl+alt+c"            # ep tra tieng Trung
+HOTKEY_JA = "ctrl+alt+j"            # ep tra tieng Nhat
+HOTKEY_KO = "ctrl+alt+k"            # ep tra tieng Han
+HOTKEY_EN = "ctrl+alt+e"            # ep tra tieng Anh
+# Mo cua so tra tu bang cach NHAN DUP CTRL (nhu Google Dich tren may tinh).
+# Doi thanh False neu thay no hay nhay nham khi ban dung Ctrl+C, Ctrl+V.
+DOUBLE_CTRL_SEARCH = True
+DOUBLE_TAP_GAP = 0.4                # hai lan nhan cach nhau toi da bao nhieu giay
+HOTKEY_SNIP = "ctrl+alt+x"          # chup mot vung man hinh roi doc chu (OCR)
+HOTKEY_QUIT = "ctrl+alt+q"
+
+MAX_WORDS = 25          # so tu toi da hien trong 1 lan tra
+SHOW_ENGLISH = True     # hien them dong nghia tieng Anh
+TRANSLATE_VI = True     # dich Viet qua mang cho Nhat/Han va tu tieng Anh la
+                        # (co cache, tra roi thi lan sau khong can mang)
+# True = bam ra ngoai popup thi popup tu dong dong
+CLOSE_ON_FOCUS_OUT = os.environ.get("SCAN_KEEP_OPEN") != "1"
+POPUP_WIDTH = 470
+POPUP_MAX_HEIGHT = 600
+
+BG = "#1c1f26"
+BG_ALT = "#242833"
+FG = "#e8eaf0"
+FG_DIM = "#9aa2b1"
+ACCENT = "#f0b429"
+BORDER = "#3a4152"
+
+# Mau theo thanh dieu tieng Trung (kieu Pleco/Hanping)
+TONE_COLORS = {1: "#e5534b", 2: "#e2953a", 3: "#4aa96c", 4: "#4d8ee8", 5: "#8b93a3"}
+
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+AUDIO_DIR = os.path.join(DATA_DIR, "audio")
+LOG_PATH = os.path.join(DATA_DIR, "langscan.log")
+LOCK_PORT = 50521       # cong cuc bo dung de chan chay 2 ban cung luc
+
+# Tkinter chi duoc dung tu luong chinh. Luong phu (dich online, tra nguoc)
+# day ham vao day, luong giao dien lay ra chay.
+UI_QUEUE = queue.Queue()
+_ui_pump_on = [False]
+
+
+def ui_call(fn):
+    """Nho luong giao dien chay ham nay (goi duoc tu bat ky luong nao)."""
+    UI_QUEUE.put(fn)
+
+
+def start_ui_pump(root):
+    """Bat vong lap rut hang doi giao dien - goi tu luong chinh, mot lan."""
+    if _ui_pump_on[0]:
+        return
+    _ui_pump_on[0] = True
+
+    def pump():
+        try:
+            while True:
+                fn = UI_QUEUE.get_nowait()
+                try:
+                    fn()
+                except Exception as e:
+                    print("[!] Loi khi cap nhat giao dien:", e)
+        except queue.Empty:
+            pass
+        root.after(60, pump)
+
+    root.after(60, pump)
+
+
+# --------------------------------------------------- chay ngam (pythonw) ----
+def setup_logging():
+    """Chay bang pythonw thi khong co console -> print() se loi. Ghi ra file log."""
+    if sys.stdout is not None and sys.stderr is not None:
+        return
+    os.makedirs(DATA_DIR, exist_ok=True)
+    try:
+        f = open(LOG_PATH, "a", encoding="utf-8", buffering=1)
+    except Exception:
+        f = open(os.devnull, "w")
+    sys.stdout = sys.stderr = f
+    print("\n===== {} khoi dong =====".format(time.strftime("%Y-%m-%d %H:%M:%S")))
+
+
+def already_running():
+    """Giu mot socket cuc bo lam 'khoa' - ban thu hai se khong mo duoc."""
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.bind(("127.0.0.1", LOCK_PORT))
+        s.listen(1)
+    except OSError:
+        return True
+    globals()["_LOCK_SOCKET"] = s        # giu tham chieu de khong bi dong
+    return False
+
+
+# --------------------------------------------------------------- audio -----
+class Speaker(object):
+    """Phat am: gTTS (online, co cache) -> SAPI (offline) -> tat."""
+
+    def __init__(self):
+        self.mode = None
+        self._mixer = None
+        try:
+            import pygame
+            pygame.mixer.init()
+            self._mixer = pygame.mixer
+        except Exception:
+            self._mixer = None
+        try:
+            import gtts  # noqa: F401
+            if self._mixer is not None:
+                self.mode = "gtts"
+        except Exception:
+            pass
+        if self.mode is None:
+            try:
+                import win32com.client  # noqa: F401
+                self.mode = "sapi"
+            except Exception:
+                self.mode = None
+        os.makedirs(AUDIO_DIR, exist_ok=True)
+
+    @property
+    def available(self):
+        return self.mode is not None
+
+    def say(self, text, lang=langs.ZH):
+        if not text or not self.available:
+            return
+        threading.Thread(target=self._say, args=(text, lang), daemon=True).start()
+
+    def _say(self, text, lang):
+        try:
+            if self.mode == "gtts":
+                code = langs.TTS_LANG.get(lang, "zh-CN")
+                path = os.path.join(AUDIO_DIR, "{}_{}.mp3".format(code, abs(hash(text))))
+                if not os.path.exists(path):
+                    from gtts import gTTS
+                    gTTS(text=text, lang=code).save(path)
+                self._mixer.music.load(path)
+                self._mixer.music.play()
+            elif self.mode == "sapi":
+                import win32com.client
+                win32com.client.Dispatch("SAPI.SpVoice").Speak(text)
+        except Exception as e:
+            print("[!] Khong phat am duoc:", e)
+
+
+# ----------------------------------------------------------- clipboard -----
+def grab_selection():
+    """Gia lap Ctrl+C de lay doan dang boi den, roi tra clipboard ve nhu cu."""
+    import keyboard
+    import pyperclip
+
+    try:
+        old = pyperclip.paste()
+    except Exception:
+        old = ""
+
+    # Nha cac phim dang giu cua to hop hotkey truoc khi gui Ctrl+C
+    for k in ("ctrl", "alt", "shift", "d", "c", "j", "k", "e", "s", "x"):
+        try:
+            keyboard.release(k)
+        except Exception:
+            pass
+    time.sleep(0.05)
+
+    marker = "\x00__scan__\x00"
+    try:
+        pyperclip.copy(marker)
+    except Exception:
+        pass
+
+    keyboard.send("ctrl+c")
+
+    text = ""
+    for _ in range(20):                      # cho toi da ~1 giay
+        time.sleep(0.05)
+        try:
+            cur = pyperclip.paste()
+        except Exception:
+            cur = marker
+        if cur != marker:
+            text = cur
+            break
+
+    try:
+        pyperclip.copy(old)                  # tra clipboard ve nguyen trang
+    except Exception:
+        pass
+    return text
+
+
+# --------------------------------------------------------------- popup -----
+# Chu co dau / chu d cua tieng Viet -> coi la go tieng Viet
+RE_VI = re.compile("[\u00e0\u00e1\u1ea1\u1ea3\u00e3\u00e2\u1ea7\u1ea5\u1ead\u1ea9\u1eab"
+                   "\u0103\u1eb1\u1eaf\u1eb7\u1eb3\u1eb5\u00e8\u00e9\u1eb9\u1ebb\u1ebd"
+                   "\u00ea\u1ec1\u1ebf\u1ec7\u1ec3\u1ec5\u00ec\u00ed\u1ecb\u1ec9\u0129"
+                   "\u00f2\u00f3\u1ecd\u1ecf\u00f5\u00f4\u1ed3\u1ed1\u1ed9\u1ed5\u1ed7"
+                   "\u01a1\u1edd\u1edb\u1ee3\u1edf\u1ee1\u00f9\u00fa\u1ee5\u1ee7\u0169"
+                   "\u01b0\u1eeb\u1ee9\u1ef1\u1eed\u1eef\u1ef3\u00fd\u1ef5\u1ef7\u1ef9"
+                   "\u0111]")
+
+
+class Popup(object):
+    def __init__(self, root, analyzer, speaker):
+        self.root = root
+        self.analyzer = analyzer
+        self.speaker = speaker
+        self.win = None
+        self.src_pref = "auto"      # ngon ngu nguon dang chon trong popup
+        self.dst_pref = "vi"        # ngon ngu dich dang chon trong popup
+        self._pos = None            # giu vi tri popup khi dich lai
+        self._menu_open = False
+        self.reverse = None         # chi so tra nguoc (dung lan dau, ~10 giay)
+        self._hint_empty = False    # mo o go tay trong: hien huong dan
+
+    def close(self, _=None):
+        if self.win is not None:
+            try:
+                self.win.destroy()
+            except Exception:
+                pass
+            self.win = None
+
+    # ---- dung khung
+    def show(self, raw_text, force_lang=None, keep_pos=False):
+        self._pos = None
+        self._phrase_lbl = None
+        if not keep_pos:                # quet / boi den moi -> nguon ve 'Tu dong'
+            self.src_pref = "auto"
+        if keep_pos and self.win is not None:
+            try:
+                self._pos = (self.win.winfo_x(), self.win.winfo_y())
+            except Exception:
+                self._pos = None
+        self.close()
+        eff_force = force_lang or (self.src_pref if self.src_pref != "auto" else None)
+        has_cjk = bool(langs.RE_HAN.search(raw_text) or langs.RE_KANA.search(raw_text)
+                       or langs.RE_HANGUL.search(raw_text))
+        is_vi = (not force_lang) and (
+            self.src_pref == VI or
+            (self.src_pref in ("auto", langs.EN) and not has_cjk
+             and bool(RE_VI.search(raw_text.lower()))))
+        if is_vi:                       # go tieng Viet: khong tra tu dien ngoai ngu
+            lang, cards, err = None, [], ""
+            text = " ".join(raw_text.split())
+        else:
+            lang, cards, err = self.analyzer.analyze(
+                raw_text, force_lang=eff_force, max_words=MAX_WORDS)
+            text = langs.clean(raw_text, lang) if lang else ""
+
+        win = tk.Toplevel(self.root)
+        self.win = win
+        win.overrideredirect(True)
+        win.attributes("-topmost", True)
+        win.configure(bg=BORDER)
+
+        outer = tk.Frame(win, bg=BG, bd=0)
+        outer.pack(padx=1, pady=1, fill="both", expand=True)
+
+        # ---- thanh tren: o nhap (sua duoc) + nut Tra + dong
+        head = tk.Frame(outer, bg=BG_ALT)
+        head.pack(fill="x")
+        shown = (raw_text or text or "").strip()   # giu nguyen chu goc, ke ca dau va dong
+        ent = tk.Text(head, bg=BG, fg=FG, insertbackground=FG, relief="flat",
+                      font=("Microsoft YaHei", 12), highlightthickness=1,
+                      highlightbackground=BORDER, highlightcolor=ACCENT,
+                      wrap="word", height=1, width=10, padx=6, pady=4, undo=True)
+        ent.insert("1.0", shown)
+        ent.pack(side="left", fill="x", expand=True, padx=(10, 6), pady=8)
+        self._entry = ent
+
+        def _get():
+            return ent.get("1.0", "end-1c").strip()
+
+        def _lines():
+            n = ent.count("1.0", "end-1c", "displaylines")
+            n = n[0] if isinstance(n, tuple) else n
+            return int(n or 1)
+
+        def _fit(_e=None):
+            """O nhap cao vua du so dong chu (toi da 6), dai hon thi cuon."""
+            try:
+                ent.update_idletasks()
+                n = max(1, min(6, _lines()))
+                if int(ent.cget("height")) != n:
+                    ent.config(height=n)
+                    self._regrow()
+            except Exception:
+                pass
+
+        def _redo(_e=None, _force=force_lang):
+            q = _get()
+            if q:
+                self.root.after(10, lambda: self.show(q, _force, keep_pos=True))
+            return "break"
+
+        def _newline(_e=None):
+            ent.insert("insert", "\n")
+            _fit()
+            return "break"
+
+        def _wheel_text(e):
+            try:
+                if _lines() > int(ent.cget("height")):
+                    ent.yview_scroll(int(-e.delta / 120), "units")
+                    return "break"
+            except Exception:
+                pass
+
+        for seq in ("<Return>", "<KP_Enter>"):
+            ent.bind(seq, _redo)
+        for seq in ("<Shift-Return>", "<Shift-KP_Enter>"):
+            ent.bind(seq, _newline)
+        ent.bind("<KeyRelease>", _fit)
+        ent.bind("<<Paste>>", lambda e: ent.after(20, _fit))
+        ent.bind("<MouseWheel>", _wheel_text)
+        win.after(40, _fit)
+        win.after(250, _fit)
+        tk.Button(head, text="Tra", bg=ACCENT, fg=BG, bd=0, padx=10, pady=2,
+                  activebackground=FG, activeforeground=BG, cursor="hand2",
+                  font=("Segoe UI", 9, "bold"), command=_redo
+                  ).pack(side="left", padx=(0, 6))
+        tk.Button(head, text="✕", bg=BG_ALT, fg=FG_DIM, bd=0,
+                  activebackground=BORDER, activeforeground=FG, cursor="hand2",
+                  font=("Segoe UI", 10), command=self.close
+                  ).pack(side="left", padx=(0, 8))
+
+        # ---- thanh ngon ngu: nguon -> dich, ngon ngu nhan ra, nut nghe
+        bar = tk.Frame(outer, bg=BG_ALT)
+        bar.pack(fill="x")
+        src_choices = list(SRC_CHOICES)
+        src_var = tk.StringVar(value=LABEL.get(self.src_pref, "Tự động"))
+        dst_var = tk.StringVar(value=LABEL.get(self.dst_pref, "Việt"))
+
+        def _pick_src(name):
+            self.src_pref = next((k for k, n in SRC_CHOICES if n == name), "auto")
+            self.root.after(10, lambda: self.show(_get(), None, keep_pos=True))
+
+        def _pick_dst(name):
+            self.dst_pref = next((k for k, n in DST_CHOICES if n == name), VI)
+            self.root.after(10, lambda: self.show(_get(), None, keep_pos=True))
+
+        tk.Label(bar, text="Nguồn", bg=BG_ALT, fg=FG_DIM,
+                 font=("Segoe UI", 8)).pack(side="left", padx=(10, 2), pady=(0, 4))
+        self._option(bar, src_var, [n for _, n in src_choices], _pick_src
+                     ).pack(side="left", pady=(0, 4))
+        def _swap(_lang=lang, _vi=is_vi):
+            cur_src = self.src_pref
+            if cur_src == "auto":
+                cur_src = VI if _vi else (_lang or langs.EN)
+            cur_dst = self.dst_pref if not (_vi and self.dst_pref == VI) else langs.EN
+            res = getattr(getattr(self, "_phrase_lbl", None), "_result", "")
+            q = res or _get()
+            self.src_pref, self.dst_pref = cur_dst, cur_src
+            self.root.after(10, lambda: self.show(q, None, keep_pos=True))
+        tk.Button(bar, text="⇄", bg=BG_ALT, fg=ACCENT, bd=0, cursor="hand2",
+                  activebackground=BORDER, activeforeground=ACCENT,
+                  font=("Segoe UI", 11, "bold"), command=_swap
+                  ).pack(side="left", padx=6, pady=(0, 4))
+        tk.Label(bar, text="Đích", bg=BG_ALT, fg=FG_DIM,
+                 font=("Segoe UI", 8)).pack(side="left", padx=(0, 2), pady=(0, 4))
+        self._option(bar, dst_var, [n for _, n in DST_CHOICES], _pick_dst
+                     ).pack(side="left", pady=(0, 4))
+        if lang or is_vi:
+            tk.Label(bar, text=("Việt" if is_vi else langs.LANG_NAME[lang]),
+                     bg=BORDER, fg=ACCENT,
+                     font=("Segoe UI", 8, "bold"), padx=6, pady=1
+                     ).pack(side="left", padx=(10, 0), pady=(0, 4))
+        if text and lang and self.speaker.available:
+            tk.Button(bar, text="▶ Nghe", bg=BG_ALT, fg=ACCENT, bd=0,
+                      activebackground=BORDER, activeforeground=ACCENT,
+                      cursor="hand2", font=("Segoe UI", 9),
+                      command=lambda: self.speaker.say(text, lang)
+                      ).pack(side="left", padx=6, pady=(0, 4))
+
+        # ---- than: danh sach the tu, cuon duoc
+        body = tk.Frame(outer, bg=BG)
+        body.pack(fill="both", expand=True)
+        canvas = tk.Canvas(body, bg=BG, highlightthickness=0, width=POPUP_WIDTH)
+        scroll = tk.Scrollbar(body, orient="vertical", command=canvas.yview,
+                              bg=BG, troughcolor=BG, bd=0, highlightthickness=0)
+        inner = tk.Frame(canvas, bg=BG)
+        inner.bind("<Configure>",
+                   lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.create_window((0, 0), window=inner, anchor="nw", width=POPUP_WIDTH)
+        canvas.configure(yscrollcommand=scroll.set)
+        canvas.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
+        def _wheel(e, canvas=canvas):
+            try:
+                canvas.yview_scroll(int(-e.delta / 120), "units")
+            except tk.TclError:           # popup da dong -> go su kien, het loi
+                try:
+                    canvas.unbind_all("<MouseWheel>")
+                except Exception:
+                    pass
+        canvas.bind_all("<MouseWheel>", _wheel)
+        self._canvas, self._inner = canvas, inner
+
+        target = self.dst_pref if self.dst_pref != VI else langs.EN
+        if is_vi:
+            self._phrase_line(inner, text, VI, target=target)
+        elif not raw_text.strip() and self._hint_empty:
+            self._message(inner, "Gõ hoặc dán chữ cần dịch vào ô phía trên rồi nhấn "
+                                 "Enter.\nViệt ⇄ Trung / Nhật / Hàn / Anh; gõ pinyin "
+                                 "(yinhang, yín háng) cũng được.")
+        elif err:
+            self._message(inner, err)
+        elif lang is None:
+            self._message(inner, "Vung boi den khong co chu nao tra duoc.")
+        elif not cards:
+            self._message(inner, "Khong tra duoc tu nao trong doan nay.")
+        else:
+            # Dich ca cau (chay ngam, co cache) - huu ich nhat voi cau dai
+            # Dich ca cum khi co tu 2 tu tro len, ke ca khi cac tu phu
+            # (that/of/you...) bi loc nen chi con 1 the tu.
+            multi_word = (lang not in (langs.ZH, langs.JA)
+                          and len(text.split()) >= 2)
+            if TRANSLATE_VI and (len(cards) > 1 or multi_word or self.dst_pref != VI):
+                self._phrase_line(inner, text, lang)
+            for i, c in enumerate(cards):
+                self._card_block(inner, c, first=(i == 0))
+
+        want_py = (not is_vi
+                   and bool(re.match(r"^[A-Za-z\u00c0-\u01ff1-5 ']{2,}$", text or ""))
+                   and len((text or "").split()) <= 3
+                   and self.src_pref in ("auto", langs.ZH)
+                   and lang in (None, langs.EN, langs.ZH))
+        if is_vi or want_py:
+            self._extra_lookup(win, inner, text, is_vi, target, want_py)
+
+        foot = tk.Label(outer, text="Esc: dong   |   Enter: dich lai   |   {}: tra lai   |   ep: {} Trung  {} Nhat  {} Han  {} Anh"
+                        .format(HOTKEY_LOOKUP.upper(), HOTKEY_ZH.upper()[-1],
+                                HOTKEY_JA.upper()[-1], HOTKEY_KO.upper()[-1],
+                                HOTKEY_EN.upper()[-1]),
+                        bg=BG_ALT, fg=FG_DIM, font=("Segoe UI", 8))
+        foot.pack(fill="x", ipady=3)
+
+        self._place(win)
+        win.bind("<Escape>", self.close)
+        if CLOSE_ON_FOCUS_OUT:
+            # Chi dong khi focus roi han khoi popup (chuyen giua o nhap, nut,
+            # menu chon ngon ngu trong popup thi khong dong)
+            def _focus_out(_e=None, _win=win):
+                def _check():
+                    if self.win is not _win or self._menu_open:
+                        return
+                    try:
+                        w = _win.focus_get()
+                    except Exception:
+                        w = None
+                    if w is not None:
+                        try:
+                            if isinstance(w, tk.Menu) or w.winfo_toplevel() is _win:
+                                return
+                        except Exception:
+                            return
+                    self.close()
+                _win.after(200, _check)
+            win.bind("<FocusOut>", _focus_out)
+        win.focus_force()
+        try:
+            ent.focus_set()
+            ent.tag_add("sel", "1.0", "end-1c")
+            ent.mark_set("insert", "end-1c")
+        except Exception:
+            pass
+
+    def _option(self, parent, var, names, command):
+        """O chon (xo xuong) ngon ngu, ve theo mau popup."""
+        om = tk.OptionMenu(parent, var, *names, command=command)
+        om.config(bg=BG, fg=FG, activebackground=BORDER, activeforeground=FG,
+                  bd=0, highlightthickness=0, relief="flat", padx=6, pady=1,
+                  font=("Segoe UI", 9), cursor="hand2")
+        menu = om["menu"]
+        menu.config(bg=BG, fg=FG, activebackground=ACCENT, activeforeground=BG,
+                    bd=0, font=("Segoe UI", 9),
+                    postcommand=lambda: setattr(self, "_menu_open", True))
+        menu.bind("<Unmap>", lambda e: self.root.after(
+            300, lambda: setattr(self, "_menu_open", False)))
+        return om
+
+    def _message(self, parent, msg):
+        tk.Label(parent, text=msg, bg=BG, fg=FG_DIM, font=("Segoe UI", 10),
+                 wraplength=POPUP_WIDTH - 30, justify="left").pack(
+                     anchor="w", padx=14, pady=14)
+
+    # ---- khung dich ca cau (noi bat, co nut Sao chep)
+    def _phrase_line(self, parent, text, lang, target=None):
+        target = target or self.dst_pref
+        if target == lang:              # nguon trung dich -> tu doi sang ngon ngu kia
+            target = langs.EN if lang == VI else VI
+        box = tk.Frame(parent, bg=BG_ALT)
+        box.pack(fill="x", padx=10, pady=(8, 2))
+        top = tk.Frame(box, bg=BG_ALT)
+        top.pack(fill="x", padx=10, pady=(6, 0))
+        tk.Label(top, text="DỊCH  →  {}".format(LABEL.get(target, target).upper()),
+                 bg=BG_ALT, fg=ACCENT, font=("Segoe UI", 8, "bold")).pack(side="left")
+        lbl = tk.Label(box, text="đang dịch...", bg=BG_ALT, fg=FG_DIM,
+                       font=("Microsoft YaHei", 13),
+                       wraplength=POPUP_WIDTH - 40, justify="left")
+        copy_btn = tk.Button(top, text="Sao chép", bg=BG_ALT, fg=ACCENT, bd=0,
+                             activebackground=BORDER, activeforeground=ACCENT,
+                             cursor="hand2", font=("Segoe UI", 8))
+        copy_btn.config(command=lambda: self._copy(lbl, copy_btn))
+        copy_btn.pack(side="right")
+        lbl.pack(anchor="w", padx=10, pady=(2, 8))
+        self._phrase_lbl = lbl
+        self._fill_async(lbl, text, lang, prefix="", color=FG, target=target)
+
+    def _copy(self, lbl, btn=None):
+        result = getattr(lbl, "_result", "")
+        if not result:
+            return
+        try:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(result)
+            self.root.update()
+            if btn is not None:
+                btn.config(text="Đã chép ✓")
+        except Exception:
+            pass
+
+    # ---- mo o go tay (nhan dup Ctrl): popup trong, con tro nam san o o nhap
+    def show_empty(self):
+        self._hint_empty = True
+        try:
+            self.show("", None)
+        finally:
+            self._hint_empty = False
+
+    def _section(self, parent, title):
+        tk.Label(parent, text=title.upper(), bg=BG, fg=ACCENT,
+                 font=("Segoe UI", 8, "bold")).pack(anchor="w", padx=12, pady=(10, 0))
+
+    def _regrow(self):
+        """Noi dung vua dai ra (dich xong, tra nguoc xong): gian popup cho vua."""
+        win = self.win
+        if win is None:
+            return
+        try:
+            win.update_idletasks()
+            need = self._inner.winfo_reqheight()
+            self._canvas.configure(height=max(90, min(need, POPUP_MAX_HEIGHT - 60)))
+            win.update_idletasks()
+            h = min(win.winfo_reqheight(), POPUP_MAX_HEIGHT)
+            w = POPUP_WIDTH + 18
+            sh = win.winfo_screenheight()
+            x, y = win.winfo_x(), win.winfo_y()
+            if y + h > sh - 40:
+                y = max(10, sh - h - 40)
+            win.geometry("{}x{}+{}+{}".format(w, h, x, y))
+        except Exception:
+            pass
+
+    # ---- tra nguoc Viet -> ngoai ngu / go pinyin (chay ngam, khong lam treo popup)
+    def _extra_lookup(self, win, inner, query, is_vi, target, want_py):
+        lbl = tk.Label(inner, text="đang tìm từ trong chỉ mục...", bg=BG, fg=FG_DIM,
+                       font=("Segoe UI", 9, "italic"))
+        lbl.pack(anchor="w", padx=12, pady=(8, 4))
+
+        def work():
+            backward, pinyin, note = [], [], ""
+            try:
+                if self.reverse is None:
+                    ui_call(lambda: lbl.winfo_exists() and lbl.config(
+                        text="đang dựng chỉ mục tra ngược (chỉ lần đầu, ~10 giây)..."))
+                    self.reverse = reverse_mod.Reverse(self.analyzer)
+                rv = self.reverse
+                if is_vi:
+                    if target in (langs.JA, langs.KO):
+                        backward, _bridge = rv.search_foreign(query, target)
+                        if backward:
+                            note = "qua Hán tự và tiếng Anh"
+                    else:
+                        backward = rv.search(
+                            query, only=target if target in (langs.ZH, langs.EN) else None)
+                if want_py:
+                    pinyin = rv.search_pinyin(query)
+            except Exception as e:
+                note = str(e)
+
+            def apply_():
+                try:
+                    if self.win is not win or not lbl.winfo_exists():
+                        return
+                    if not backward and not pinyin:
+                        lbl.config(text=note or "không tìm thấy từ tra ngược nào cho '{}'"
+                                   .format(query))
+                        self._regrow()
+                        return
+                    lbl.destroy()
+                    if backward:
+                        found = {c.lang for c in backward}
+                        title = ("Tiếng Việt → tiếng {}".format(LABEL.get(found.pop(), ""))
+                                 if len(found) == 1 else "Tiếng Việt → Trung / Anh")
+                        if note:
+                            title += "  ({})".format(note)
+                        self._section(inner, title)
+                        for i, c in enumerate(backward):
+                            self._card_block(inner, c, first=(i == 0))
+                    if pinyin:
+                        self._section(inner, "Đọc như pinyin")
+                        for i, c in enumerate(pinyin):
+                            self._card_block(inner, c, first=(i == 0))
+                    self._regrow()
+                except Exception:
+                    pass
+            ui_call(apply_)
+        threading.Thread(target=work, daemon=True).start()
+
+    # ---- mot the tu
+    def _card_block(self, parent, card, first=False, width=None):
+        width = width or POPUP_WIDTH
+        block = tk.Frame(parent, bg=BG)
+        block.pack(fill="x", padx=12, pady=(10 if first else 6, 2))
+
+        row = tk.Frame(block, bg=BG)
+        row.pack(fill="x")
+
+        color = FG
+        if card.lang == langs.ZH and len(card.tones) == 1:
+            color = TONE_COLORS.get(card.tones[0], FG)
+        tk.Label(row, text=card.word, bg=BG, fg=color,
+                 font=("Microsoft YaHei", 20, "bold")).pack(side="left")
+
+        if card.badge:
+            known = not card.badge.lower().startswith(("ngoai", "thuan"))
+            tk.Label(row, text=card.badge, bg=BORDER if known else BG_ALT,
+                     fg=FG if known else FG_DIM, font=("Segoe UI", 8, "bold"),
+                     padx=6, pady=1).pack(side="left", padx=6)
+
+        if card.reading:
+            tk.Label(row, text="[{}]".format(card.reading), bg=BG, fg=ACCENT,
+                     font=("Segoe UI", 12)).pack(side="left", padx=4)
+
+        if self.speaker.available:
+            tk.Button(row, text="▶", bg=BG, fg=FG_DIM, bd=0, cursor="hand2",
+                      activebackground=BG, activeforeground=ACCENT,
+                      font=("Segoe UI", 9),
+                      command=lambda: self.speaker.say(card.speak, card.lang)
+                      ).pack(side="left")
+
+        if not card.found:
+            if TRANSLATE_VI:
+                lbl = self._sense(block, "...", FG_DIM, 11, width)
+                self._fill_async(lbl, card.speak, card.lang, color=FG)
+            else:
+                tk.Label(block, text="khong co trong tu dien", bg=BG, fg=FG_DIM,
+                         font=("Segoe UI", 9)).pack(anchor="w")
+            return
+
+        # Tieng Trung: nghia Viet co san offline.
+        # Nhat/Han: dich ngam roi dien vao sau.
+        if card.vi:
+            self._sense(block, "; ".join(card.vi), FG, 11, width)
+        elif TRANSLATE_VI and card.lang != langs.ZH:
+            lbl = self._sense(block, "...", FG_DIM, 11, width)
+            self._fill_async(lbl, card.word, card.lang, prefix="", color=FG)
+
+        if SHOW_ENGLISH and card.en:
+            self._sense(block, "; ".join(card.en), FG_DIM, 9, width)
+        if card.note:
+            self._sense(block, card.note, FG_DIM, 9, width)
+
+        tk.Frame(parent, bg=BORDER, height=1).pack(fill="x", padx=12, pady=(6, 0))
+
+    def _sense(self, block, text, color, size, width=None):
+        lbl = tk.Label(block, text=text, bg=block["bg"], fg=color,
+                       font=("Segoe UI", size),
+                       wraplength=(width or POPUP_WIDTH) - 40,
+                       justify="left")
+        lbl.pack(anchor="w", pady=(1, 0))
+        return lbl
+
+    def _fill_async(self, label, text, lang, prefix="", color=FG, target="vi"):
+        """Dich o luong khac roi cap nhat nhan - khong lam treo popup."""
+        source = text
+
+        def done(vi):
+            def apply_():
+                try:
+                    if not label.winfo_exists():
+                        return
+                    if vi and vi.strip().lower() == str(source).strip().lower():
+                        label._result = vi
+                        label.config(text="giu nguyen (ten rieng hoac thuat ngu)",
+                                     fg=FG_DIM)
+                    elif vi:
+                        label._result = vi
+                        label.config(text=prefix + vi, fg=color)
+                    else:
+                        label.config(text="(chua dich duoc - co the dang mat mang)",
+                                     fg=FG_DIM)
+                    self._regrow()
+                except Exception:
+                    pass
+            ui_call(apply_)
+        tr.translate_async(text, lang, done, target=target)
+
+    # ---- vi tri popup: canh con tro chuot, khong tran ra ngoai man hinh
+    def _place(self, win):
+        win.update_idletasks()
+        try:
+            need = self._inner.winfo_reqheight()
+            self._canvas.configure(height=max(90, min(need, POPUP_MAX_HEIGHT - 60)))
+            win.update_idletasks()
+        except Exception:
+            pass
+        h = min(win.winfo_reqheight(), POPUP_MAX_HEIGHT)
+        w = POPUP_WIDTH + 18
+        sw, sh = win.winfo_screenwidth(), win.winfo_screenheight()
+        if getattr(self, "_pos", None):          # dich lai: giu nguyen cho cu
+            x, y = self._pos
+            x = max(0, min(x, sw - w - 10))
+            y = max(0, min(y, sh - h - 40))
+            win.geometry("{}x{}+{}+{}".format(w, h, x, y))
+            return
+        x, y = self.root.winfo_pointerxy()
+        x = max(10, min(x + 12, sw - w - 10))
+        y = y + 16
+        if y + h > sh - 40:
+            y = max(10, y - h - 32)
+        win.geometry("{}x{}+{}+{}".format(w, h, x, y))
+
+
+# ---------------------------------------------------- nhan dup Ctrl --------
+class DoubleTap(object):
+    """Bat kieu bam Ctrl hai lan lien tiep.
+
+    Chi tinh khi Ctrl duoc bam MOT MINH: neu giua hai lan co phim khac
+    (Ctrl+C, Ctrl+V...) thi bo qua, khong thi cu copy hai lan la no nhay ra.
+    """
+
+    def __init__(self, callback, key="ctrl", gap=DOUBLE_TAP_GAP):
+        self.callback = callback
+        self.key = key
+        self.gap = gap
+        self.last_release = -1e9      # chua bam lan nao
+        self.dirty = False          # da co phim khac bam xen vao chua
+
+    def is_target(self, name):
+        return name in (self.key, "left " + self.key, "right " + self.key)
+
+    def feed(self, name, is_down, now):
+        """Nap mot su kien phim. Tra ve True neu vua du hai lan bam."""
+        if not self.is_target(name):
+            if is_down:
+                self.dirty = True   # dang giu Ctrl ma bam phim khac
+            return False
+        if is_down:
+            return False
+        # Ctrl vua duoc nha ra
+        clean, self.dirty = not self.dirty, False
+        if clean and (now - self.last_release) <= self.gap:
+            self.last_release = -1e9
+            return True
+        self.last_release = now if clean else -1e9
+        return False
+
+    def hook(self, event):
+        import keyboard
+        try:
+            fired = self.feed(event.name or "",
+                              event.event_type == keyboard.KEY_DOWN,
+                              time.time())
+        except Exception:
+            return
+        if fired:
+            self.callback()
+
+
+# ------------------------------------------------ chup man hinh roi doc chu -
+class Snipper(object):
+    """Keo chuot chon mot vung man hinh -> OCR -> dua vao popup nhu binh thuong.
+
+    Dung cho cho khong boi den duoc: anh, PDF scan, video, game, phan mem
+    ve giao dien bang do hoa.
+    """
+
+    def __init__(self, root, on_text):
+        self.root = root
+        self.on_text = on_text          # goi lai voi doan chu doc duoc
+        self.win = None
+        self.canvas = None
+        self.start = None
+        self.rect = None
+
+    def start_snip(self):
+        if self.win is not None:
+            return
+        try:
+            from PIL import ImageGrab      # noqa: F401
+        except ImportError:
+            self.on_text("", "thieu thu vien Pillow - chay setup.bat")
+            return
+
+        win = tk.Toplevel(self.root)
+        self.win = win
+        win.attributes("-fullscreen", True)
+        win.attributes("-alpha", 0.25)
+        win.attributes("-topmost", True)
+        win.configure(bg="black", cursor="crosshair")
+        canvas = tk.Canvas(win, bg="black", highlightthickness=0)
+        canvas.pack(fill="both", expand=True)
+        self.canvas = canvas
+        canvas.bind("<Button-1>", self._down)
+        canvas.bind("<B1-Motion>", self._move)
+        canvas.bind("<ButtonRelease-1>", self._up)
+        win.bind("<Escape>", lambda e: self._cancel())
+        win.focus_force()
+
+    def _cancel(self):
+        if self.win is not None:
+            try:
+                self.win.destroy()
+            except Exception:
+                pass
+            self.win = None
+            self.rect = None
+
+    def _down(self, event):
+        self.start = (event.x_root, event.y_root)
+        self.rect = self.canvas.create_rectangle(
+            event.x, event.y, event.x, event.y, outline=ACCENT, width=2)
+        self._origin = (event.x, event.y)
+
+    def _move(self, event):
+        if self.rect is not None:
+            self.canvas.coords(self.rect, self._origin[0], self._origin[1],
+                               event.x, event.y)
+
+    def _up(self, event):
+        if self.start is None:
+            self._cancel()
+            return
+        x1, y1 = self.start
+        x2, y2 = event.x_root, event.y_root
+        self.start = None
+        self._cancel()
+        box = (min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2))
+        if box[2] - box[0] < 8 or box[3] - box[1] < 8:
+            self.on_text("", "vung chon qua nho")
+            return
+        # Cho lop phu bien han roi moi chup, khong thi chup nham chinh no
+        self.root.after(120, lambda: self._grab(box))
+
+    def _screen_scale(self):
+        """Ti le giua diem anh THAT va toa do tkinter bao.
+
+        Windows dat ty le hien thi 125%/150% thi tkinter van bao toa do theo
+        he 100%, con anh chup ra la diem anh that -> khoanh mot dang, chup
+        mot neo. Phai nhan lai cho dung.
+        """
+        if getattr(self, "_scale", None) is None:
+            try:
+                from PIL import ImageGrab
+                phys = ImageGrab.grab().size[0]
+                logical = self.root.winfo_screenwidth()
+                self._scale = (phys / float(logical)) if logical else 1.0
+                if not (0.5 <= self._scale <= 4.0):
+                    self._scale = 1.0
+                if abs(self._scale - 1.0) > 0.01:
+                    print("[*] Ty le man hinh {:.0f}% - da bu lai khi chup".format(
+                        self._scale * 100))
+            except Exception:
+                self._scale = 1.0
+        return self._scale
+
+    def _grab(self, box):
+        def work():
+            try:
+                from PIL import ImageGrab
+                scale = self._screen_scale()
+                real = tuple(int(round(v * scale)) for v in box)
+                try:
+                    img = ImageGrab.grab(bbox=real, all_screens=True)
+                except TypeError:          # ban Pillow cu khong co all_screens
+                    img = ImageGrab.grab(bbox=real)
+                # Chu nho thi phong to len - OCR doc chinh xac hon han
+                if img.width < 900:
+                    from PIL import Image
+                    factor = min(3.0, 900.0 / max(img.width, 1))
+                    img = img.resize((int(img.width * factor),
+                                      int(img.height * factor)), Image.LANCZOS)
+                import ocr
+                text, lang = ocr.read_auto(img)
+                if not text:
+                    ui_call(lambda: self.on_text("", ocr.status_text()))
+                else:
+                    ui_call(lambda: self.on_text(text, ""))
+            except Exception as e:
+                ui_call(lambda: self.on_text("", "loi khi chup/doc chu: {}".format(e)))
+        threading.Thread(target=work, daemon=True).start()
+
+
+# ------------------------------------------------------ cua so tra tu tay ---
+SEARCH_WIDTH = 620
+SEARCH_HEIGHT = 620
+
+# Thanh chon ngon ngu kieu Google Dich: Nguon -> Dich.
+VI = "vi"
+SRC_CHOICES = (("auto", "Tự động"), (VI, "Việt"), (langs.ZH, "Trung"),
+               (langs.JA, "Nhật"), (langs.KO, "Hàn"), (langs.EN, "Anh"))
+DST_CHOICES = ((VI, "Việt"), (langs.ZH, "Trung"), (langs.EN, "Anh"),
+               (langs.JA, "Nhật"), (langs.KO, "Hàn"))
+LABEL = dict(SRC_CHOICES)
+
+
+
+# ------------------------------------------------------- icon khay he thong -
+class Tray(object):
+    """Icon o khay he thong (canh dong ho). Khong co pystray thi bo qua."""
+
+    def __init__(self, app):
+        self.app = app
+        self.icon = None
+
+    def _image(self):
+        from PIL import Image, ImageDraw, ImageFont
+        img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+        d = ImageDraw.Draw(img)
+        d.rounded_rectangle([0, 0, 63, 63], radius=14, fill="#1c1f26",
+                            outline="#f0b429", width=3)
+        font = None
+        for name in ("msyh.ttc", "simhei.ttf", "malgun.ttf", "simsun.ttc"):
+            try:
+                font = ImageFont.truetype(os.path.join(
+                    os.environ.get("WINDIR", "C:\\Windows"), "Fonts", name), 34)
+                break
+            except Exception:
+                continue
+        if font is None:
+            d.text((32, 32), "LS", fill="#f0b429", anchor="mm")
+        else:
+            d.text((32, 33), "語", fill="#f0b429", font=font, anchor="mm")
+        return img
+
+    def _menu(self):
+        import pystray
+        Item, Menu = pystray.MenuItem, pystray.Menu
+        return Menu(
+            Item("Tra tu dang boi den ({})".format(HOTKEY_LOOKUP.upper()),
+                 lambda: self.app.on_hotkey(), default=True),
+            Item("Ep tra tieng Nhat ({})".format(HOTKEY_JA.upper()),
+                 lambda: self.app.on_hotkey(langs.JA)),
+            Item("Ep tra tieng Han ({})".format(HOTKEY_KO.upper()),
+                 lambda: self.app.on_hotkey(langs.KO)),
+            Item("Ep tra tieng Anh ({})".format(HOTKEY_EN.upper()),
+                 lambda: self.app.on_hotkey(langs.EN)),
+            Menu.SEPARATOR,
+            Item("O go tay dich / tra tu ({})".format(
+                "nhan dup Ctrl"),
+                 lambda: self.app.open_search()),
+            Item("Chup man hinh roi doc chu ({})".format(HOTKEY_SNIP.upper()),
+                 lambda: self.app.open_snip()),
+            Menu.SEPARATOR,
+            Item("Khoi dong cung Windows", lambda: self._toggle_autostart(),
+                 checked=lambda item: autostart.is_installed()),
+            Item("Mo thu muc cai dat", lambda: self._open(os.path.dirname(
+                os.path.abspath(__file__)))),
+            Item("Xem log", lambda: self._open(LOG_PATH)),
+            Menu.SEPARATOR,
+            Item("Thoat ({})".format(HOTKEY_QUIT.upper()), lambda: self.app.quit()),
+        )
+
+    def _open(self, path):
+        try:
+            os.startfile(path)
+        except Exception as e:
+            print("[!] Khong mo duoc {}: {}".format(path, e))
+
+    def _toggle_autostart(self):
+        def work():
+            try:
+                autostart.toggle()
+            except Exception as e:
+                print("[!] Loi bat/tat khoi dong cung Windows:", e)
+            if self.icon is not None:
+                self.icon.update_menu()
+        threading.Thread(target=work, daemon=True).start()
+
+    def start(self):
+        try:
+            import pystray  # noqa: F401
+        except ImportError:
+            print("[!] Chua co icon khay (thieu pystray/pillow). Cai: pip install pystray pillow")
+            return
+        try:
+            import pystray
+            self.icon = pystray.Icon("LangScan", self._image(),
+                                     "LangScan - {} de tra tu".format(
+                                         HOTKEY_LOOKUP.upper()), self._menu())
+            threading.Thread(target=self.icon.run, daemon=True).start()
+        except Exception as e:
+            print("[!] Khong tao duoc icon khay:", e)
+
+
+# ----------------------------------------------------------------- app -----
+class App(object):
+    def __init__(self):
+        self.analyzer = langs.Analyzer()
+        self.root = tk.Tk()
+        self.root.withdraw()
+        self.speaker = Speaker()
+        if not self.speaker.available:
+            print("[!] Chua phat am duoc (thieu gtts/pygame). Cai:  pip install gtts pygame")
+        self.popup = Popup(self.root, self.analyzer, self.speaker)
+        self.snipper = Snipper(self.root, self._snip_done)
+        self.q = queue.Queue()
+        self.tray = Tray(self)
+
+    def open_search(self):
+        """Mo cua so go tay - phai chay o luong giao dien."""
+        self.q.put(("__search__", None))
+
+    def open_snip(self):
+        """Chup mot vung man hinh roi doc chu."""
+        self.q.put(("__snip__", None))
+
+    def _snip_done(self, text, err):
+        """OCR xong: co chu thi hien popup, khong thi bao loi."""
+        if text:
+            print("[*] OCR doc duoc: {}".format(text[:60].replace("\n", " ")))
+            self.popup.show(text)
+        else:
+            fatal_msg = err or "khong doc duoc chu nao trong vung da chon"
+            print("[!] OCR:", fatal_msg)
+            self.popup.show("")
+            try:
+                self.popup._message(self.popup._inner, fatal_msg)
+            except Exception:
+                pass
+
+    def on_hotkey(self, force_lang=None):
+        # Chay o luong cua thu vien keyboard -> chi day yeu cau vao hang doi
+        threading.Thread(target=self._collect, args=(force_lang,), daemon=True).start()
+
+    def _collect(self, force_lang):
+        try:
+            self.q.put((grab_selection(), force_lang))
+        except Exception as e:
+            print("[!] Loi khi lay vung boi den:", e)
+
+    def pump(self):
+        try:
+            while True:
+                text, force_lang = self.q.get_nowait()
+                if text == "__search__":
+                    self.popup.show_empty()
+                elif text == "__snip__":
+                    self.snipper.start_snip()
+                else:
+                    self.popup.show(text, force_lang)
+        except queue.Empty:
+            pass
+        self.root.after(60, self.pump)
+
+    def run(self):
+        import keyboard
+        keyboard.add_hotkey(HOTKEY_LOOKUP, lambda: self.on_hotkey(None))
+        keyboard.add_hotkey(HOTKEY_ZH, lambda: self.on_hotkey(langs.ZH))
+        keyboard.add_hotkey(HOTKEY_JA, lambda: self.on_hotkey(langs.JA))
+        keyboard.add_hotkey(HOTKEY_KO, lambda: self.on_hotkey(langs.KO))
+        keyboard.add_hotkey(HOTKEY_EN, lambda: self.on_hotkey(langs.EN))
+        if DOUBLE_CTRL_SEARCH:
+            self._double_ctrl = DoubleTap(self.open_search)
+            keyboard.hook(self._double_ctrl.hook)
+        keyboard.add_hotkey(HOTKEY_SNIP, self.open_snip)
+        keyboard.add_hotkey(HOTKEY_QUIT, self.quit)
+        self.tray.start()
+        start_ui_pump(self.root)
+        print()
+        print("=" * 62)
+        print("  LangScan dang chay - Trung / Nhat / Han / Anh")
+        print("  {}  tra tu (tu nhan dien ngon ngu)".format(HOTKEY_LOOKUP.upper()))
+        print("  {} / {} / {} / {}  ep tra Trung / Nhat / Han / Anh".format(
+            HOTKEY_ZH.upper(), HOTKEY_JA.upper(), HOTKEY_KO.upper(), HOTKEY_EN.upper()))
+        print("  {}  mo o go tay de dich / tra tu (2 chieu Viet <-> nuoc ngoai)".format(
+            "NHAN DUP CTRL" if DOUBLE_CTRL_SEARCH else "(tu icon khay)"))
+        print("  {}  chup mot vung man hinh roi doc chu (OCR)".format(
+            HOTKEY_SNIP.upper()))
+        print("  Khoi dong cung Windows: {}".format(
+            "DANG BAT" if autostart.is_installed() else "dang tat"))
+        print("  Thoat: {} (hoac chuot phai vao icon khay)".format(HOTKEY_QUIT.upper()))
+        print("=" * 62)
+        self.root.after(60, self.pump)
+        self.root.mainloop()
+
+    def quit(self):
+        print("[*] Thoat.")
+        try:
+            if self.tray.icon is not None:
+                self.tray.icon.stop()
+        except Exception:
+            pass
+        try:
+            self.root.quit()
+        finally:
+            os._exit(0)
+
+
+def fatal(msg):
+    """Bao loi ra man hinh - vi chay ngam thi khong ai doc duoc console."""
+    print("[!]", msg)
+    try:
+        import tkinter.messagebox as mb
+        r = tk.Tk()
+        r.withdraw()
+        mb.showerror("LangScan", msg)
+        r.destroy()
+    except Exception:
+        pass
+
+
+def main():
+    setup_logging()
+    if already_running():
+        print("[=] LangScan da chay san roi - thoat ban thu hai.")
+        return 0
+    for mod in ("keyboard", "pyperclip"):
+        try:
+            __import__(mod)
+        except ImportError:
+            fatal("Thieu thu vien '{}'.\nMo thu muc LangScan va chay setup.bat".format(mod))
+            return 1
+    try:
+        App().run()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        fatal("Loi: {}\nXem chi tiet trong data/langscan.log".format(e))
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
