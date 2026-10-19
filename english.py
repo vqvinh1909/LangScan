@@ -256,7 +256,8 @@ class English(object):
         # Tu goc khac voi tu boi den (studying -> study) thi noi ro
         shown = key if key == token.lower() else "{}  ({})".format(token, key)
         return langs.Card(
-            word=shown, reading=self.phonetic(key) or self.phonetic(token),
+            # IPA cua dung tu boi den (went /wɛnt/), khong co moi lay cua tu goc
+            word=shown, reading=self.phonetic(token) or self.phonetic(key),
             badge=lvl or "ngoai CEFR", vi=defs[:4],
             note="  ·  ".join(note_bits), speak=token, lang=langs.EN)
 

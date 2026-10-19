@@ -79,6 +79,96 @@ ENDINGS = ["았습니다", "었습니다", "겠습니다", "합니다", "습니�
 # Duoi bat dau bang 해/했/하 -> tu goc gan nhu chac chan la '~하다'
 _HADA_HINT = ("해", "했", "하", "합")
 
+# Phan duoi con lai SAU khi da tach ra am tiet bi rut gon (갔|습니다, 예뻐|요).
+# "" = ca tu la dang 아/어 tran (예뻐, 추워).
+_TAILS = {"", "요", "서", "도", "야", "다", "니다", "니까", "습니다", "습니까",
+          "어", "아", "어요", "아요", "어서", "아서", "는데", "지만", "고", "죠",
+          "지요", "네요", "세요", "셔요", "으세요", "면", "으면", "으니까", "는",
+          "은", "을", "거예요", "게요", "던"}
+
+# Chi so jamo (theo bang Unicode Hangul)
+_C_IEUNG, _C_RIEUL, _C_HIEUH = 11, 5, 18
+_V_A, _V_AE, _V_EO, _V_YEO, _V_O, _V_WA, _V_WAE, _V_OE = 0, 1, 4, 6, 8, 9, 10, 11
+_V_U, _V_WO, _V_EU, _V_I = 13, 14, 18, 20
+_J_N, _J_D, _J_L, _J_B, _J_S, _J_SS, _J_H = 4, 7, 8, 17, 19, 20, 27
+# ㅆ cua thi qua khu chi dinh vao am tiet dang 아/어 (갔 했 왔 마셨), con 있 la ㅆ goc
+_PAST_VOWELS = (_V_A, _V_AE, _V_EO, _V_YEO, _V_WA, _V_WAE, _V_WO)
+
+
+def _syl(cho, jung, jong=0):
+    return chr(_HANGUL_START + cho * 588 + jung * 28 + jong)
+
+
+def _stem_candidates(prefix):
+    """Cac goc dong tu/tinh tu (chua co '다') co the sinh ra 'prefix'.
+
+    Thao nguoc cac kieu rut gon va bat quy tac hay gap:
+      갔 -> 가 (+았)        예뻐 -> 예쁘 (으 bi luoc)   추워 -> 춥 (ㅂ)
+      들어 -> 들 / 듣 (ㄷ)   나아 -> 낫 (ㅅ)            불러 -> 부르 (르)
+      그래 -> 그렇 (ㅎ)      마셔 -> 마시   봐 -> 보   줘 -> 주   돼 -> 되
+      갑니다 -> 가 (ㅂ니다)  만드세요 -> 만들 (ㄹ bi luoc)
+    Tra ve danh sach theo thu tu kha nang, tu dien se quyet dinh cai nao dung.
+    """
+    if not prefix or decompose(prefix[-1]) is None:
+        return []
+    head = prefix[:-1]
+    cho, jung, jong = decompose(prefix[-1])
+    out = [prefix]
+
+    if jong == _J_SS and jung in _PAST_VOWELS:   # thi qua khu: bo ㅆ roi thao tiep
+        out += _stem_candidates(head + _syl(cho, jung))
+    elif jong in (_J_N, _J_L, _J_B):         # 간다, 갈 거예요, 갑니다
+        out.append(head + _syl(cho, jung))
+    elif jong == 0:
+        out.append(head + _syl(cho, jung, _J_L))      # ㄹ bi luoc: 사세요 -> 살
+
+    if jong == 0:
+        prev = decompose(head[-1]) if head else None
+        if cho == _C_IEUNG and jung in (_V_A, _V_EO) and head:
+            if prev and prev[2] == 0:
+                # Goc tan cung nguyen am thi 아/어 da bi rut gon (가+아 = 가),
+                # nen 나아 de lai nguyen 아 gan nhu chac la bat quy tac ㅅ: 낫다
+                out.append(head[:-1] + _syl(prev[0], prev[1], _J_S))
+            if prev and prev[2] == _J_SS and prev[1] in _PAST_VOWELS:   # 왔어 -> 오
+                out += _stem_candidates(head[:-1] + _syl(prev[0], prev[1]))
+            out.append(head)                           # 먹어 -> 먹
+            if prev and prev[2] == _J_L:               # ㄷ: 들어 -> 듣
+                out.append(head[:-1] + _syl(prev[0], prev[1], _J_D))
+        if cho == _C_IEUNG and jung in (_V_WA, _V_WO) and prev and prev[2] == 0:
+            out.append(head[:-1] + _syl(prev[0], prev[1], _J_B))   # 추워 -> 춥
+        if jung in (_V_A, _V_EO):
+            # 으 bi luoc theo hai hoa nguyen am: truoc ㅏ/ㅗ thanh 아 (바쁘 -> 바빠),
+            # con lai thanh 어 (예쁘 -> 예뻐, 쓰 -> 써). Nen 싸 khong the la 쓰다.
+            bright = prev is not None and prev[1] in (_V_A, _V_O)
+            if (jung == _V_A) == bright:
+                eu = head + _syl(cho, _V_EU)
+                if jung == _V_EO:
+                    out.insert(0, eu)                  # 써 -> 쓰다 truoc 써다 (hiem)
+                else:
+                    out.append(eu)
+            if cho == _C_RIEUL and prev and prev[2] == _J_L:   # 르: 불러 -> 부르
+                out.append(head[:-1] + _syl(prev[0], prev[1]) + "르")
+        elif jung == _V_YEO:
+            out.append(head + _syl(cho, _V_I))         # 마셔 -> 마시
+        elif jung == _V_WA:
+            out.append(head + _syl(cho, _V_O))         # 봐 -> 보
+        elif jung == _V_WO:
+            out.append(head + _syl(cho, _V_U))         # 줘 -> 주, 배워 -> 배우
+        elif jung == _V_WAE:
+            out.append(head + _syl(cho, _V_OE))        # 돼 -> 되
+        elif jung == _V_AE:
+            if cho == _C_HIEUH:
+                out.append(head + _syl(cho, _V_A))     # 해 -> 하
+            out.append(head + _syl(cho, _V_EO, _J_H))  # ㅎ: 그래 -> 그렇
+            out.append(head + _syl(cho, _V_A, _J_H))   # ㅎ: 빨개 -> 빨갛
+
+    seen, uniq = set(), []
+    for s in out:
+        if s and s not in seen:
+            seen.add(s)
+            uniq.append(s)
+    return uniq
+
 
 class Korean(object):
     def __init__(self, hanviet=None, path=KENGDIC_PATH):
@@ -111,15 +201,36 @@ class Korean(object):
         return self.index.get(word, [])
 
     def lookup_deep(self, word):
+        key, hits = self._lookup_deep(word)
+        # Muc chi la loi chi dan ('봐' -> 'see 보다', '그래다' -> 'see 그렇다'):
+        # hien thang tu goc cho nguoi hoc
+        if hits and all(g.startswith("see ") for g, _h in hits):
+            target = hits[0][0][4:].strip()
+            if target != key and self.lookup(target):
+                return target, self.lookup(target)
+        return key, hits
+
+    def _lookup_deep(self, word):
         """Thu nguyen tu -> bo tro tu -> ve dang '~다' -> cat dan tu phai."""
         if self.lookup(word):
             return word, self.lookup(word)
 
+        # '요' de cuoi cung: 타요 / 좋아요 la dong tu, khong phai danh tu + 요
         for p in sorted(PARTICLES, key=len, reverse=True):
-            if word.endswith(p) and len(word) > len(p):
+            if p != "요" and word.endswith(p) and len(word) > len(p):
                 stem = word[:-len(p)]
                 if self.lookup(stem):
                     return stem, self.lookup(stem)
+
+        # Am tiet bi rut gon / bat quy tac (갔습니다, 예뻐요, 추워요, 불렀어요).
+        # Chay truoc bang ENDINGS: 나았어요 khop '았어요' -> 나다 la sai, phai la 낫다
+        for k in range(len(word), 0, -1):
+            if word[k:] not in _TAILS:
+                continue
+            for stem in _stem_candidates(word[:k]):
+                cand = stem + "다"
+                if self.lookup(cand):
+                    return cand, self.lookup(cand)
 
         for e in sorted(ENDINGS, key=len, reverse=True):
             if word.endswith(e) and len(word) > len(e):
@@ -131,6 +242,9 @@ class Korean(object):
                 for cand in cands:
                     if self.lookup(cand):
                         return cand, self.lookup(cand)
+
+        if word.endswith("요") and len(word) > 1 and self.lookup(word[:-1]):
+            return word[:-1], self.lookup(word[:-1])         # 학교요
 
         for end in range(len(word) - 1, 1, -1):
             cand = word[:end]

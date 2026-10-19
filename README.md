@@ -227,6 +227,12 @@ python reverse.py    "ngân hàng"
 python reverse.py    yinhang
 ```
 
+Kiểm tra tự động (cần `pip install pytest`, chạy offline, khoảng 3 giây):
+
+```
+python -m pytest tests
+```
+
 ---
 
 ## Nguồn dữ liệu & giấy phép
