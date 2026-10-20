@@ -584,6 +584,35 @@ class Popup(object):
             300, lambda: setattr(self, "_menu_open", False)))
         return om
 
+    def ocr_vi_hint(self):
+        """Dong nhac o dau popup: may chua co OCR tieng Viet + nut cai ngay."""
+        inner = getattr(self, "_inner", None)
+        if inner is None:
+            return
+        bat = os.path.join(APP_DIR, "caidat_ocr_tiengviet.bat")
+        box = tk.Frame(inner, bg=BG_ALT)
+        kids = inner.winfo_children()
+        box.pack(fill="x", padx=12, pady=(10, 0), **({"before": kids[0]} if kids else {}))
+        tk.Label(box, bg=BG_ALT, fg=FG, font=("Segoe UI", 9), justify="left",
+                 wraplength=self.width - 60,
+                 text="Nếu ảnh là chữ tiếng Việt: máy chưa có OCR tiếng Việt nên đọc "
+                      "mất dấu, sai chữ (vd \"Đã sửa\" → \"Dasta\")."
+                 ).pack(anchor="w", padx=10, pady=(8, 4))
+        if os.path.exists(bat):
+            def run():
+                try:
+                    os.startfile(bat)        # file .bat tu xin quyen admin (UAC)
+                    btn.config(text="Đang cài... xong thì thoát và mở lại LangScan",
+                               state="disabled")
+                except Exception as e:
+                    btn.config(text="Không chạy được: {}".format(e))
+            btn = tk.Button(box, text="Cài OCR tiếng Việt (1–3 phút)", bg=ACCENT, fg=BG,
+                            bd=0, padx=10, pady=2, cursor="hand2",
+                            activebackground=FG, activeforeground=BG,
+                            font=("Segoe UI", 9, "bold"), command=run)
+            btn.pack(anchor="w", padx=10, pady=(0, 8))
+        self._regrow()
+
     def _message(self, parent, msg):
         tk.Label(parent, text=msg, bg=BG, fg=FG_DIM, font=("Segoe UI", 10),
                  wraplength=self.width - 30, justify="left").pack(
@@ -1129,7 +1158,10 @@ class Snipper(object):
                 if not text:
                     ui_call(lambda: self.on_text("", ocr.status_text()))
                 else:
-                    ui_call(lambda: self.on_text(text, ""))
+                    # Ra chu Latin ma may chua co OCR tieng Viet: neu anh la chu
+                    # Viet thi chac chan doc sai ('Đã sửa' -> 'Dasta') - nhac cai
+                    vi_hint = lang == langs.EN and not ocr.vietnamese_ready()
+                    ui_call(lambda: self.on_text(text, "", vi_hint))
             except Exception as e:
                 ui_call(lambda: self.on_text("", "lỗi khi chụp / đọc chữ: {}".format(e)))
         threading.Thread(target=work, daemon=True).start()
@@ -1243,11 +1275,27 @@ class App(object):
         """Chup mot vung man hinh roi doc chu."""
         self.q.put(("__snip__", None))
 
-    def _snip_done(self, text, err):
+    def _mostly_english(self, text):
+        """Chu OCR la tieng Anh that (da so tu co cap CEFR) -> khong nhac OCR Viet."""
+        toks = [t.lower() for t in re.findall(r"[A-Za-z]+", text)]
+        try:
+            en = self.analyzer.en()
+        except Exception:
+            return False
+
+        def english(t):
+            # tu ngan ('sa', 'da') chi tinh neu pho bien; tu dai thi dua ve
+            # dang goc (lives -> live) roi tra tu dien
+            return t in en.cefr or (len(t) > 3 and en.lookup_deep(t)[1] is not None)
+        return bool(toks) and sum(english(t) for t in toks) * 2 > len(toks)
+
+    def _snip_done(self, text, err, vi_hint=False):
         """OCR xong: co chu thi hien popup, khong thi bao loi."""
         if text:
             print("[*] OCR doc duoc: {}".format(text[:60].replace("\n", " ")))
             self.popup.show(text)
+            if vi_hint and not self._mostly_english(text):
+                self.popup.ocr_vi_hint()
         else:
             fatal_msg = err or "không đọc được chữ nào trong vùng đã chọn"
             print("[!] OCR:", fatal_msg)
