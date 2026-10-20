@@ -639,7 +639,64 @@ def _read_vietnamese(image, rapid_text=""):
     letters = sum(1 for ch in text if ch.isalpha())
     marks = len(langs.RE_VI.findall(text.lower()))
     # Tieng Viet ~1 chu co dau / 4 chu cai; tieng Anh doc bang 'vie' gan nhu 0
-    return text if letters and marks >= max(1, letters // 25) else ""
+    if not (letters and marks >= max(1, letters // 25)):
+        return ""
+    return _merge_latin(text, rapid_text) if rapid_text else text
+
+
+def _merge_latin(tess, rapid):
+    """Ghep hai ket qua OCR theo tung tu, lay cai tot cua ca hai.
+
+    Tesseract 'vie' giu dung dau tieng Viet nhung doc chu Latin kieu code
+    kem (Ctrl+Alt+Q -> 'Ctr1+A1t+Q'); RapidOCR doc chu Latin tot nhung mat
+    dau tieng Viet (Khởi -> Khoi). Bo dau ra de so khop hai ben:
+      - khop nhau -> giu ban Tesseract (co dau)
+      - lech nhau MOT tu doi MOT tu, giong nhau phan lon, va tu Tesseract
+        khong co dau tieng Viet -> lay ban RapidOCR
+      - con lai giu Tesseract (vd 'run_hidden.' vs 'run hidden.ba')."""
+    import difflib
+    import unicodedata
+
+    def key(t):
+        t = unicodedata.normalize("NFD", t.lower().replace("đ", "d"))
+        return "".join(ch for ch in t if not unicodedata.combining(ch))
+
+    lines = [l.split() for l in tess.split("\n")]
+    toks = [(i, t) for i, l in enumerate(lines) for t in l]
+    rtoks = rapid.split()
+    if not toks or not rtoks:
+        return tess
+    import re
+    # Chu cai dinh chu so (r1, A1t, 0ff): dau hieu Tesseract doc nham l/1, O/0
+    mixed = re.compile(r"[A-Za-z][0-9]|[0-9][A-Za-z]")
+    out = [t for _i, t in toks]
+    sm = difflib.SequenceMatcher(None, [key(t) for _i, t in toks],
+                                 [key(t) for t in rtoks], autojunk=False)
+    for op, a1, a2, b1, b2 in sm.get_opcodes():
+        if op != "replace":
+            continue
+        used = set()
+        for k in range(a1, a2):
+            t = toks[k][1]
+            # tu co dau: Tesseract dung hon; khong nghi doc nham: giu nguyen
+            # (RapidOCR cung sai: 'TiWorker.exe' -> 'TiWorkerexe')
+            if langs.RE_VI.search(t.lower()) or not mixed.search(t):
+                continue
+            best, score = None, 0.6
+            for j in range(b1, b2):
+                r = rtoks[j]
+                if j in used or len(mixed.findall(r)) >= len(mixed.findall(t)):
+                    continue
+                s = difflib.SequenceMatcher(None, key(t), key(r)).ratio()
+                if s >= score:
+                    best, score = j, s
+            if best is not None:
+                used.add(best)
+                out[k] = rtoks[best]
+    rebuilt = [[] for _ in lines]
+    for (i, _t), new in zip(toks, out):
+        rebuilt[i].append(new)
+    return "\n".join(" ".join(l) for l in rebuilt if l)
 
 
 def status_text():

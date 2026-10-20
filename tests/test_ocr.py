@@ -45,3 +45,18 @@ def test_clean_tsv_drops_garbage_line():
 ])
 def test_split_glued_vietnamese(word, want):
     assert ocr._split_glued_vi(word) == want
+
+
+@pytest.mark.parametrize("tess, rapid, want", [
+    # Tesseract doc nham l->1 trong chu kieu code: lay ban RapidOCR
+    ("Khởi động lại app Ctr1+A1t+Q rồi", "Khoi dong lai app ( Ctrl+Alt+Q roi",
+     "Khởi động lại app Ctrl+Alt+Q rồi"),
+    ("bấm C0py và F5", "bam Copy va F5", "bấm Copy và F5"),
+    # khong co dau hieu doc nham: giu Tesseract (RapidOCR lam mat dau cham)
+    ("cài qua TiWorker.exe và", "cai qua TiWorkerexe va", "cài qua TiWorker.exe và"),
+    ("rồi run_hidden.", "roi run hidden.ba", "rồi run_hidden."),
+    # chu so that (Windows 11) giu nguyen; xuong dong giu nguyen
+    ("mở Windows 11\ncũng đã xong", "mo Windows 11\ncung da xong", "mở Windows 11\ncũng đã xong"),
+])
+def test_merge_latin(tess, rapid, want):
+    assert ocr._merge_latin(tess, rapid) == want
