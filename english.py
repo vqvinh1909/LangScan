@@ -36,9 +36,9 @@ not no nor too very can could will would shall should may might must
 """.split())
 
 POS_VI = {
-    "N": "danh tu", "V": "dong tu", "A": "tinh tu", "ADJ": "tinh tu",
-    "ADV": "trang tu", "PRON": "dai tu", "PREP": "gioi tu", "CONJ": "lien tu",
-    "INT": "than tu", "NUM": "so tu", "DET": "tu han dinh",
+    "N": "danh từ", "V": "động từ", "A": "tính từ", "ADJ": "tính từ",
+    "ADV": "trạng từ", "PRON": "đại từ", "PREP": "giới từ", "CONJ": "liên từ",
+    "INT": "thán từ", "NUM": "số từ", "DET": "từ hạn định",
 }
 
 
@@ -102,7 +102,7 @@ class English(object):
     def __init__(self):
         if not os.path.exists(ENVI_PATH):
             raise FileNotFoundError(
-                "Chua co tu dien Anh-Viet: {}\nChay:  python setup_data.py".format(ENVI_PATH))
+                "Chưa có từ điển Anh-Việt: {}\nChạy:  python setup_data.py".format(ENVI_PATH))
         self.index = {}
         with open(ENVI_PATH, "r", encoding="utf-8") as f:
             for line in f:
@@ -239,7 +239,7 @@ class English(object):
             # Ten rieng thi khong dich - dich may se cho ra nghia vo nghia
             if self.looks_proper(token, first_in_text):
                 return langs.Card(
-                    word=token, reading=self.phonetic(token), badge="ten rieng",
+                    word=token, reading=self.phonetic(token), badge="tên riêng",
                     vi=["tên riêng - giữ nguyên, không dịch"],
                     speak=token, lang=langs.EN)
             return langs.Card(word=token, reading=self.phonetic(token),
@@ -250,7 +250,7 @@ class English(object):
         if pos_vi:
             note_bits.append(pos_vi)
         if example:
-            note_bits.append("vd: " + example)
+            note_bits.append("ví dụ: " + example)
         lvl = self.cefr.get(key) or self.cefr.get(token.lower())
 
         # Tu goc khac voi tu boi den (studying -> study) thi noi ro
@@ -258,7 +258,7 @@ class English(object):
         return langs.Card(
             # IPA cua dung tu boi den (went /wɛnt/), khong co moi lay cua tu goc
             word=shown, reading=self.phonetic(token) or self.phonetic(key),
-            badge=lvl or "ngoai CEFR", vi=defs[:4],
+            badge=lvl or "ngoài CEFR", vi=defs[:4],
             note="  ·  ".join(note_bits), speak=token, lang=langs.EN)
 
     def cards(self, text, max_words=25):

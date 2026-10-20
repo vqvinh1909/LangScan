@@ -9,7 +9,7 @@ import re
 
 ZH, JA, KO, EN = "zh", "ja", "ko", "en"
 
-LANG_NAME = {ZH: "Trung", JA: "Nhat", KO: "Han", EN: "Anh"}
+LANG_NAME = {ZH: "Trung", JA: "Nhật", KO: "Hàn", EN: "Anh"}
 TTS_LANG = {ZH: "zh-CN", JA: "ja", KO: "ko", EN: "en"}
 
 # Viet bang ma Unicode chu khong dung ky tu truc tiep - vai chu Han tu va chu
@@ -170,7 +170,7 @@ class Analyzer(object):
             if lang == EN:
                 return lang, self.en().cards(text, max_words), ""
         except ImportError as e:
-            return lang, [], "Tieng {}: {}".format(LANG_NAME[lang], e)
+            return lang, [], "Tiếng {}: {}".format(LANG_NAME[lang], e)
         except FileNotFoundError as e:
             return lang, [], str(e)
         return lang, [], ""

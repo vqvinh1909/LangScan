@@ -180,7 +180,7 @@ class Dictionary(object):
 
         if not self.vi_simp and not self.en_simp:
             raise FileNotFoundError(
-                "Chua co tu dien nao trong {}\nHay chay truoc:  python setup_data.py"
+                "Chưa có từ điển nào trong {}\nHãy chạy trước:  python setup_data.py"
                 .format(DATA_DIR))
 
         self.hsk = {}
@@ -322,7 +322,7 @@ def cards(text, dictionary, max_words=25):
         lvl = dictionary.hsk_level(key)
         note = ""
         if head is not None and head.classifiers:
-            note = "luong tu: " + ", ".join(head.classifiers[:2])
+            note = "lượng từ: " + ", ".join(head.classifiers[:2])
         extra_vi, extra_en = [], []
         if vi:
             extra_vi = vi[0].senses[:5]
@@ -334,7 +334,7 @@ def cards(text, dictionary, max_words=25):
         out.append(langs.Card(
             word=key,
             reading=head.pinyin if head else "",
-            badge="HSK{}".format(lvl) if lvl else "ngoai HSK",
+            badge="HSK{}".format(lvl) if lvl else "ngoài HSK",
             vi=extra_vi, en=extra_en, note=note,
             speak=key, lang=langs.ZH,
             tones=head.tones() if head else []))
@@ -359,7 +359,7 @@ def main(argv):
     for w in words:
         key, vi, en = d.lookup_deep(w)
         lvl = d.hsk_level(key)
-        tag = "HSK{}".format(lvl) if lvl else "ngoai HSK"
+        tag = "HSK{}".format(lvl) if lvl else "ngoài HSK"
         pin = (vi or en)[0].pinyin if (vi or en) else "?"
         print("{}  [{}]  ({})".format(key, pin, tag))
         if vi:

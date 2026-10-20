@@ -36,4 +36,4 @@ def test_it_multiword_phrase(en):
 
 
 def test_proper_noun_not_translated(en):
-    assert en.card("Zalo").badge == "ten rieng"
+    assert en.card("Zalo").badge == "tên riêng"

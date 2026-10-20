@@ -164,10 +164,10 @@ def from_romaji(text):
 
 # ------------------------------------------------------------ tu dien -------
 _POS_VI = [
-    ("noun", "danh tu"), ("verb", "dong tu"), ("adjective", "tinh tu"),
-    ("adverb", "trang tu"), ("expression", "cum tu"), ("particle", "tro tu"),
-    ("counter", "luong tu"), ("pronoun", "dai tu"), ("suffix", "hau to"),
-    ("prefix", "tien to"), ("conjunction", "lien tu"), ("interjection", "than tu"),
+    ("noun", "danh từ"), ("verb", "động từ"), ("adjective", "tính từ"),
+    ("adverb", "trạng từ"), ("expression", "cụm từ"), ("particle", "trợ từ"),
+    ("counter", "lượng từ"), ("pronoun", "đại từ"), ("suffix", "hậu tố"),
+    ("prefix", "tiền tố"), ("conjunction", "liên từ"), ("interjection", "thán từ"),
 ]
 _POS_RE = re.compile(r"\s*\(\((.*)\)\)\s*$", re.S)
 
@@ -200,7 +200,7 @@ class Japanese(object):
         try:
             from jamdict import Jamdict
         except ImportError:
-            raise ImportError("chua cai tu dien tieng Nhat - nhay dup file"
+            raise ImportError("chưa cài từ điển tiếng Nhật - nháy đúp file"
                               " caidat_tiengnhat.bat")
         if os.path.exists(LOCAL_DB) and os.path.getsize(LOCAL_DB) > 10 * 1024 * 1024:
             self._make_jam = lambda: Jamdict(db_file=LOCAL_DB)
@@ -211,7 +211,7 @@ class Japanese(object):
             if not self.jam.lookup("水").entries:
                 raise RuntimeError("tra thu khong ra ket qua")
         except Exception:
-            raise ImportError("thieu du lieu tu dien tieng Nhat - nhay dup file"
+            raise ImportError("thiếu dữ liệu từ điển tiếng Nhật - nháy đúp file"
                               " caidat_tiengnhat.bat")
         self.tokenizer = None
         try:
@@ -323,7 +323,7 @@ class Japanese(object):
 
         return langs.Card(
             word=word, reading=display_reading,
-            badge="N{}".format(lvl) if lvl else "ngoai JLPT",
+            badge="N{}".format(lvl) if lvl else "ngoài JLPT",
             en=senses_en[:5], note=note,
             speak=surface, lang=langs.JA)
 

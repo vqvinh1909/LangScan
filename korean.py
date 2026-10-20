@@ -244,7 +244,7 @@ class Korean(object):
         cua phan hanja - co thi tot, khong co van chay binh thuong."""
         if not os.path.exists(path):
             raise FileNotFoundError(
-                "Chua co tu dien tieng Han: {}\nChay:  python setup_data.py".format(path))
+                "Chưa có từ điển tiếng Hàn: {}\nChạy:  python setup_data.py".format(path))
         self.index = {}
         self._load(path)
         self.hanviet = hanviet
@@ -400,7 +400,7 @@ class Korean(object):
             out.append(langs.Card(
                 word=surface, reading=romanize(surface), badge="Hàn",
                 en=[gloss.strip()],
-                note="Han tu {}{}".format(hanja, "  =  {}".format(hv) if hv else ""),
+                note="Hán tự {}{}".format(hanja, "  =  {}".format(hv) if hv else ""),
                 speak=surface, lang=langs.KO))
             if len(out) >= limit:
                 break
@@ -421,7 +421,7 @@ class Korean(object):
             hanja = "".join(ch for ch in (hanja or "") if langs.RE_HAN.match(ch))
             if hanja:
                 hv = self.han_viet(hanja)
-                note = "Han tu {}{}".format(hanja, "  =  {}".format(hv) if hv else "")
+                note = "Hán tự {}{}".format(hanja, "  =  {}".format(hv) if hv else "")
             out.append(langs.Card(
                 word=surface, reading=romanize(surface),
                 badge="Hàn", en=[gloss.strip()], note=note,
@@ -445,11 +445,11 @@ class Korean(object):
             hanja = "".join(ch for ch in hanja if langs.RE_HAN.match(ch))
         if hanja:
             hv = self.han_viet(hanja)
-            note = "Han tu {}{}".format(hanja, "  =  {}".format(hv) if hv else "")
+            note = "Hán tự {}{}".format(hanja, "  =  {}".format(hv) if hv else "")
 
         return langs.Card(
             word=key, reading=romanize(key),
-            badge="Hanja" if hanja else "thuan Han",
+            badge="gốc Hán" if hanja else "thuần Hàn",
             en=glosses[:5], note=note, speak=key, lang=langs.KO)
 
     def cards(self, text, max_words=25):

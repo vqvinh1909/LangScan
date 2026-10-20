@@ -44,6 +44,7 @@ CLOSE_ON_FOCUS_OUT = os.environ.get("SCAN_KEEP_OPEN") != "1"
 POPUP_WIDTH = 470       # co mac dinh; keo goc ◢ cua popup de doi, app nho lai
 POPUP_MAX_HEIGHT = 600
 POPUP_MIN_SIZE = (340, 160)
+CEFR_BADGES = ("A1", "A2", "B1", "B2", "C1", "C2", "IT")   # tu tieng Anh pho bien
 
 # Giao dien popup: "sang" (nen trang nga, xanh tre hop logo) hoac "toi" (ban cu)
 THEME = "sang"
@@ -464,7 +465,14 @@ class Popup(object):
                    and bool(re.match(r"^[A-Za-zÀ-ǿ1-5 ']{2,}$", py_text))
                    and len(py_text.split()) <= 10
                    and self.src_pref in ("auto", langs.ZH)
-                   and lang in (None, langs.EN, langs.ZH))
+                   and lang in (None, langs.EN, langs.ZH)
+                   # Tu dong + tu tieng Anh that ('bank'): khong doc them nhu pinyin
+                   # (ra toan 半空, 扮酷... thua). Muon doc pinyin thi chon nguon Trung.
+                   # Chi tinh tu tieng Anh pho bien (co cap CEFR / thuat ngu IT):
+                   # tu dien Anh-Viet co ca muc hiem 'wo', 'shi', 'ni' -> 'wo shi',
+                   # 'ni hao' van phai doc nhu pinyin
+                   and not (self.src_pref == "auto" and lang == langs.EN and cards
+                            and all(c.badge in CEFR_BADGES for c in cards)))
         # Tu dong ma tieng Anh khong ra gi ('taberu', 'annyeong'): thu doc nhu
         # romaji tieng Nhat / phien am tieng Han
         want_rom = (want_py and self.src_pref == "auto" and lang == langs.EN
@@ -478,10 +486,10 @@ class Popup(object):
         elif err:
             self._message(inner, err)
         elif lang is None and not want_py:
-            self._message(inner, "Vung boi den khong co chu nao tra duoc.")
+            self._message(inner, "Vùng bôi đen không có chữ nào tra được.")
         elif not cards:
             if not want_py:                 # pinyin thi phan tra pinyin ben duoi lo
-                self._message(inner, "Khong tra duoc tu nao trong doan nay.")
+                self._message(inner, "Không tra được từ nào trong đoạn này.")
         else:
             # Dich ca cau (chay ngam, co cache) - huu ich nhat voi cau dai
             # Dich ca cum khi co tu 2 tu tro len, ke ca khi cac tu phu
@@ -797,8 +805,11 @@ class Popup(object):
                     if self.win is not win or not lbl.winfo_exists():
                         return
                     if not backward and not pinyin and not phrase and not romans:
-                        lbl.config(text=note or "không tìm thấy từ tra ngược nào cho '{}'"
-                                   .format(query))
+                        if is_vi or note:       # go tieng Viet ma khong ra gi: bao ro
+                            lbl.config(text=note or "không tìm thấy từ nào nghĩa là '{}'"
+                                       .format(query))
+                        else:                   # thu doc pinyin / romaji khong ra: im lang
+                            lbl.destroy()
                         self._regrow()
                         return
                     lbl.destroy()
@@ -845,7 +856,7 @@ class Popup(object):
                  font=("Microsoft YaHei", 20, "bold")).pack(side="left")
 
         if card.badge:
-            known = not card.badge.lower().startswith(("ngoai", "thuan"))
+            known = not card.badge.lower().startswith(("ngoài", "thuần"))
             tk.Label(row, text=card.badge, bg=BORDER if known else BG_ALT,
                      fg=FG if known else FG_DIM, font=("Segoe UI", 8, "bold"),
                      padx=6, pady=1).pack(side="left", padx=6)
@@ -866,7 +877,7 @@ class Popup(object):
                 lbl = self._sense(block, "...", FG_DIM, 11, width)
                 self._fill_async(lbl, card.speak, card.lang, color=FG)
             else:
-                tk.Label(block, text="khong co trong tu dien", bg=BG, fg=FG_DIM,
+                tk.Label(block, text="không có trong từ điển", bg=BG, fg=FG_DIM,
                          font=("Segoe UI", 9)).pack(anchor="w")
             return
 
@@ -904,13 +915,13 @@ class Popup(object):
                         return
                     if vi and vi.strip().lower() == str(source).strip().lower():
                         label._result = vi
-                        label.config(text="giu nguyen (ten rieng hoac thuat ngu)",
+                        label.config(text="giữ nguyên (tên riêng hoặc thuật ngữ)",
                                      fg=FG_DIM)
                     elif vi:
                         label._result = vi
                         label.config(text=prefix + vi, fg=color)
                     else:
-                        label.config(text="(chua dich duoc - co the dang mat mang)",
+                        label.config(text="(chưa dịch được - có thể đang mất mạng)",
                                      fg=FG_DIM)
                     self._regrow()
                 except Exception:
@@ -1005,7 +1016,7 @@ class Snipper(object):
         try:
             from PIL import ImageGrab      # noqa: F401
         except ImportError:
-            self.on_text("", "thieu thu vien Pillow - chay setup.bat")
+            self.on_text("", "thiếu thư viện Pillow - chạy setup.bat (hoặc cài lại LangScan)")
             return
 
         win = tk.Toplevel(self.root)
@@ -1053,7 +1064,7 @@ class Snipper(object):
         self._cancel()
         box = (min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2))
         if box[2] - box[0] < 8 or box[3] - box[1] < 8:
-            self.on_text("", "vung chon qua nho")
+            self.on_text("", "vùng chọn quá nhỏ")
             return
         # Cho lop phu bien han roi moi chup, khong thi chup nham chinh no
         self.root.after(120, lambda: self._grab(box))
@@ -1103,7 +1114,7 @@ class Snipper(object):
                 else:
                     ui_call(lambda: self.on_text(text, ""))
             except Exception as e:
-                ui_call(lambda: self.on_text("", "loi khi chup/doc chu: {}".format(e)))
+                ui_call(lambda: self.on_text("", "lỗi khi chụp / đọc chữ: {}".format(e)))
         threading.Thread(target=work, daemon=True).start()
 
 
@@ -1138,27 +1149,27 @@ class Tray(object):
         import pystray
         Item, Menu = pystray.MenuItem, pystray.Menu
         return Menu(
-            Item("Tra tu dang boi den ({})".format(HOTKEY_LOOKUP.upper()),
+            Item("Tra từ đang bôi đen ({})".format(HOTKEY_LOOKUP.upper()),
                  lambda: self.app.on_hotkey(), default=True),
-            Item("Ep tra tieng Nhat ({})".format(HOTKEY_JA.upper()),
+            Item("Ép tra tiếng Nhật ({})".format(HOTKEY_JA.upper()),
                  lambda: self.app.on_hotkey(langs.JA)),
-            Item("Ep tra tieng Han ({})".format(HOTKEY_KO.upper()),
+            Item("Ép tra tiếng Hàn ({})".format(HOTKEY_KO.upper()),
                  lambda: self.app.on_hotkey(langs.KO)),
-            Item("Ep tra tieng Anh ({})".format(HOTKEY_EN.upper()),
+            Item("Ép tra tiếng Anh ({})".format(HOTKEY_EN.upper()),
                  lambda: self.app.on_hotkey(langs.EN)),
             Menu.SEPARATOR,
-            Item("O go tay dich / tra tu ({})".format(
-                "nhan dup Ctrl"),
+            Item("Ô gõ tay để dịch / tra từ ({})".format(
+                "nhấn đúp Ctrl"),
                  lambda: self.app.open_search()),
-            Item("Chup man hinh roi doc chu ({})".format(HOTKEY_SNIP.upper()),
+            Item("Chụp màn hình rồi đọc chữ ({})".format(HOTKEY_SNIP.upper()),
                  lambda: self.app.open_snip()),
             Menu.SEPARATOR,
-            Item("Khoi dong cung Windows", lambda: self._toggle_autostart(),
+            Item("Khởi động cùng Windows", lambda: self._toggle_autostart(),
                  checked=lambda item: autostart.is_installed()),
-            Item("Mo thu muc cai dat", lambda: self._open(APP_DIR)),
-            Item("Xem log", lambda: self._open(LOG_PATH)),
+            Item("Mở thư mục cài đặt", lambda: self._open(APP_DIR)),
+            Item("Xem nhật ký (log)", lambda: self._open(LOG_PATH)),
             Menu.SEPARATOR,
-            Item("Thoat ({})".format(HOTKEY_QUIT.upper()), lambda: self.app.quit()),
+            Item("Thoát ({})".format(HOTKEY_QUIT.upper()), lambda: self.app.quit()),
         )
 
     def _open(self, path):
@@ -1221,7 +1232,7 @@ class App(object):
             print("[*] OCR doc duoc: {}".format(text[:60].replace("\n", " ")))
             self.popup.show(text)
         else:
-            fatal_msg = err or "khong doc duoc chu nao trong vung da chon"
+            fatal_msg = err or "không đọc được chữ nào trong vùng đã chọn"
             print("[!] OCR:", fatal_msg)
             self.popup.show("")
             try:
@@ -1359,14 +1370,15 @@ def main():
         try:
             __import__(mod)
         except ImportError:
-            fatal("Thieu thu vien '{}'.\nMo thu muc LangScan va chay setup.bat".format(mod))
+            fatal("Thiếu thư viện '{}'.\nMở thư mục LangScan và chạy setup.bat "
+                  "(hoặc cài lại LangScan).".format(mod))
             return 1
     try:
         App().run()
     except Exception as e:
         import traceback
         traceback.print_exc()
-        fatal("Loi: {}\nXem chi tiet trong data/langscan.log".format(e))
+        fatal("Lỗi: {}\nXem chi tiết trong data/langscan.log".format(e))
         return 1
     return 0
 

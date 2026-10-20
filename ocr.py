@@ -470,11 +470,11 @@ def status_text():
     if tess:
         bits.append("Tesseract: " + ", ".join(t for t in tess if t != "osd"))
     if not bits:
-        return ("Chua co bo OCR nao.\n"
-                "  - Nhanh nhat (Trung + Anh, ~1 phut): nhay dup caidat_ocr_nhanh.bat\n"
-                "  - Day du (them Nhat + Han, lau hon): nhay dup caidat_ocr.bat")
+        return ("Chưa có bộ OCR nào.\n"
+                "  - Nhanh nhất (Trung + Anh, ~1 phút): nháy đúp caidat_ocr_nhanh.bat\n"
+                "  - Đầy đủ (thêm Nhật + Hàn, lâu hơn): nháy đúp caidat_ocr.bat")
     ready = [langs.LANG_NAME[l] for l in available()]
-    bits.append("Doc duoc: " + (", ".join(ready) if ready else "chua thu tieng nao"))
+    bits.append("Đọc được: " + (", ".join(ready) if ready else "chưa thứ tiếng nào"))
     return "\n".join(bits)
 
 
