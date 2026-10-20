@@ -173,8 +173,12 @@ class Speaker(object):
     def _say(self, text, lang):
         try:
             if self.mode == "gtts":
+                import hashlib
                 code = langs.TTS_LANG.get(lang, "zh-CN")
-                path = os.path.join(AUDIO_DIR, "{}_{}.mp3".format(code, abs(hash(text))))
+                # md5 thay cho hash(): hash() cua Python doi moi lan mo app nen
+                # truoc day cache khong bao gio dung lai, lan nao cung tai lai
+                key = hashlib.md5(text.encode("utf-8")).hexdigest()[:16]
+                path = os.path.join(AUDIO_DIR, "{}_{}.mp3".format(code, key))
                 if not os.path.exists(path):
                     from gtts import gTTS
                     gTTS(text=text, lang=code).save(path)
@@ -608,9 +612,54 @@ class Popup(object):
                              cursor="hand2", font=("Segoe UI", 8))
         copy_btn.config(command=lambda: self._copy(lbl, copy_btn))
         copy_btn.pack(side="right")
+        if self.speaker.available:
+            # Doc to cau DA DICH bang giong ngon ngu dich (nut '▶ Nghe' tren
+            # thanh ngon ngu thi doc cau goc)
+            def _say(_lbl=lbl, _t=target):
+                said = getattr(_lbl, "_result", "")
+                if said:
+                    self.speaker.say(said, _t)
+            tk.Button(top, text="▶ Nghe", bg=BG_ALT, fg=ACCENT, bd=0,
+                      activebackground=BORDER, activeforeground=ACCENT,
+                      cursor="hand2", font=("Segoe UI", 8), command=_say
+                      ).pack(side="right", padx=(0, 8))
         lbl.pack(anchor="w", padx=10, pady=(2, 8))
         self._phrase_lbl = lbl
-        self._fill_async(lbl, text, lang, prefix="", color=FG, target=target)
+
+        # Phien am Latin (pinyin / romaji / RR) cho cau Trung / Nhat / Han:
+        # cau goc o tren ban dich, cau dich ra o duoi - de doc duoc ca cau
+        cjk = (langs.ZH, langs.JA, langs.KO)
+
+        def roman_label(before):
+            return tk.Label(box, text="", bg=BG_ALT, fg=ACCENT, font=("Segoe UI", 10, "italic"),
+                            wraplength=self.width - 40, justify="left")
+
+        def fill_roman(rl, sentence, rlang, **pack):
+            def work():
+                try:
+                    r = self.analyzer.romanize_sentence(sentence, rlang)
+                except Exception as e:
+                    print("[!] Loi phien am:", e)
+                    r = ""
+                if r:
+                    def show():
+                        try:
+                            if rl.winfo_exists():
+                                rl.config(text=r)
+                                rl.pack(anchor="w", padx=10, **pack)
+                                self._regrow()
+                        except tk.TclError:
+                            pass
+                    ui_call(show)
+            threading.Thread(target=work, daemon=True).start()
+
+        if lang in cjk:                  # cau goc tieng Trung/Nhat/Han
+            fill_roman(roman_label(lbl), text, lang, before=lbl, pady=(2, 0))
+        after = None
+        if target in cjk:                # dich ra tieng Trung/Nhat/Han
+            out_rl = roman_label(None)
+            after = lambda vi: fill_roman(out_rl, vi, target, after=lbl, pady=(0, 8))
+        self._fill_async(lbl, text, lang, prefix="", color=FG, target=target, after=after)
 
     def _copy(self, lbl, btn=None):
         result = getattr(lbl, "_result", "")
@@ -921,11 +970,17 @@ class Popup(object):
         lbl.pack(anchor="w", pady=(1, 0))
         return lbl
 
-    def _fill_async(self, label, text, lang, prefix="", color=FG, target="vi"):
-        """Dich o luong khac roi cap nhat nhan - khong lam treo popup."""
+    def _fill_async(self, label, text, lang, prefix="", color=FG, target="vi", after=None):
+        """Dich o luong khac roi cap nhat nhan - khong lam treo popup.
+        after(ban_dich): goi them (o luong nen) khi dich xong, neu co."""
         source = text
 
         def done(vi):
+            if after and vi and vi.strip().lower() != str(source).strip().lower():
+                try:
+                    after(vi)
+                except Exception as e:
+                    print("[!] Loi sau khi dich:", e)
             def apply_():
                 try:
                     if not label.winfo_exists():

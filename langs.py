@@ -10,7 +10,7 @@ import re
 ZH, JA, KO, EN = "zh", "ja", "ko", "en"
 
 LANG_NAME = {ZH: "Trung", JA: "Nhật", KO: "Hàn", EN: "Anh"}
-TTS_LANG = {ZH: "zh-CN", JA: "ja", KO: "ko", EN: "en"}
+TTS_LANG = {ZH: "zh-CN", JA: "ja", KO: "ko", EN: "en", "vi": "vi"}
 
 # Viet bang ma Unicode chu khong dung ky tu truc tiep - vai chu Han tu va chu
 # tuong thich trong nhin giong het nhau nhung ma khac nhau, de viet nham dai.
@@ -221,6 +221,109 @@ class Analyzer(object):
         if any(RE_VI_ONLY.search(t) or not self._is_pinyin(t) for t in toks):
             return "vi"
         return "maybe"
+
+    # ---- phien am ca cau (dong chu Latin duoi ban dich sang Trung/Nhat/Han)
+    _PUNCT = str.maketrans({"，": ", ", "。": ". ", "、": ", ", "？": "? ", "！": "! ",
+                            "：": ": ", "；": "; ", "（": " (", "）": ") ", "「": '"',
+                            "」": '"', "『": '"', "』": '"', "“": '"', "”": '"', "　": " "})
+
+    def romanize_sentence(self, text, lang):
+        """'我去上学' -> 'wǒ qù shàngxué', '学校に行きます' -> 'gakkou ni ikimasu',
+        '학교에 갑니다' -> 'hakgyoe gamnida'. '' neu khong phai Trung/Nhat/Han."""
+        text = (text or "").strip()
+        if not text:
+            return ""
+        if lang == ZH:
+            out = self._pinyin_sentence(text)
+        elif lang == JA:
+            out = self._romaji_sentence(text)
+        elif lang == KO:
+            import korean
+            out = korean.romanize(text)
+        else:
+            return ""
+        out = out.translate(self._PUNCT)
+        out = re.sub(r"\s+([,.?!:;)])", r"\1", out)
+        return re.sub(r"\s+", " ", out).strip()
+
+    # Tro tu da am: trong cau gan nhu luon doc thanh nhe (吗 ma chu khong phai ma2)
+    _NEUTRAL = {"吗": "ma", "呢": "ne", "吧": "ba", "了": "le", "的": "de", "得": "de",
+                "着": "zhe", "过": "guo", "啊": "a", "们": "men", "么": "me", "嘛": "ma"}
+
+    @staticmethod
+    def _split_hsk(words, d):
+        """jieba hay giu nguyen cum (我爱你, 今天天气) -> pinyin dinh lien kho doc.
+        Cum khong phai tu HSK ma tach het duoc thanh tu HSK thi tach ra."""
+        out = []
+        for w in words:
+            if len(w) < 3 or d.hsk_level(w):
+                out.append(w)
+                continue
+            parts, i = [], 0
+            while i < len(w):
+                for size in range(min(4, len(w) - i), 0, -1):
+                    piece = w[i:i + size]
+                    if d.hsk_level(piece) or (size == 1 and Analyzer._NEUTRAL.get(piece)):
+                        parts.append(piece)
+                        i += size
+                        break
+                else:
+                    parts = None
+                    break
+            out.extend(parts if parts and len(parts) > 1 else [w])
+        return out
+
+    def _pinyin_sentence(self, text):
+        """Pinyin co dau thanh, viet lien theo tu (shàngxué) nhu sach giao khoa."""
+        import dictionary
+        d = self.zh()
+        out = []
+        for run in re.findall(r"[㐀-䶿一-鿿豈-﫿]+|[^㐀-䶿一-鿿豈-﫿]+", text):
+            if not RE_HAN.match(run):
+                out.append(run)
+                continue
+            for word in self._split_hsk(dictionary.segment(run, d), d):
+                if word in self._NEUTRAL:
+                    out.append(self._NEUTRAL[word])
+                    continue
+                entries = d.lookup(word, "vi") or d.lookup(word, "en")
+                if entries:
+                    out.append(entries[0].pinyin.replace(" ", ""))
+                    continue
+                syl = []                 # tu ghep la: ghep pinyin tung chu
+                for ch in word:
+                    e = d.lookup(ch, "vi") or d.lookup(ch, "en")
+                    syl.append(e[0].pinyin if e else ch)
+                out.append("".join(syl))
+        return " ".join(out)
+
+    def _romaji_sentence(self, text):
+        """Romaji theo tu; duoi dong tu / tro dong tu dinh vao tu truoc (ikimasu)."""
+        import japanese
+        out, prev = [], ""
+        for surface, _base, reading, pos in self.ja().tokens(text):
+            fields = (pos or "").split(",")
+            if fields[0] == "記号" or not (reading or japanese.RE_KANA_ONLY.match(surface)):
+                out.append(surface)      # dau cau, chu Latin, so
+                prev = ""
+                continue
+            kana = japanese.kata_to_hira(reading or surface)
+            if fields[0] == "助詞" and surface in ("は", "へ", "を"):
+                rom = {"は": "wa", "へ": "e", "を": "o"}[surface]
+            else:
+                rom = japanese.to_romaji(kana)
+            # Dinh vao DONG TU / tinh tu dung truoc: 行き+ます -> ikimasu,
+            # し+て -> shite. Sau danh tu thi tach: gakusei desu.
+            glue = prev in ("動詞", "形容詞", "助動詞") and not (
+                fields[0] == "助動詞" and surface[:1] == "で") and (     # です tach rieng
+                fields[0] == "助動詞"
+                or (fields[0] == "助詞" and len(fields) > 1 and fields[1] == "接続助詞"))
+            if glue and out:
+                out[-1] += rom
+            else:
+                out.append(rom)
+            prev = fields[0]
+        return " ".join(out)
 
     def romanized_text(self, text, lang):
         """'tabemashita' -> 'たべました', 'annyeong' -> '안녕' ('' neu khong doc duoc)."""

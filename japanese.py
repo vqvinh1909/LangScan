@@ -47,6 +47,7 @@ _ROMAJI = {
     "ぁ": "a", "ぃ": "i", "ぅ": "u", "ぇ": "e", "ぉ": "o",
 }
 _YOON = {"ゃ": "ya", "ゅ": "yu", "ょ": "yo"}
+RE_KANA_ONLY = re.compile(r"^[぀-ヿー]+$")     # tu chi gom hiragana / katakana
 
 
 def kata_to_hira(s):

@@ -61,8 +61,18 @@ def romanize(text):
             continue
         nxt = syls[i + 1][1] if i + 1 < len(syls) else None
         # Chu sau bat dau bang ㅇ (chi so 11) = khong co phu am dau -> noi am
-        out.append(_JONG_LINK[jong] if (nxt and nxt[0] == 11) else _JONG[jong])
+        if nxt and nxt[0] == 11:
+            out.append(_JONG_LINK[jong])
+        elif nxt and nxt[0] in (2, 6) and _NASAL.get(_JONG[jong]):
+            # Dong hoa am mui truoc ㄴ/ㅁ: 합니다 hamnida, 한국말 hangungmal,
+            # 있는 inneun (RR viet theo cach doc)
+            out.append(_NASAL[_JONG[jong]])
+        else:
+            out.append(_JONG[jong])
     return "".join(out)
+
+
+_NASAL = {"p": "m", "k": "ng", "t": "n"}
 
 
 # ------------------------------------------------ phien am Latin -> Hangul --
