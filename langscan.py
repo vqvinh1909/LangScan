@@ -336,9 +336,11 @@ class Popup(object):
             return ent.get("1.0", "end-1c").strip()
 
         def _lines():
+            # Tk dem so CHO XUONG DONG giua dau va cuoi (it hon so dong 1 don
+            # vi): 2 dong tra ve 1 -> truoc day o nhap thieu mat dong cuoi
             n = ent.count("1.0", "end-1c", "displaylines")
             n = n[0] if isinstance(n, tuple) else n
-            return int(n or 1)
+            return int(n or 0) + 1
 
         def _fit(_e=None):
             """O nhap cao vua du so dong chu (toi da 6), dai hon thi cuon."""
@@ -379,6 +381,12 @@ class Popup(object):
         ent.bind("<MouseWheel>", _wheel_text)
         win.after(40, _fit)
         win.after(250, _fit)
+        # Do lai moi khi o nhap duoc ve / doi be rong: sau OCR may dang ban, cua
+        # so hien muon hon 250ms nen hai lan do tren dem sai so dong (con 1
+        # dong, dong sau bi che). Doi chieu cao xong Tk ve lai -> _fit thay
+        # khong doi gi nua nen khong lap vo han.
+        ent.bind("<Map>", lambda e: ent.after(10, _fit), add="+")
+        ent.bind("<Configure>", lambda e: ent.after(10, _fit), add="+")
         # Nut Tra bam dong dau o nhap (o nhap cao nhieu dong thi khong troi
         # xuong giua); chua cho ben phai cho nut dong o goc.
         tk.Button(head, text="Tra", bg=ACCENT, fg=BG, bd=0, padx=10, pady=2,

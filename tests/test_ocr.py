@@ -35,3 +35,13 @@ def test_clean_tsv_drops_garbage_line():
     tsv = "\n".join([head] + ["5\t1\t1\t1\t{}\t{}\t0\t0\t9\t9\t{}\t{}".format(ln, i, c, w)
                               for i, (ln, c, w) in enumerate(rows)])
     assert ocr._clean_tsv(tsv) == "Việc còn lại."
+
+
+@pytest.mark.parametrize("word, want", [
+    ("từcó", "từ có"), ("gốithành", "gối thành"), ("lạiGõ", "lại Gõ"),
+    ("thuậtngữ", "thuật ngữ"), ("từcó,", "từ có,"),
+    ("người", "người"), ("tiếng", "tiếng"),            # chu dung thi giu nguyen
+    ("Windows", "Windows"), ("LangScan", "LangScan"),  # khong dung vao chu Anh
+])
+def test_split_glued_vietnamese(word, want):
+    assert ocr._split_glued_vi(word) == want

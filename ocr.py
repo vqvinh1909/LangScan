@@ -564,11 +564,57 @@ def _clean_tsv(tsv):
         mean = sum(c * len(w) for c, w in words) / float(chars or 1)
         if mean < 65:
             continue                                   # ca dong la rac
-        keep = [w for c, w in words
+        keep = [_split_glued_vi(w) for c, w in words
                 if re.search(r"\w", w) and not (len(w) <= 2 and c < 80)]
         if keep:
             out.append(" ".join(keep))
     return "\n".join(out).strip()
+
+
+def _split_glued_vi(word):
+    """Tesseract hay lam dinh hai am tiet (truoc chu in dam, chu sat nhau):
+    'từcó' -> 'từ có', 'gốithành' -> 'gối thành'. Chi tach khi ca tu KHONG
+    phai mot am tiet tieng Viet ma tach duoc thanh 2-3 am tiet hop le."""
+    import re
+    import unicodedata
+    m = re.match(r"^(\W*)(.*?)(\W*)$", word)
+    head, core, tail = m.group(1), m.group(2), m.group(3)
+    if len(core) < 4 or not core.isalpha():
+        return word
+
+    def plain(s):
+        s = unicodedata.normalize("NFD", s.lower().replace("đ", "d"))
+        return "".join(ch for ch in s if not unicodedata.combining(ch))
+
+    def ok(s):
+        return bool(langs.RE_VI_SYLLABLE.match(plain(s)))
+
+    # chi lam voi chu co dau tieng Viet (khong dung vao tu tieng Anh, ten rieng)
+    if ok(core) or not langs.RE_VI.search(core.lower()):
+        return word
+
+    def splits(s, n):
+        """Moi cach cat s thanh dung n am tiet hop le."""
+        if n == 1:
+            return [[s]] if ok(s) else []
+        out = []
+        for i in range(1, len(s)):
+            if ok(s[:i]):
+                out += [[s[:i]] + r for r in splits(s[i:], n - 1)]
+        return out
+
+    parts = None
+    for n in (2, 3):                     # it manh nhat truoc: 'gối thành', khong 'gố i thành'
+        cands = splits(core, n)
+        if cands:
+            # chu hoa giua tu ('lạiGõ') la ranh gioi chac chan; khong co thi
+            # uu tien manh sau bat dau bang phu am (am tiet that hiem bat dau 'i')
+            cands.sort(key=lambda p: (not all(x[:1].isupper() == (k > 0 and x[:1].isupper())
+                                              for k, x in enumerate(p)),
+                                      sum(1 for x in p[1:] if plain(x)[:1] in "aeiouy")))
+            parts = cands[0]
+            break
+    return head + " ".join(parts) + tail if parts else word
 
 
 def _english_ratio(text):
