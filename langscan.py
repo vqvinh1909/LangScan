@@ -34,6 +34,7 @@ HOTKEY_EN = "ctrl+alt+e"            # ep tra tieng Anh
 DOUBLE_CTRL_SEARCH = True
 DOUBLE_TAP_GAP = 0.4                # hai lan nhan cach nhau toi da bao nhieu giay
 HOTKEY_SNIP = "ctrl+alt+x"          # chup mot vung man hinh roi doc chu (OCR)
+HOTKEY_SNIP_AGAIN = "ctrl+alt+z"    # chup lai DUNG vung vua khoanh (phu de, game...)
 HOTKEY_QUIT = "ctrl+alt+q"
 
 MAX_WORDS = 25          # so tu toi da hien trong 1 lan tra
@@ -73,6 +74,7 @@ from paths import APP_DIR, DATA_DIR
 AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 LOG_PATH = os.path.join(DATA_DIR, "langscan.log")
 POPUP_PREFS = os.path.join(DATA_DIR, "popup.json")   # kich thuoc popup da keo
+SNIP_PREFS = os.path.join(DATA_DIR, "snip.json")     # vung chup lan truoc
 LOCK_PORT = 50521       # cong cuc bo dung de chan chay 2 ban cung luc
 
 # Tkinter chi duoc dung tu luong chinh. Luong phu (dich online, tra nguoc)
@@ -1097,6 +1099,63 @@ class Snipper(object):
         self.canvas = None
         self.start = None
         self.rect = None
+        self.last_box = self._load_box()  # vung khoanh lan truoc (toa do tkinter)
+
+    @staticmethod
+    def _load_box():
+        try:
+            import json
+            with open(SNIP_PREFS, encoding="utf-8") as f:
+                box = tuple(int(v) for v in json.load(f)["box"])
+            return box if len(box) == 4 else None
+        except Exception:
+            return None
+
+    def _save_box(self, box):
+        self.last_box = box
+        try:
+            import json
+            with open(SNIP_PREFS, "w", encoding="utf-8") as f:
+                json.dump({"box": list(box)}, f)
+        except Exception:
+            pass
+
+    def snip_again(self):
+        """Chup lai dung vung lan truoc (chu doi, vi tri khong doi: phu de
+        video, game, tai lieu cuon). Chua khoanh lan nao thi cho khoanh."""
+        if self.win is not None:
+            return
+        if not self.last_box:
+            self.start_snip()
+            return
+        self._grab(self.last_box)
+
+    def _flash(self, box):
+        """Nhay vien vang quanh vung vua chup ~0.5s de biet no chup cho nao.
+        Ve SAU khi da chup xong nen khong lot vao anh."""
+        x1, y1, x2, y2 = box
+        t = 3
+        wins = []
+        for gx, gy, gw, gh in ((x1 - t, y1 - t, x2 - x1 + 2 * t, t),
+                               (x1 - t, y2, x2 - x1 + 2 * t, t),
+                               (x1 - t, y1, t, y2 - y1), (x2, y1, t, y2 - y1)):
+            try:
+                w = tk.Toplevel(self.root)
+                w.overrideredirect(True)
+                w.attributes("-topmost", True)
+                w.configure(bg=ACCENT)
+                w.geometry("{}x{}+{}+{}".format(max(gw, 1), max(gh, 1), gx, gy))
+                wins.append(w)
+            except Exception:
+                pass
+
+        def gone():
+            for w in wins:
+                try:
+                    w.destroy()
+                except Exception:
+                    pass
+        self.root.after(500, gone)
 
     def start_snip(self):
         if self.win is not None:
@@ -1154,6 +1213,7 @@ class Snipper(object):
         if box[2] - box[0] < 8 or box[3] - box[1] < 8:
             self.on_text("", "vùng chọn quá nhỏ")
             return
+        self._save_box(box)              # cho Ctrl+Alt+Z chup lai vung nay
         # Cho lop phu bien han roi moi chup, khong thi chup nham chinh no
         self.root.after(120, lambda: self._grab(box))
 
@@ -1180,15 +1240,19 @@ class Snipper(object):
         return self._scale
 
     def _grab(self, box):
+        # Do ti le man hinh o LUONG CHINH: no goi Tk (winfo_screenwidth), ma Tk
+        # goi tu luong nen khong an toan (co luc loi -> ti le 100%, chup lech)
+        scale = self._screen_scale()
+
         def work():
             try:
                 from PIL import ImageGrab
-                scale = self._screen_scale()
                 real = tuple(int(round(v * scale)) for v in box)
                 try:
                     img = ImageGrab.grab(bbox=real, all_screens=True)
                 except TypeError:          # ban Pillow cu khong co all_screens
                     img = ImageGrab.grab(bbox=real)
+                ui_call(lambda: self._flash(box))
                 # Chu nho thi phong to len - OCR doc chinh xac hon han
                 if img.width < 900:
                     from PIL import Image
@@ -1251,6 +1315,8 @@ class Tray(object):
                  lambda: self.app.open_search()),
             Item("Chụp màn hình rồi đọc chữ ({})".format(HOTKEY_SNIP.upper()),
                  lambda: self.app.open_snip()),
+            Item("Chụp lại vùng cũ ({})".format(HOTKEY_SNIP_AGAIN.upper()),
+                 lambda: self.app.open_snip_again()),
             Menu.SEPARATOR,
             Item("Khởi động cùng Windows", lambda: self._toggle_autostart(),
                  checked=lambda item: autostart.is_installed()),
@@ -1314,6 +1380,10 @@ class App(object):
         """Chup mot vung man hinh roi doc chu."""
         self.q.put(("__snip__", None))
 
+    def open_snip_again(self):
+        """Chup lai dung vung lan truoc."""
+        self.q.put(("__snip_again__", None))
+
     def _snip_done(self, text, err):
         """OCR xong: co chu thi hien popup, khong thi bao loi."""
         if text:
@@ -1346,6 +1416,10 @@ class App(object):
                     self.popup.show_empty()
                 elif text == "__snip__":
                     self.snipper.start_snip()
+                elif text == "__snip_again__":
+                    # Dong popup cu truoc: no hay nam de len chinh vung can chup
+                    self.popup.close()
+                    self.root.after(150, self.snipper.snip_again)
                 else:
                     self.popup.show(text, force_lang)
         except queue.Empty:
@@ -1363,6 +1437,7 @@ class App(object):
             self._double_ctrl = DoubleTap(self.open_search)
             keyboard.hook(self._double_ctrl.hook)
         keyboard.add_hotkey(HOTKEY_SNIP, self.open_snip)
+        keyboard.add_hotkey(HOTKEY_SNIP_AGAIN, self.open_snip_again)
         keyboard.add_hotkey(HOTKEY_QUIT, self.quit)
         self.tray.start()
         start_ui_pump(self.root)
@@ -1376,6 +1451,7 @@ class App(object):
             "NHAN DUP CTRL" if DOUBLE_CTRL_SEARCH else "(tu icon khay)"))
         print("  {}  chup mot vung man hinh roi doc chu (OCR)".format(
             HOTKEY_SNIP.upper()))
+        print("  {}  chup lai dung vung vua khoanh".format(HOTKEY_SNIP_AGAIN.upper()))
         print("  Khoi dong cung Windows: {}".format(
             "DANG BAT" if autostart.is_installed() else "dang tat"))
         print("  Thoat: {} (hoac chuot phai vao icon khay)".format(HOTKEY_QUIT.upper()))

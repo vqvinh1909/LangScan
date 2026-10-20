@@ -107,6 +107,7 @@ Có **icon chữ V (nền tre xanh) ở khay hệ thống** (góc phải taskbar
 | **Nhấn đúp `Ctrl`** | **Mở cửa sổ gõ tay để tra từ** (hai chiều) |
 | `Ctrl+Alt+S` | Cũng mở cửa sổ đó — giữ làm đường dự phòng |
 | `Ctrl+Alt+X` | **Chụp một vùng màn hình rồi đọc chữ** (OCR) |
+| `Ctrl+Alt+Z` | **Chụp lại đúng vùng vừa khoanh** — đọc phụ đề video, game, tài liệu cuộn: chữ đổi nhưng chỗ không đổi |
 | `Esc` | Đóng popup |
 | `Ctrl+Alt+Q` | Thoát chương trình |
 
@@ -172,6 +173,8 @@ Lần tra ngược **đầu tiên** mất khoảng 10 giây để dựng chỉ m
 ## Chụp màn hình rồi tra (OCR)
 
 Bấm **Ctrl+Alt+X**, màn hình mờ đi, kéo chuột khoanh vùng có chữ. Thả chuột là app đọc chữ trong đó rồi hiện popup y như khi bôi đen.
+
+**Chụp lại vùng cũ — `Ctrl+Alt+Z`:** chụp lại đúng vùng vừa khoanh, không phải khoanh lại. Hợp để đọc phụ đề video, hội thoại trong game, tài liệu cuộn trang. Popup cũ tự đóng trước khi chụp (để không che chữ), viền vàng nháy quanh vùng cho biết vừa chụp chỗ nào. App nhớ vùng này cả khi tắt mở lại; chưa khoanh lần nào thì phím này mở chế độ khoanh như `Ctrl+Alt+X`.
 
 Dùng cho chỗ không bôi đen được: **ảnh, PDF scan, video, game, phần mềm vẽ giao diện bằng đồ hoạ**. Đây chính là lỗ hổng còn lại của cách bôi đen — giờ bịt được.
 
