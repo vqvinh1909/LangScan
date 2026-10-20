@@ -221,6 +221,7 @@ Mở `langscan.py`, sửa mấy dòng đầu file:
 | `SHOW_ENGLISH` | `False` = ẩn dòng tiếng Anh |
 | `TRANSLATE_VI` | `False` = tắt dịch online (Nhật, Hàn, từ tiếng Anh lạ) |
 | `MAX_WORDS` | Số từ tối đa mỗi lần tra |
+| `THEME` | `"sang"` (nền trắng ngà, xanh tre, mặc định) hoặc `"toi"` (nền tối) |
 | `TONE_COLORS` | Màu theo thanh điệu tiếng Trung |
 
 ## Cấu trúc

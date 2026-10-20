@@ -45,15 +45,27 @@ POPUP_WIDTH = 470       # co mac dinh; keo goc ◢ cua popup de doi, app nho lai
 POPUP_MAX_HEIGHT = 600
 POPUP_MIN_SIZE = (340, 160)
 
-BG = "#1c1f26"
-BG_ALT = "#242833"
-FG = "#e8eaf0"
-FG_DIM = "#9aa2b1"
-ACCENT = "#f0b429"
-BORDER = "#3a4152"
+# Giao dien popup: "sang" (nen trang nga, xanh tre hop logo) hoac "toi" (ban cu)
+THEME = "sang"
 
-# Mau theo thanh dieu tieng Trung (kieu Pleco/Hanping)
-TONE_COLORS = {1: "#e5534b", 2: "#e2953a", 3: "#4aa96c", 4: "#4d8ee8", 5: "#8b93a3"}
+if THEME == "toi":
+    BG = "#1c1f26"
+    BG_ALT = "#242833"
+    FG = "#e8eaf0"
+    FG_DIM = "#9aa2b1"
+    ACCENT = "#f0b429"
+    BORDER = "#3a4152"
+    # Mau theo thanh dieu tieng Trung (kieu Pleco/Hanping)
+    TONE_COLORS = {1: "#e5534b", 2: "#e2953a", 3: "#4aa96c", 4: "#4d8ee8", 5: "#8b93a3"}
+else:
+    BG = "#fcfbf7"           # trang nga - do choi hon trang tinh
+    BG_ALT = "#eaf2ec"       # xanh tre rat nhat cho thanh tren / duoi
+    FG = "#1e2a23"
+    FG_DIM = "#5d6b63"
+    ACCENT = "#1f7a55"       # xanh tre cua logo
+    BORDER = "#c9dacf"
+    # Thanh dieu: dam hon ban toi de doc ro tren nen sang
+    TONE_COLORS = {1: "#d0342c", 2: "#c96f12", 3: "#23854a", 4: "#2563c9", 5: "#6f7782"}
 
 from paths import APP_DIR, DATA_DIR
 AUDIO_DIR = os.path.join(DATA_DIR, "audio")
@@ -354,14 +366,19 @@ class Popup(object):
         ent.bind("<MouseWheel>", _wheel_text)
         win.after(40, _fit)
         win.after(250, _fit)
+        # Nut Tra bam dong dau o nhap (o nhap cao nhieu dong thi khong troi
+        # xuong giua); chua cho ben phai cho nut dong o goc.
         tk.Button(head, text="Tra", bg=ACCENT, fg=BG, bd=0, padx=10, pady=2,
                   activebackground=FG, activeforeground=BG, cursor="hand2",
                   font=("Segoe UI", 9, "bold"), command=_redo
-                  ).pack(side="left", padx=(0, 6))
-        tk.Button(head, text="✕", bg=BG_ALT, fg=FG_DIM, bd=0,
-                  activebackground=BORDER, activeforeground=FG, cursor="hand2",
-                  font=("Segoe UI", 10), command=self.close
-                  ).pack(side="left", padx=(0, 8))
+                  ).pack(side="left", anchor="n", padx=(0, 34), pady=(10, 8))
+        # Nut dong sat goc tren ben phai, sang do khi re chuot (kieu Windows)
+        close = tk.Label(head, text="✕", bg=BG_ALT, fg=FG_DIM, cursor="hand2",
+                         font=("Segoe UI", 11), width=3, pady=2)
+        close.place(relx=1.0, x=0, y=0, anchor="ne")
+        close.bind("<Enter>", lambda e: close.config(bg="#c42b1c", fg="white"))
+        close.bind("<Leave>", lambda e: close.config(bg=BG_ALT, fg=FG_DIM))
+        close.bind("<Button-1>", lambda e: self.close())
 
         # ---- thanh ngon ngu: nguon -> dich, ngon ngu nhan ra, nut nghe
         bar = tk.Frame(outer, bg=BG_ALT)
@@ -480,26 +497,30 @@ class Popup(object):
             self._extra_lookup(win, inner, py_text if want_py else text,
                                is_vi, target, want_py, want_rom)
 
-        foot = tk.Label(outer, text="Esc: dong   |   Enter: dich lai   |   {}: tra lai   |   ep: {} Trung  {} Nhat  {} Han  {} Anh"
-                        .format(HOTKEY_LOOKUP.upper(), HOTKEY_ZH.upper()[-1],
-                                HOTKEY_JA.upper()[-1], HOTKEY_KO.upper()[-1],
-                                HOTKEY_EN.upper()[-1]),
-                        bg=BG_ALT, fg=FG_DIM, font=("Segoe UI", 8))
-        foot.pack(fill="x", ipady=3)
+        # Gon de khong bi goc bo cat chu; chua le phai cho goc keo ◢
+        mods = HOTKEY_ZH.rsplit("+", 1)[0].title()
+        footbar = tk.Frame(outer, bg=BG_ALT)
+        footbar.pack(fill="x")
+        foot = tk.Label(footbar, anchor="w", bg=BG_ALT, fg=FG_DIM, font=("Segoe UI", 8),
+                        text="Esc đóng  ·  Enter tra lại  ·  {}+{}/{}/{}/{}: ép Trung/Nhật/Hàn/Anh"
+                        .format(mods, HOTKEY_ZH[-1].upper(), HOTKEY_JA[-1].upper(),
+                                HOTKEY_KO[-1].upper(), HOTKEY_EN[-1].upper()))
+        foot.pack(fill="x", ipady=4, padx=(14, 24))
 
         # Popup khong co thanh tieu de (overrideredirect) nen tu lam: keo vung
         # trong cua thanh tren / thanh ngon ngu / dong duoi de di chuyen,
         # keo goc ◢ de doi co.
-        for w in (head, bar, foot):
+        for w in (head, bar, footbar, foot):
             self._draggable(w, win)
         grip = tk.Label(outer, text="◢", bg=BG_ALT, fg=FG_DIM, cursor="size_nw_se",
                         font=("Segoe UI", 9))
-        grip.place(relx=1.0, rely=1.0, anchor="se")
+        grip.place(relx=1.0, rely=1.0, x=-6, y=-3, anchor="se")   # tranh goc bo
         grip.bind("<ButtonPress-1>", lambda e, w=win: self._resize_start(e, w))
         grip.bind("<B1-Motion>", lambda e, w=win: self._resize_move(e, w))
         grip.bind("<ButtonRelease-1>", lambda e: self._resize_end())
 
         self._place(win)
+        self._round_corners(win)
         win.bind("<Escape>", self.close)
         if CLOSE_ON_FOCUS_OUT:
             # Chi dong khi focus roi han khoi popup (chuyen giua o nhap, nut,
@@ -597,6 +618,33 @@ class Popup(object):
                  font=("Segoe UI", 8, "bold")).pack(anchor="w", padx=12, pady=(10, 0))
 
     # ---- keo di chuyen / doi co popup
+    @staticmethod
+    def _round_corners(win, radius=16):
+        """Bo goc popup. Windows 11: nho DWM ve (min, co bong do). Windows 10
+        khong co tinh nang do: cat cua so thanh hinh chu nhat bo goc, cat lai
+        moi khi doi co."""
+        try:
+            import ctypes
+            win.update_idletasks()
+            hwnd = int(win.wm_frame(), 16)
+            pref = ctypes.c_int(2)                       # DWMWCP_ROUND
+            if ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                    hwnd, 33, ctypes.byref(pref), ctypes.sizeof(pref)) == 0:
+                return                                   # 33 = DWMWA_WINDOW_CORNER_PREFERENCE
+        except Exception:
+            return
+
+        def clip(_e=None):
+            try:
+                w, h = win.winfo_width(), win.winfo_height()
+                rgn = ctypes.windll.gdi32.CreateRoundRectRgn(0, 0, w + 1, h + 1,
+                                                             radius, radius)
+                ctypes.windll.user32.SetWindowRgn(hwnd, rgn, True)
+            except Exception:
+                pass
+        clip()
+        win.bind("<Configure>", clip, add="+")
+
     def _load_size(self):
         try:
             import json
@@ -642,7 +690,7 @@ class Popup(object):
         x0, y0, w0, h0 = self._rs
         w = max(POPUP_MIN_SIZE[0] + 18, w0 + e.x_root - x0)
         h = max(POPUP_MIN_SIZE[1], h0 + e.y_root - y0)
-        self.user_h = h                      # tu gio giu co nay, khong tu co gian nua
+        self.user_h = h                      # chieu cao toi da tu gio (xem _height)
         win.geometry("{}x{}".format(w, h))
 
     def _on_resize(self, canvas, item, width):
@@ -675,9 +723,19 @@ class Popup(object):
         walk(self._inner)
 
     def _height(self, win):
-        if self.user_h:
-            return self.user_h
-        return min(win.winfo_reqheight(), POPUP_MAX_HEIGHT)
+        """Chieu cao popup: vua noi dung, toi da bang co nguoi dung da keo
+        (chua keo thi POPUP_MAX_HEIGHT). It chu thi popup gon lai, nhieu chu
+        thi dan toi muc do roi cuon - khong de khoang trang thua."""
+        max_h = self.user_h or POPUP_MAX_HEIGHT
+        try:
+            win.update_idletasks()
+            need = self._inner.winfo_reqheight()
+            chrome = win.winfo_reqheight() - self._canvas.winfo_reqheight()
+            self._canvas.configure(height=max(90, min(need, max_h - chrome)))
+            win.update_idletasks()
+        except Exception:
+            pass
+        return min(win.winfo_reqheight(), max_h)
 
     def _regrow(self):
         """Noi dung vua dai ra (dich xong, tra nguoc xong): gian popup cho vua."""
@@ -685,10 +743,6 @@ class Popup(object):
         if win is None:
             return
         try:
-            win.update_idletasks()
-            need = self._inner.winfo_reqheight()
-            self._canvas.configure(height=max(90, min(need, POPUP_MAX_HEIGHT - 60)))
-            win.update_idletasks()
             h = self._height(win)
             w = self.width + 18
             sh = win.winfo_screenheight()
@@ -866,13 +920,6 @@ class Popup(object):
 
     # ---- vi tri popup: canh con tro chuot, khong tran ra ngoai man hinh
     def _place(self, win):
-        win.update_idletasks()
-        try:
-            need = self._inner.winfo_reqheight()
-            self._canvas.configure(height=max(90, min(need, POPUP_MAX_HEIGHT - 60)))
-            win.update_idletasks()
-        except Exception:
-            pass
         h = self._height(win)
         w = self.width + 18
         sw, sh = win.winfo_screenwidth(), win.winfo_screenheight()
