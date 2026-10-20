@@ -521,11 +521,13 @@ def _tesseract_vi(image):
     os.close(fd)
     try:
         g.save(path)
+        # Xuat TSV de co diem tin cay tung chu (file cau hinh 'tsv' khong co
+        # trong thu muc tessdata rieng nen bat bang -c)
         r = subprocess.run([exe, path, "-", "-l", "vie", "--psm", "6",
-                            "--tessdata-dir", tessdata],
+                            "--tessdata-dir", tessdata, "-c", "tessedit_create_tsv=1"],
                            capture_output=True, timeout=20,
                            creationflags=0x08000000 if os.name == "nt" else 0)
-        text = r.stdout.decode("utf-8", "replace")
+        tsv = r.stdout.decode("utf-8", "replace")
     except Exception:
         return ""
     finally:
@@ -533,8 +535,40 @@ def _tesseract_vi(image):
             os.remove(path)
         except OSError:
             pass
-    lines = [" ".join(l.split()) for l in text.splitlines()]
-    return "\n".join(l for l in lines if l).strip()
+    return _clean_tsv(tsv)
+
+
+def _clean_tsv(tsv):
+    """Ghep chu tu ket qua TSV cua Tesseract, bo phan rac.
+
+    Vung khoanh dinh mot dong chu bi cat ngang, vien, thanh cuon... thi
+    Tesseract van 'doc' ra rac ("F «-c^Š» r1 2 hAiiFfc ^^") nhung diem tin
+    cay rat thap (~10-40), con chu that ~85-97. Bo ca dong trung binh < 65,
+    bo tu chi toan ky hieu, bo tu ngan (1-2 ky tu) diem < 80."""
+    import re
+    lines = {}
+    for row in tsv.splitlines()[1:]:
+        c = row.split("\t")
+        if len(c) < 12 or not c[11].strip():
+            continue
+        try:
+            conf = float(c[10])
+        except ValueError:
+            continue
+        key = (int(c[2]), int(c[3]), int(c[4]))        # block, doan, dong
+        lines.setdefault(key, []).append((conf, c[11].strip()))
+    out = []
+    for key in sorted(lines):
+        words = lines[key]
+        chars = sum(len(w) for _c, w in words)
+        mean = sum(c * len(w) for c, w in words) / float(chars or 1)
+        if mean < 65:
+            continue                                   # ca dong la rac
+        keep = [w for c, w in words
+                if re.search(r"\w", w) and not (len(w) <= 2 and c < 80)]
+        if keep:
+            out.append(" ".join(keep))
+    return "\n".join(out).strip()
 
 
 def _english_ratio(text):

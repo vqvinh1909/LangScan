@@ -26,3 +26,12 @@ def test_vietnamese(text):
 def test_english_stays_english():
     got, lang = ocr.read_auto(render("Jeff currently lives in Canada", "segoeui.ttf"))
     assert lang == "en" and "currently" in got
+
+
+def test_clean_tsv_drops_garbage_line():
+    head = "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext"
+    rows = [(1, 96.9, "Việc"), (1, 96.5, "còn"), (1, 96.4, "lại."), (1, 72.4, "|"), (1, 76.5, "À"),
+            (2, 27.9, "i"), (2, 23.8, "^¬~“,"), (2, 92.0, "H"), (2, 16.1, "“x"), (2, 34.5, "vy")]
+    tsv = "\n".join([head] + ["5\t1\t1\t1\t{}\t{}\t0\t0\t9\t9\t{}\t{}".format(ln, i, c, w)
+                              for i, (ln, c, w) in enumerate(rows)])
+    assert ocr._clean_tsv(tsv) == "Việc còn lại."
