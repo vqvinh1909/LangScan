@@ -84,7 +84,7 @@ def copy_data():
             print("    (thieu data/{} - ban dong goi se khong co phan nay)".format(name))
             continue
         shutil.copy2(path, dst)
-    for name in ("README.md",):
+    for name in ("README.md", "caidat_ocr_tiengviet.bat"):
         shutil.copy2(os.path.join(ROOT, name), APP_DIST)
 
 

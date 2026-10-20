@@ -18,11 +18,16 @@ import sys
 
 import langs
 
+VI = "vi"               # chi dung cho OCR (doc anh co chu tieng Viet)
+
 # Ma ngon ngu cua LangScan -> ma Windows dung
 WIN_LANG = {langs.ZH: ["zh-Hans-CN", "zh-Hans", "zh-CN", "zh"],
             langs.JA: ["ja-JP", "ja"],
             langs.KO: ["ko-KR", "ko"],
-            langs.EN: ["en-US", "en-GB", "en"]}
+            langs.EN: ["en-US", "en-GB", "en"],
+            # Tieng Viet: RapidOCR (Trung + Anh) doc chu Viet thanh 'dugc', 'ngudi'
+            # (mat dau, sai chu) -> dung OCR cua Windows neu da cai goi tieng Viet
+            VI: ["vi-VN", "vi"]}
 # Ma Tesseract
 TESS_LANG = {langs.ZH: "chi_sim", langs.JA: "jpn", langs.KO: "kor", langs.EN: "eng"}
 # RapidOCR chi co san mo hinh tieng Trung + tieng Anh (nhung hai thu do rat tot)
@@ -436,7 +441,15 @@ def read_auto(image, prefer=None):
             han, kana, hangul, latin = langs.count_scripts(text)
             if not (kana or hangul):
                 if han >= max(1, latin // 3):
+                    # Mo hinh RapidOCR chi biet chu Han: cau tieng Nhat bi roi
+                    # mat kana (私は学生です -> 私学). Windows doc ra kana thi la Nhat.
+                    ja = _windows_ocr(image, langs.JA) if windows_lang_for(langs.JA) else ""
+                    if langs.count_scripts(ja)[1] >= 2:
+                        return ja, langs.JA
                     return text.replace(" ", ""), langs.ZH
+                vi = _read_vietnamese(image)
+                if vi:
+                    return vi, VI
                 return text, langs.EN
 
     best, best_lang, best_score = "", None, 0
@@ -455,7 +468,30 @@ def read_auto(image, prefer=None):
             score = latin - (han + kana + hangul) * 2
         if score > best_score:
             best, best_lang, best_score = text, lang, score
+    if best_lang == langs.EN:
+        vi = _read_vietnamese(image)
+        if vi:
+            return vi, VI
     return best, best_lang
+
+
+def _read_vietnamese(image):
+    """Doc lai anh chu Latin bang OCR tieng Viet cua Windows; tra ve chu neu
+    that su la tieng Viet (co dau), '' neu khong co goi hoac khong phai."""
+    if not windows_lang_for(VI):
+        return ""
+    try:
+        text = _windows_ocr(image, VI)
+    except Exception:
+        return ""
+    letters = sum(1 for ch in text if ch.isalpha())
+    marks = len(langs.RE_VI.findall(text.lower()))
+    # Tieng Viet trung binh ~1 nguyen am co dau / 4 chu cai; tieng Anh = 0
+    return text if letters and marks >= max(2, letters // 25) else ""
+
+
+def vietnamese_ready():
+    return bool(windows_lang_for(VI))
 
 
 def status_text():
@@ -474,7 +510,12 @@ def status_text():
                 "  - Nhanh nhất (Trung + Anh, ~1 phút): nháy đúp caidat_ocr_nhanh.bat\n"
                 "  - Đầy đủ (thêm Nhật + Hàn, lâu hơn): nháy đúp caidat_ocr.bat")
     ready = [langs.LANG_NAME[l] for l in available()]
+    if vietnamese_ready():
+        ready.append("Việt")
     bits.append("Đọc được: " + (", ".join(ready) if ready else "chưa thứ tiếng nào"))
+    if not vietnamese_ready():
+        bits.append("Chưa có OCR tiếng Việt (chữ Việt trong ảnh sẽ mất dấu): "
+                    "nháy đúp caidat_ocr_tiengviet.bat")
     return "\n".join(bits)
 
 

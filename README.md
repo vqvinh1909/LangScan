@@ -175,6 +175,10 @@ App tự đoán vùng chụp là tiếng gì: nó thử đọc bằng từng th�
 
 Nếu máy bạn đã cài sẵn Tesseract thì app cũng dùng được, coi như phương án dự phòng thứ ba.
 
+**Chụp chữ tiếng Việt:** RapidOCR chỉ biết chữ Trung và Anh, nên đọc chữ Việt thành chữ mất dấu, sai chữ ("được" → "dugc"). Nháy đúp **`caidat_ocr_tiengviet.bat`** (cần quyền admin, 1–3 phút) để bật OCR tiếng Việt của Windows; từ đó chụp chữ Việt sẽ ra đủ dấu. Bản cài bằng file Setup có sẵn lối tắt trong Start menu: *Cai OCR tieng Viet*. Chưa cài thì app vẫn đoán được đó là tiếng Việt (xem mục dưới) nhưng dịch sẽ kém chính xác hơn.
+
+**Tiếng Việt gõ không dấu:** `toi di hoc`, `ngan hang`, `tuong lua` được nhận là tiếng Việt chứ không bị coi là tiếng Anh nữa. Cụm đọc được cả hai kiểu (`xin chao`, `ni hao`) thì app hiện cả cách đọc pinyin lẫn cách hiểu tiếng Việt.
+
 Chụp một vùng mất khoảng 2 giây để đọc chữ. Vùng càng nhỏ càng nhanh — khoanh đúng câu cần tra, đừng chụp cả màn hình. Vùng chữ nhỏ thì app tự phóng to trước khi đọc, nên chụp chữ bé vẫn ra.
 
 **Nếu nó đọc nhầm sang chỗ khác trên màn hình:** đó là do tỉ lệ hiển thị của Windows (125%, 150%). tkinter báo toạ độ theo hệ 100% còn ảnh chụp là điểm ảnh thật, nên khoanh một đằng chụp một nẻo. App đo tỉ lệ này lúc chụp lần đầu và bù lại — bản từ 2026-09-10 trở đi đã xử lý.

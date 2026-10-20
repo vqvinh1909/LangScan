@@ -16,6 +16,7 @@ import sys
 import threading
 import time
 import tkinter as tk
+import unicodedata
 
 import autostart
 import langs
@@ -233,13 +234,7 @@ def grab_selection():
 
 # --------------------------------------------------------------- popup -----
 # Chu co dau / chu d cua tieng Viet -> coi la go tieng Viet
-RE_VI = re.compile("[\u00e0\u00e1\u1ea1\u1ea3\u00e3\u00e2\u1ea7\u1ea5\u1ead\u1ea9\u1eab"
-                   "\u0103\u1eb1\u1eaf\u1eb7\u1eb3\u1eb5\u00e8\u00e9\u1eb9\u1ebb\u1ebd"
-                   "\u00ea\u1ec1\u1ebf\u1ec7\u1ec3\u1ec5\u00ec\u00ed\u1ecb\u1ec9\u0129"
-                   "\u00f2\u00f3\u1ecd\u1ecf\u00f5\u00f4\u1ed3\u1ed1\u1ed9\u1ed5\u1ed7"
-                   "\u01a1\u1edd\u1edb\u1ee3\u1edf\u1ee1\u00f9\u00fa\u1ee5\u1ee7\u0169"
-                   "\u01b0\u1eeb\u1ee9\u1ef1\u1eed\u1eef\u1ef3\u00fd\u1ef5\u1ef7\u1ef9"
-                   "\u0111]")
+RE_VI = langs.RE_VI
 
 
 class Popup(object):
@@ -268,6 +263,9 @@ class Popup(object):
 
     # ---- dung khung
     def show(self, raw_text, force_lang=None, keep_pos=False):
+        # Vai app dua chu Viet dang to hop (NFD: dau tach rieng): doi ve NFC
+        # de nhan dien tieng Viet va tkinter ve dau dung cho
+        raw_text = unicodedata.normalize("NFC", raw_text or "")
         self._pos = None
         self._phrase_lbl = None
         if not keep_pos:                # quet / boi den moi -> nguon ve 'Tu dong'
@@ -285,6 +283,16 @@ class Popup(object):
             self.src_pref == VI or
             (self.src_pref in ("auto", langs.EN) and not has_cjk
              and bool(RE_VI.search(raw_text.lower()))))
+        # Tieng Viet go khong dau / chu OCR mat dau ('toi di hoc', 'ngan hang'):
+        # truoc day bi coi la tieng Anh roi dich ra cau vo nghia.
+        # 'maybe' ('xin chao', 'ni hao'): van tra nhu pinyin, them muc tieng Viet.
+        vi_plain = None
+        if not is_vi and not force_lang and self.src_pref == "auto" and not has_cjk:
+            try:
+                vi_plain = self.analyzer.vietnamese_plain(raw_text)
+            except Exception:
+                vi_plain = None
+            is_vi = vi_plain == "vi"
         if is_vi:                       # go tieng Viet: khong tra tu dien ngoai ngu
             lang, cards, err = None, [], ""
             text = " ".join(raw_text.split())
@@ -478,7 +486,10 @@ class Popup(object):
         want_rom = (want_py and self.src_pref == "auto" and lang == langs.EN
                     and not any(c.found for c in cards))
         if is_vi:
-            self._phrase_line(inner, text, VI, target=target)
+            # Cum khong dau ngan ('ngan hang'): dich may doan bua ("Ngan cave"),
+            # phan tra nguoc ben duoi da ra dung - bo dong dich ca cum
+            if not (vi_plain == "vi" and len(text.split()) <= 2):
+                self._phrase_line(inner, text, VI, target=target)
         elif not raw_text.strip() and self._hint_empty:
             self._message(inner, "Gõ hoặc dán chữ cần dịch vào ô phía trên rồi nhấn "
                                  "Enter.\nViệt ⇄ Trung / Nhật / Hàn / Anh; gõ pinyin "
@@ -501,9 +512,10 @@ class Popup(object):
             for i, c in enumerate(cards):
                 self._card_block(inner, c, first=(i == 0))
 
-        if is_vi or want_py:
+        if is_vi or want_py or vi_plain == "maybe":
             self._extra_lookup(win, inner, py_text if want_py else text,
-                               is_vi, target, want_py, want_rom)
+                               is_vi, target, want_py, want_rom,
+                               also_vi=(vi_plain == "maybe"))
 
         # Gon de khong bi goc bo cat chu; chua le phai cho goc keo ◢
         mods = HOTKEY_ZH.rsplit("+", 1)[0].title()
@@ -762,7 +774,8 @@ class Popup(object):
             pass
 
     # ---- tra nguoc Viet -> ngoai ngu / go pinyin (chay ngam, khong lam treo popup)
-    def _extra_lookup(self, win, inner, query, is_vi, target, want_py, want_rom=False):
+    def _extra_lookup(self, win, inner, query, is_vi, target, want_py, want_rom=False,
+                      also_vi=False):
         lbl = tk.Label(inner, text="đang tìm từ trong chỉ mục...", bg=BG, fg=FG_DIM,
                        font=("Segoe UI", 9, "italic"))
         lbl.pack(anchor="w", padx=12, pady=(8, 4))
@@ -785,7 +798,7 @@ class Popup(object):
                         text="đang dựng chỉ mục tra ngược (chỉ lần đầu, ~10 giây)..."))
                     self.reverse = reverse_mod.Reverse(self.analyzer)
                 rv = self.reverse
-                if is_vi:
+                if is_vi or also_vi:            # also_vi: 'xin chao' doc ca kieu Viet
                     if target in (langs.JA, langs.KO):
                         backward, _bridge = rv.search_foreign(query, target)
                         if backward:
@@ -805,7 +818,9 @@ class Popup(object):
                     if self.win is not win or not lbl.winfo_exists():
                         return
                     if not backward and not pinyin and not phrase and not romans:
-                        if is_vi or note:       # go tieng Viet ma khong ra gi: bao ro
+                        # Go tu / cum tieng Viet ma khong ra gi: bao ro. Ca cau thi
+                        # tra nguoc vo nghia - dong dich ca cau o tren la du.
+                        if note or (is_vi and len(query.split()) <= 2):
                             lbl.config(text=note or "không tìm thấy từ nào nghĩa là '{}'"
                                        .format(query))
                         else:                   # thu doc pinyin / romaji khong ra: im lang
@@ -819,6 +834,8 @@ class Popup(object):
                                  if len(found) == 1 else "Tiếng Việt → Trung / Anh")
                         if note:
                             title += "  ({})".format(note)
+                        if also_vi and not is_vi:
+                            title = "Nếu là tiếng Việt không dấu:  " + title
                         self._section(inner, title)
                         for i, c in enumerate(backward):
                             self._card_block(inner, c, first=(i == 0))
