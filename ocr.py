@@ -24,10 +24,7 @@ VI = "vi"               # chi dung cho OCR (doc anh co chu tieng Viet)
 WIN_LANG = {langs.ZH: ["zh-Hans-CN", "zh-Hans", "zh-CN", "zh"],
             langs.JA: ["ja-JP", "ja"],
             langs.KO: ["ko-KR", "ko"],
-            langs.EN: ["en-US", "en-GB", "en"],
-            # Tieng Viet: RapidOCR (Trung + Anh) doc chu Viet thanh 'dugc', 'ngudi'
-            # (mat dau, sai chu) -> dung OCR cua Windows neu da cai goi tieng Viet
-            VI: ["vi-VN", "vi"]}
+            langs.EN: ["en-US", "en-GB", "en"]}
 # Ma Tesseract
 TESS_LANG = {langs.ZH: "chi_sim", langs.JA: "jpn", langs.KO: "kor", langs.EN: "eng"}
 # RapidOCR chi co san mo hinh tieng Trung + tieng Anh (nhung hai thu do rat tot)
@@ -447,7 +444,7 @@ def read_auto(image, prefer=None):
                     if langs.count_scripts(ja)[1] >= 2:
                         return ja, langs.JA
                     return text.replace(" ", ""), langs.ZH
-                vi = _read_vietnamese(image)
+                vi = _read_vietnamese(image, text)
                 if vi:
                     return vi, VI
                 return text, langs.EN
@@ -469,29 +466,100 @@ def read_auto(image, prefer=None):
         if score > best_score:
             best, best_lang, best_score = text, lang, score
     if best_lang == langs.EN:
-        vi = _read_vietnamese(image)
+        vi = _read_vietnamese(image, best)
         if vi:
             return vi, VI
     return best, best_lang
 
 
-def _read_vietnamese(image):
-    """Doc lai anh chu Latin bang OCR tieng Viet cua Windows; tra ve chu neu
-    that su la tieng Viet (co dau), '' neu khong co goi hoac khong phai."""
-    if not windows_lang_for(VI):
-        return ""
-    try:
-        text = _windows_ocr(image, VI)
-    except Exception:
-        return ""
-    letters = sum(1 for ch in text if ch.isalpha())
-    marks = len(langs.RE_VI.findall(text.lower()))
-    # Tieng Viet trung binh ~1 nguyen am co dau / 4 chu cai; tieng Anh = 0
-    return text if letters and marks >= max(2, letters // 25) else ""
+# ------------------------------------------------ tieng Viet (Tesseract) ---
+# RapidOCR chi biet chu Trung + Anh (mo hinh chu Latin cua no cung khong co
+# ơ ư ă ạ...), OCR cua Windows khong ho tro tieng Viet -> dung Tesseract voi
+# du lieu 'vie' (data/tessdata/vie.traineddata, ban tessdata_fast).
+# Ban .exe goi kem mot ban Tesseract rut gon trong thu muc tesseract/.
+def tesseract_exe():
+    """Duong dan tesseract.exe: ban goi kem -> ban da cai -> PATH."""
+    import os
+    import shutil
+    from paths import APP_DIR
+    for path in (os.path.join(APP_DIR, "tesseract", "tesseract.exe"),
+                 os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"),
+                              "Tesseract-OCR", "tesseract.exe"),
+                 os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs",
+                              "Tesseract-OCR", "tesseract.exe")):
+        if os.path.exists(path):
+            return path
+    return shutil.which("tesseract")
+
+
+def _vie_tessdata():
+    import os
+    from paths import DATA_DIR
+    d = os.path.join(DATA_DIR, "tessdata")
+    return d if os.path.exists(os.path.join(d, "vie.traineddata")) else None
 
 
 def vietnamese_ready():
-    return bool(windows_lang_for(VI))
+    return bool(tesseract_exe() and _vie_tessdata())
+
+
+def _tesseract_vi(image):
+    """Doc anh bang Tesseract tieng Viet (chay tesseract.exe, khong can pytesseract)."""
+    import os
+    import subprocess
+    import tempfile
+    from PIL import Image, ImageOps
+    exe, tessdata = tesseract_exe(), _vie_tessdata()
+    if not (exe and tessdata):
+        return ""
+    g = ImageOps.grayscale(image)
+    if sum(g.histogram()[:128]) > g.width * g.height / 2:   # chu sang tren nen toi
+        g = ImageOps.invert(g)
+    if g.width < 1500:                       # Tesseract can chu cao ~30px tro len
+        g = g.resize((g.width * 2, g.height * 2), Image.LANCZOS)
+    fd, path = tempfile.mkstemp(suffix=".png")
+    os.close(fd)
+    try:
+        g.save(path)
+        r = subprocess.run([exe, path, "-", "-l", "vie", "--psm", "6",
+                            "--tessdata-dir", tessdata],
+                           capture_output=True, timeout=20,
+                           creationflags=0x08000000 if os.name == "nt" else 0)
+        text = r.stdout.decode("utf-8", "replace")
+    except Exception:
+        return ""
+    finally:
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+    lines = [" ".join(l.split()) for l in text.splitlines()]
+    return "\n".join(l for l in lines if l).strip()
+
+
+def _english_ratio(text):
+    """Ti le tu tieng Anh pho bien trong chu RapidOCR doc ra (0..1)."""
+    import re
+    toks = [t.lower() for t in re.findall(r"[A-Za-z]+", text)]
+    if not toks:
+        return 0.0
+    common = _vocab()
+    hits = sum(1 for t in toks if t in common or _stem_of(t, common))
+    return hits / float(len(toks))
+
+
+def _read_vietnamese(image, rapid_text=""):
+    """Anh chu Latin: doc lai bang Tesseract tieng Viet, tra ve chu neu that su
+    la tieng Viet (co dau). '' neu khong co Tesseract hoac la tieng Anh."""
+    if not vietnamese_ready():
+        return ""
+    if rapid_text and _english_ratio(rapid_text) > 0.6:
+        return ""                    # tieng Anh ro rang: khoi ton ~1 giay
+    text = _tesseract_vi(image)
+    letters = sum(1 for ch in text if ch.isalpha())
+    marks = len(langs.RE_VI.findall(text.lower()))
+    # Tieng Viet ~1 chu co dau / 4 chu cai; tieng Anh doc bang 'vie' gan nhu 0
+    return text if letters and marks >= max(1, letters // 25) else ""
 
 
 def status_text():
@@ -514,8 +582,8 @@ def status_text():
         ready.append("Việt")
     bits.append("Đọc được: " + (", ".join(ready) if ready else "chưa thứ tiếng nào"))
     if not vietnamese_ready():
-        bits.append("Chưa có OCR tiếng Việt (chữ Việt trong ảnh sẽ mất dấu): "
-                    "nháy đúp caidat_ocr_tiengviet.bat")
+        bits.append("Chưa đọc được chữ tiếng Việt trong ảnh: cần Tesseract + "
+                    "data/tessdata/vie.traineddata (bản cài .exe có sẵn)")
     return "\n".join(bits)
 
 

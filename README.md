@@ -164,6 +164,7 @@ Có hai cách cài, chọn một:
 |---|---|---|---|
 | **`caidat_ocr_nhanh.bat`** | gói pip RapidOCR, ~36MB | **~1 phút**, không cần quyền admin | Trung + Anh |
 | `caidat_ocr.bat` | gói ngôn ngữ của Windows | 10–20 phút, cần quyền admin | Trung + Nhật + Hàn + Anh |
+| Tesseract (xem dưới) | `winget install UB-Mannheim.TesseractOCR` | ~1 phút | **Việt** |
 
 Học tiếng Trung là chính thì dùng bản nhanh là đủ. Cần đọc chữ Nhật/Hàn trong ảnh mới phải chờ bản đầy đủ.
 
@@ -175,7 +176,13 @@ App tự đoán vùng chụp là tiếng gì: nó thử đọc bằng từng th�
 
 Nếu máy bạn đã cài sẵn Tesseract thì app cũng dùng được, coi như phương án dự phòng thứ ba.
 
-**Chụp chữ tiếng Việt:** RapidOCR chỉ biết chữ Trung và Anh, nên đọc chữ Việt thành chữ mất dấu, sai chữ ("được" → "dugc"). Nháy đúp **`caidat_ocr_tiengviet.bat`** (cần quyền admin, 1–3 phút) để bật OCR tiếng Việt của Windows; từ đó chụp chữ Việt sẽ ra đủ dấu. Bản cài bằng file Setup có sẵn lối tắt trong Start menu: *Cai OCR tieng Viet*. Chưa cài thì app vẫn đoán được đó là tiếng Việt (xem mục dưới) nhưng dịch sẽ kém chính xác hơn.
+**Chụp chữ tiếng Việt:** RapidOCR chỉ biết chữ Trung và Anh, còn OCR có sẵn của Windows không hỗ trợ tiếng Việt, nên chữ Việt dùng **Tesseract** với dữ liệu tiếng Việt (`data/tessdata/vie.traineddata`). Bản cài bằng file Setup đã gói sẵn Tesseract, không phải cài gì thêm. Chạy từ mã nguồn thì cài Tesseract một lần:
+
+```
+winget install UB-Mannheim.TesseractOCR
+```
+
+Có Tesseract thì chụp "Đã sửa:" ra đúng "Đã sửa:" (không có thì ra "Dasta:"). Chữ Việt đọc mất khoảng 2–4 giây; chữ Anh / Trung vẫn nhanh như cũ vì app chỉ đọc thêm bằng Tesseract khi chữ không phải tiếng Anh rõ ràng.
 
 **Tiếng Việt gõ không dấu:** `toi di hoc`, `ngan hang`, `tuong lua` được nhận là tiếng Việt chứ không bị coi là tiếng Anh nữa. Cụm đọc được cả hai kiểu (`xin chao`, `ni hao`) thì app hiện cả cách đọc pinyin lẫn cách hiểu tiếng Việt.
 

@@ -8,11 +8,11 @@ if %errorLevel% neq 0 (
     exit /b
 )
 echo ================================================
-echo   Bat OCR cua Windows cho Trung / Nhat / Han / Anh / Viet
+echo   Bat OCR cua Windows cho Trung / Nhat / Han / Anh
 echo   Windows se tai vai chuc MB cho moi thu tieng.
 echo ================================================
 echo.
-for %%L in (zh-CN ja-JP ko-KR en-US vi-VN) do (
+for %%L in (zh-CN ja-JP ko-KR en-US) do (
     echo --- %%L
     powershell -NoProfile -Command "Add-WindowsCapability -Online -Name 'Language.OCR~~~%%L~0.0.1.0' | Out-Null; if ($?) { 'da bat' } else { 'that bai' }"
 )

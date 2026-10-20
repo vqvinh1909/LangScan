@@ -42,7 +42,6 @@ Source: "dist\LangScan\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"
 Name: "{group}\Kiem tra LangScan (selftest)"; Filename: "{app}\{#AppExe}"; Parameters: "--selftest"
-Name: "{group}\Cai OCR tieng Viet (doc chu Viet trong anh)"; Filename: "{app}\caidat_ocr_tiengviet.bat"
 Name: "{group}\Go cai dat {#AppName}"; Filename: "{uninstallexe}"
 Name: "{userdesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 

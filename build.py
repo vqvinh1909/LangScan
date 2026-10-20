@@ -27,7 +27,12 @@ ICON = os.path.join(ROOT, "build", "langscan.ico")
 # app tu tao lai lan chay dau tren may nguoi dung.
 DATA_FILES = ["cedict.txt", "cvdict.u8", "hsk.json", "cefr.json", "en_ipa.tsv",
               "envi.tsv", "it_terms.tsv", "jlpt.json", "kengdic.tsv",
-              "jamdict.db"]           # tu dien Nhat ~310MB, nen lai con ~50MB
+              "jamdict.db",           # tu dien Nhat ~310MB, nen lai con ~50MB
+              "tessdata/vie.traineddata"]   # OCR tieng Viet (Tesseract, 0.5MB)
+TESSERACT_DIRS = [os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"),
+                               "Tesseract-OCR"),
+                  os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs",
+                               "Tesseract-OCR")]
 # Thu vien co file du lieu / module nap dong ma PyInstaller khong tu thay
 COLLECT_ALL = ["jieba", "janome", "jamdict", "puchikarui", "chirptext",
                "rapidocr_onnxruntime", "onnxruntime", "gtts", "pystray", "winrt"]
@@ -83,9 +88,50 @@ def copy_data():
         if not os.path.exists(path):
             print("    (thieu data/{} - ban dong goi se khong co phan nay)".format(name))
             continue
-        shutil.copy2(path, dst)
-    for name in ("README.md", "caidat_ocr_tiengviet.bat"):
+        os.makedirs(os.path.dirname(os.path.join(dst, name)), exist_ok=True)
+        shutil.copy2(path, os.path.join(dst, name))
+    for name in ("README.md",):
         shutil.copy2(os.path.join(ROOT, name), APP_DIST)
+
+
+def bundle_tesseract():
+    """Goi kem ban Tesseract rut gon (OCR tieng Viet) vao dist/LangScan/tesseract.
+
+    Chi lay tesseract.exe + cac DLL no that su can (doc bang import bang
+    pefile), roi 'strip' bo thong tin go loi: libtesseract tu 101MB -> ~4MB,
+    ca bo ~23MB. Nguoi dung ban .exe khong phai cai Tesseract."""
+    src = next((d for d in TESSERACT_DIRS
+                if os.path.exists(os.path.join(d, "tesseract.exe"))), None)
+    if src is None:
+        print("    (khong thay Tesseract -> ban dong goi khong doc duoc chu Viet trong anh.\n"
+              "     Cai: winget install UB-Mannheim.TesseractOCR)")
+        return
+    dst = os.path.join(APP_DIST, "tesseract")
+    shutil.rmtree(dst, ignore_errors=True)
+    os.makedirs(dst)
+    local = {f.lower(): f for f in os.listdir(src) if f.lower().endswith(".dll")}
+    try:
+        import pefile
+        need, todo = set(), ["tesseract.exe"]
+        while todo:
+            pe = pefile.PE(os.path.join(src, todo.pop()), fast_load=True)
+            pe.parse_data_directories(directories=[
+                pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_IMPORT"]])
+            for e in getattr(pe, "DIRECTORY_ENTRY_IMPORT", []):
+                f = local.get(e.dll.decode().lower())
+                if f and f not in need:
+                    need.add(f)
+                    todo.append(f)
+    except ImportError:                       # khong co pefile: chep het DLL
+        need = set(local.values())
+    for f in ["tesseract.exe"] + sorted(need):
+        shutil.copy2(os.path.join(src, f), dst)
+    strip = shutil.which("strip")
+    if strip:
+        for f in os.listdir(dst):
+            subprocess.call([strip, "--strip-debug", os.path.join(dst, f)])
+    size = sum(os.path.getsize(os.path.join(dst, f)) for f in os.listdir(dst))
+    print("    Tesseract: {} file, {:.0f} MB".format(len(os.listdir(dst)), size / 1e6))
 
 
 def inno_setup():
@@ -104,6 +150,7 @@ def main(argv):
     make_icon()
     pyinstaller()
     copy_data()
+    bundle_tesseract()
     exe = os.path.join(APP_DIST, "LangScan.exe")
     print("\n[OK] {}".format(exe))
     if "--no-setup" not in argv:
