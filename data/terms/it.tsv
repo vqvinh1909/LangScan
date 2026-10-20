@@ -1,0 +1,74 @@
+# Thuat ngu IT - Anh / Trung / Nhat / Han -> Viet
+# Dinh dang: Anh <TAB> Trung <TAB> Nhat <TAB> Han <TAB> Viet <TAB> ghi chu. Cot nao trong cung duoc.
+# Nhieu cach viet trong mot o: ngan bang dau '/'.
+# BAN KHOI DAU (may soan) - nen nho nguoi trong nganh ra lai truoc khi tin dung.
+# Thuat ngu IT chi co tieng Anh (rat nhieu) nam o data/it_terms.tsv.
+server	服务器	サーバー	서버	máy chủ
+client	客户端	クライアント	클라이언트	máy khách
+database	数据库	データベース	데이터베이스	cơ sở dữ liệu
+network	网络	ネットワーク	네트워크	mạng (máy tính)
+router	路由器	ルーター	라우터	bộ định tuyến (router)
+switch	交换机	スイッチ	스위치	bộ chuyển mạch (switch)
+firewall	防火墙	ファイアウォール	방화벽	tường lửa
+bandwidth	带宽	帯域幅	대역폭	băng thông
+latency	延迟	レイテンシ	지연 시간	độ trễ
+IP address	IP地址	IPアドレス	IP 주소	địa chỉ IP
+domain name	域名	ドメイン名	도메인 이름	tên miền
+operating system	操作系统	オペレーティングシステム	운영 체제	hệ điều hành
+source code	源代码	ソースコード	소스 코드	mã nguồn
+compiler	编译器	コンパイラ	컴파일러	trình biên dịch
+algorithm	算法	アルゴリズム	알고리즘	thuật toán
+data structure	数据结构	データ構造	자료 구조	cấu trúc dữ liệu
+programming language	编程语言	プログラミング言語	프로그래밍 언어	ngôn ngữ lập trình
+software	软件	ソフトウェア	소프트웨어	phần mềm
+hardware	硬件	ハードウェア	하드웨어	phần cứng
+memory	内存	メモリ	메모리	bộ nhớ (RAM)
+hard disk	硬盘	ハードディスク	하드 디스크	ổ cứng
+processor	处理器	プロセッサ	프로세서	bộ xử lý (CPU)
+cloud computing	云计算	クラウドコンピューティング	클라우드 컴퓨팅	điện toán đám mây
+virtual machine	虚拟机	仮想マシン	가상 머신	máy ảo
+container	容器	コンテナ	컨테이너	container - môi trường đóng gói ứng dụng
+deployment	部署	デプロイ	배포	triển khai (đưa lên môi trường chạy)
+backup	备份	バックアップ	백업	sao lưu
+encryption	加密	暗号化	암호화	mã hoá
+decryption	解密	復号	복호화	giải mã
+authentication	认证/身份验证	認証	인증	xác thực (kiểm tra là ai)
+authorization	授权	認可	인가	phân quyền (được làm gì)
+password	密码	パスワード	비밀번호	mật khẩu
+user interface	用户界面	ユーザーインターフェース	사용자 인터페이스	giao diện người dùng
+bug	程序错误	バグ	버그	lỗi phần mềm (bug)
+vulnerability	漏洞	脆弱性	취약점	lỗ hổng bảo mật
+debugging	调试	デバッグ	디버깅	gỡ lỗi
+software testing	软件测试	ソフトウェアテスト	소프트웨어 테스트	kiểm thử phần mềm
+requirement	需求	要件	요구 사항	yêu cầu (phần mềm)
+version	版本	バージョン	버전	phiên bản
+update	更新	アップデート	업데이트	cập nhật
+download	下载	ダウンロード	다운로드	tải xuống
+upload	上传	アップロード	업로드	tải lên
+installation	安装	インストール	설치	cài đặt
+configuration	配置	設定	설정	cấu hình
+log file	日志文件	ログファイル	로그 파일	tệp nhật ký (log)
+API	应用程序接口	API	API	giao diện lập trình ứng dụng (API)
+framework	框架	フレームワーク	프레임워크	framework - bộ khung phát triển
+library	库	ライブラリ	라이브러리	thư viện (mã)	nghĩa IT, không phải thư viện sách
+artificial intelligence	人工智能	人工知能	인공지능	trí tuệ nhân tạo (AI)
+machine learning	机器学习	機械学習	머신 러닝	học máy
+big data	大数据	ビッグデータ	빅데이터	dữ liệu lớn
+cache	缓存	キャッシュ	캐시	bộ nhớ đệm
+load balancer	负载均衡器	ロードバランサー	로드 밸런서	bộ cân bằng tải
+browser	浏览器	ブラウザ	브라우저	trình duyệt
+website	网站	ウェブサイト	웹사이트	trang web
+email	电子邮件	電子メール	이메일	thư điện tử
+keyboard	键盘	キーボード	키보드	bàn phím
+screenshot	截图	スクリーンショット	스크린샷	ảnh chụp màn hình
+folder	文件夹	フォルダ	폴더	thư mục
+open source	开源	オープンソース	오픈 소스	mã nguồn mở
+repository	代码仓库	リポジトリ	저장소	kho mã (repository)
+data center	数据中心	データセンター	데이터 센터	trung tâm dữ liệu
+hacker	黑客	ハッカー	해커	tin tặc
+computer virus	计算机病毒	コンピュータウイルス	컴퓨터 바이러스	virus máy tính
+mobile app	移动应用	モバイルアプリ	모바일 앱	ứng dụng di động
+smartphone	智能手机	スマートフォン	스마트폰	điện thoại thông minh
+data backup	数据备份	データバックアップ	데이터 백업	sao lưu dữ liệu
+system administrator	系统管理员	システム管理者	시스템 관리자	quản trị hệ thống
+network security	网络安全	ネットワークセキュリティ	네트워크 보안	an ninh mạng

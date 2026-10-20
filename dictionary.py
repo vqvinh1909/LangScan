@@ -327,7 +327,7 @@ def cards(text, dictionary, max_words=25):
         if vi:
             extra_vi = vi[0].senses[:5]
             if len(vi) > 1:
-                extra_vi.append("(hoac doc [{}]: {})".format(
+                extra_vi.append("(hoặc đọc [{}]: {})".format(
                     vi[1].pinyin, "; ".join(vi[1].senses[:3])))
         if en:
             extra_en = en[0].senses[:5]

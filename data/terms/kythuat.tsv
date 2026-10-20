@@ -1,0 +1,58 @@
+# Thuat ngu Ky thuat - San xuat - Nha may: Anh / Trung / Nhat / Han -> Viet
+# Dinh dang: Anh <TAB> Trung <TAB> Nhat <TAB> Han <TAB> Viet <TAB> ghi chu. Cot nao trong cung duoc.
+# BAN KHOI DAU (may soan) - nen nho nguoi trong nganh ra lai truoc khi tin dung.
+quality control	质量控制	品質管理	품질 관리	kiểm soát chất lượng (QC)
+quality assurance	质量保证	品質保証	품질 보증	đảm bảo chất lượng (QA)
+production line	生产线	生産ライン	생산 라인	dây chuyền sản xuất
+assembly	装配	組立	조립	lắp ráp
+raw material	原材料	原材料	원자재	nguyên vật liệu
+finished product	成品	完成品	완제품	thành phẩm
+semi-finished product	半成品	半製品	반제품	bán thành phẩm
+defective product	不良品	不良品	불량품	hàng lỗi
+defect rate	不良率	不良率	불량률	tỷ lệ hàng lỗi
+inspection	检验	検査	검사	kiểm tra
+technical specification	技术规格	仕様	사양	thông số kỹ thuật
+tolerance	公差	公差	공차	dung sai
+technical drawing	图纸	図面	도면	bản vẽ kỹ thuật
+mold	模具	金型	금형	khuôn
+lathe	车床	旋盤	선반	máy tiện
+milling machine	铣床	フライス盤	밀링 머신	máy phay
+welding	焊接	溶接	용접	hàn
+casting	铸造	鋳造	주조	đúc
+forging	锻造	鍛造	단조	rèn
+injection molding	注塑成型	射出成形	사출 성형	ép phun
+grinding	磨削	研削	연삭	mài
+coating	涂装	塗装	도장	sơn phủ
+screw	螺丝	ねじ	나사	ốc vít
+bolt	螺栓	ボルト	볼트	bu lông
+nut	螺母	ナット	너트	đai ốc
+bearing	轴承	ベアリング	베어링	vòng bi (ổ bi)
+gear	齿轮	歯車	기어	bánh răng
+electric motor	电机	モーター	모터	động cơ điện
+voltage	电压	電圧	전압	điện áp
+electric current	电流	電流	전류	dòng điện
+resistance	电阻	抵抗	저항	điện trở
+circuit	电路	回路	회로	mạch điện
+short circuit	短路	短絡	단락	ngắn mạch (chập điện)
+sensor	传感器	センサー	센서	cảm biến
+programmable logic controller	可编程逻辑控制器	プログラマブルロジックコントローラ	프로그래머블 로직 컨트롤러	bộ điều khiển logic khả trình (PLC)
+automation	自动化	自動化	자동화	tự động hoá
+robot arm	机械臂	ロボットアーム	로봇 팔	cánh tay robot
+maintenance	维护	保守	유지보수	bảo trì
+preventive maintenance	预防性维护	予防保全	예방 정비	bảo trì phòng ngừa
+breakdown	故障	故障	고장	hỏng hóc / sự cố máy
+safety	安全	安全	안전	an toàn
+personal protective equipment	个人防护装备	保護具	개인 보호구	đồ bảo hộ lao động (PPE)
+work instruction	作业指导书	作業指示書	작업 지시서	hướng dẫn công việc
+standard operating procedure	标准作业程序	標準作業手順書	표준 작업 절차	quy trình thao tác chuẩn (SOP)
+productivity	生产率	生産性	생산성	năng suất
+lead time	交货期	リードタイム	리드 타임	thời gian chờ (lead time)
+warehouse	仓库	倉庫	창고	kho hàng
+forklift	叉车	フォークリフト	지게차	xe nâng
+work shift	班次	シフト	교대 근무	ca làm việc
+overtime	加班	残業	잔업	làm thêm giờ (tăng ca)
+kaizen	改善	改善	개선	cải tiến (Kaizen)
+root cause	根本原因	根本原因	근본 원인	nguyên nhân gốc
+corrective action	纠正措施	是正処置	시정 조치	hành động khắc phục
+5S	5S	5S	5S	5S: Sàng lọc - Sắp xếp - Sạch sẽ - Săn sóc - Sẵn sàng
+production plan	生产计划	生産計画	생산 계획	kế hoạch sản xuất

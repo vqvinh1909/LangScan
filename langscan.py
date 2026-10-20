@@ -613,16 +613,18 @@ class Popup(object):
         copy_btn.config(command=lambda: self._copy(lbl, copy_btn))
         copy_btn.pack(side="right")
         if self.speaker.available:
-            # Doc to cau DA DICH bang giong ngon ngu dich (nut '▶ Nghe' tren
-            # thanh ngon ngu thi doc cau goc)
+            # Hai nut doc to canh nhau: cau DA DICH (giong ngon ngu dich) va
+            # cau GOC can dich (giong ngon ngu nguon). Pack tu phai sang trai.
             def _say(_lbl=lbl, _t=target):
                 said = getattr(_lbl, "_result", "")
                 if said:
                     self.speaker.say(said, _t)
-            tk.Button(top, text="▶ Nghe", bg=BG_ALT, fg=ACCENT, bd=0,
-                      activebackground=BORDER, activeforeground=ACCENT,
-                      cursor="hand2", font=("Segoe UI", 8), command=_say
-                      ).pack(side="right", padx=(0, 8))
+            for label, cmd in (("▶ Câu dịch", _say),
+                               ("▶ Câu gốc", lambda _s=text, _l=lang: self.speaker.say(_s, _l))):
+                tk.Button(top, text=label, bg=BG_ALT, fg=ACCENT, bd=0,
+                          activebackground=BORDER, activeforeground=ACCENT,
+                          cursor="hand2", font=("Segoe UI", 8), command=cmd
+                          ).pack(side="right", padx=(0, 8))
         lbl.pack(anchor="w", padx=10, pady=(2, 8))
         self._phrase_lbl = lbl
 
@@ -855,6 +857,12 @@ class Popup(object):
                     else:
                         backward = rv.search(
                             query, only=target if target in (langs.ZH, langs.EN) else None)
+                    # Thuat ngu chuyen nganh len dau ('bảng cân đối kế toán' -> 资产负债表)
+                    tcards = self.analyzer.terms_from_vi(
+                        query, target if target in (langs.ZH, langs.JA, langs.KO) else langs.EN)
+                    if tcards:
+                        seen = {c.word for c in tcards}
+                        backward = tcards + [c for c in backward if c.word not in seen]
                 if want_py:
                     phrase = rv.pinyin_phrase(query)       # 'wo shi' -> 我 是
                     if len(query.split()) <= 3:

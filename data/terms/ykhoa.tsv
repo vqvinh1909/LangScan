@@ -1,0 +1,70 @@
+# Thuat ngu Y khoa: Anh / Trung / Nhat / Han -> Viet
+# Dinh dang: Anh <TAB> Trung <TAB> Nhat <TAB> Han <TAB> Viet <TAB> ghi chu. Cot nao trong cung duoc.
+# BAN KHOI DAU (may soan) - nen nho nguoi trong nganh ra lai truoc khi tin dung.
+# Chi de tham khao khi doc tai lieu, KHONG thay cho y kien bac si.
+hypertension	高血压	高血圧	고혈압	tăng huyết áp (cao huyết áp)
+diabetes	糖尿病	糖尿病	당뇨병	đái tháo đường (tiểu đường)
+myocardial infarction	心肌梗死	心筋梗塞	심근경색	nhồi máu cơ tim
+stroke	脑卒中	脳卒中	뇌졸중	đột quỵ
+cancer	癌症	がん	암	ung thư
+tumor	肿瘤	腫瘍	종양	khối u
+pneumonia	肺炎	肺炎	폐렴	viêm phổi
+asthma	哮喘	喘息	천식	hen suyễn
+influenza	流感	インフルエンザ	독감	cúm
+fever	发烧	発熱	발열	sốt
+cough	咳嗽	咳	기침	ho
+headache	头痛	頭痛	두통	đau đầu
+diarrhea	腹泻	下痢	설사	tiêu chảy
+allergy	过敏	アレルギー	알레르기	dị ứng
+infection	感染	感染	감염	nhiễm trùng / lây nhiễm
+inflammation	炎症	炎症	염증	viêm
+fracture	骨折	骨折	골절	gãy xương
+anemia	贫血	貧血	빈혈	thiếu máu
+hepatitis	肝炎	肝炎	간염	viêm gan
+depression	抑郁症	うつ病	우울증	trầm cảm
+insomnia	失眠	不眠症	불면증	mất ngủ
+obesity	肥胖	肥満	비만	béo phì
+blood pressure	血压	血圧	혈압	huyết áp
+blood sugar	血糖	血糖	혈당	đường huyết
+heart rate	心率	心拍数	심박수	nhịp tim
+blood test	血液检查	血液検査	혈액 검사	xét nghiệm máu
+urine test	尿检	尿検査	소변 검사	xét nghiệm nước tiểu
+X-ray	X光	レントゲン	엑스레이	chụp X-quang
+CT scan	CT扫描	CT検査	CT 촬영	chụp CT (cắt lớp vi tính)
+ultrasound	超声波	超音波検査	초음파	siêu âm
+diagnosis	诊断	診断	진단	chẩn đoán
+symptom	症状	症状	증상	triệu chứng
+treatment	治疗	治療	치료	điều trị
+surgery	手术	手術	수술	phẫu thuật
+anesthesia	麻醉	麻酔	마취	gây mê / gây tê
+prescription	处方	処方箋	처방전	đơn thuốc
+side effect	副作用	副作用	부작용	tác dụng phụ
+antibiotic	抗生素	抗生物質	항생제	thuốc kháng sinh
+vaccine	疫苗	ワクチン	백신	vắc-xin
+injection	注射	注射	주사	tiêm
+dose	剂量	用量	용량	liều dùng
+painkiller	止痛药	鎮痛剤	진통제	thuốc giảm đau
+emergency room	急诊室	救急外来	응급실	phòng cấp cứu
+hospitalization	住院	入院	입원	nhập viện
+discharge from hospital	出院	退院	퇴원	xuất viện
+outpatient	门诊	外来	외래	khám ngoại trú
+nurse	护士	看護師	간호사	y tá / điều dưỡng
+pharmacist	药剂师	薬剤師	약사	dược sĩ
+internal medicine	内科	内科	내과	nội khoa
+general surgery	外科	外科	외과	ngoại khoa
+pediatrics	儿科	小児科	소아과	nhi khoa
+obstetrics and gynecology	妇产科	産婦人科	산부인과	sản phụ khoa
+dermatology	皮肤科	皮膚科	피부과	da liễu
+ophthalmology	眼科	眼科	안과	nhãn khoa (mắt)
+dentistry	牙科	歯科	치과	nha khoa
+heart	心脏	心臓	심장	tim
+lung	肺	肺	폐	phổi
+liver	肝脏	肝臓	간	gan
+kidney	肾脏	腎臓	신장	thận
+stomach	胃	胃	위	dạ dày
+blood vessel	血管	血管	혈관	mạch máu
+immune system	免疫系统	免疫系	면역 체계	hệ miễn dịch
+chronic disease	慢性病	慢性疾患	만성 질환	bệnh mãn tính
+health insurance	医疗保险	健康保険	건강보험	bảo hiểm y tế
+medical record	病历	カルテ	의무기록	bệnh án
+cholesterol	胆固醇	コレステロール	콜레스테롤	cholesterol (mỡ máu)

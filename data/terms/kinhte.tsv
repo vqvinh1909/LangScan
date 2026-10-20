@@ -1,0 +1,70 @@
+# Thuat ngu Kinh te - Tai chinh - Ke toan - Xuat nhap khau: Anh / Trung / Nhat / Han -> Viet
+# Dinh dang: Anh <TAB> Trung <TAB> Nhat <TAB> Han <TAB> Viet <TAB> ghi chu. Cot nao trong cung duoc.
+# BAN KHOI DAU (may soan) - nen nho nguoi trong nganh ra lai truoc khi tin dung.
+accounting	会计	会計	회계	kế toán
+balance sheet	资产负债表	貸借対照表	대차대조표	bảng cân đối kế toán
+income statement	利润表	損益計算書	손익계산서	báo cáo kết quả kinh doanh
+cash flow statement	现金流量表	キャッシュフロー計算書	현금흐름표	báo cáo lưu chuyển tiền tệ
+financial statements	财务报表	財務諸表	재무제표	báo cáo tài chính
+asset	资产	資産	자산	tài sản
+liability	负债	負債	부채	nợ phải trả
+owner's equity	所有者权益	純資産	자본	vốn chủ sở hữu
+revenue	营业收入	売上高	매출	doanh thu
+gross profit	毛利	売上総利益	매출총이익	lợi nhuận gộp
+net profit	净利润	純利益	순이익	lợi nhuận ròng
+operating profit	营业利润	営業利益	영업이익	lợi nhuận từ hoạt động kinh doanh
+cost of goods sold	销售成本	売上原価	매출원가	giá vốn hàng bán
+depreciation	折旧	減価償却	감가상각	khấu hao
+inventory	库存	在庫	재고	hàng tồn kho
+accounts receivable	应收账款	売掛金	매출채권	khoản phải thu
+accounts payable	应付账款	買掛金	매입채무	khoản phải trả
+invoice	发票	請求書	송장	hoá đơn
+value-added tax	增值税	付加価値税	부가가치세	thuế giá trị gia tăng (VAT)
+corporate income tax	企业所得税	法人税	법인세	thuế thu nhập doanh nghiệp
+personal income tax	个人所得税	所得税	소득세	thuế thu nhập cá nhân
+audit	审计	監査	감사	kiểm toán
+budget	预算	予算	예산	ngân sách
+fiscal year	财政年度	会計年度	회계연도	năm tài chính
+quarter	季度	四半期	분기	quý (3 tháng)
+interest rate	利率	金利	금리	lãi suất
+loan	贷款	融資	대출	khoản vay
+bank deposit	银行存款	預金	예금	tiền gửi ngân hàng
+bank account	银行账户	銀行口座	은행 계좌	tài khoản ngân hàng
+bank transfer	转账	振込	계좌이체	chuyển khoản
+exchange rate	汇率	為替レート	환율	tỷ giá hối đoái
+inflation	通货膨胀	インフレ	인플레이션	lạm phát
+gross domestic product	国内生产总值	国内総生産	국내총생산	tổng sản phẩm quốc nội (GDP)
+recession	经济衰退	景気後退	경기 침체	suy thoái kinh tế
+stock	股票	株式	주식	cổ phiếu
+stock exchange	证券交易所	証券取引所	증권거래소	sở giao dịch chứng khoán
+shareholder	股东	株主	주주	cổ đông
+dividend	股息	配当	배당	cổ tức
+bond	债券	債券	채권	trái phiếu
+investment	投资	投資	투자	đầu tư
+investor	投资者	投資家	투자자	nhà đầu tư
+capital	资本	資本	자본	vốn
+market share	市场份额	市場シェア	시장 점유율	thị phần
+supply and demand	供求	需要と供給	수요와 공급	cung và cầu
+contract	合同	契約	계약	hợp đồng
+quotation	报价	見積もり	견적	báo giá
+purchase order	采购订单	発注書	구매 주문서	đơn đặt hàng
+import	进口	輸入	수입	nhập khẩu
+export	出口	輸出	수출	xuất khẩu
+customs	海关	税関	세관	hải quan
+customs clearance	清关	通関	통관	thông quan
+tariff	关税	関税	관세	thuế quan
+letter of credit	信用证	信用状	신용장	thư tín dụng (L/C)
+bill of lading	提单	船荷証券	선하증권	vận đơn (B/L)
+logistics	物流	物流	물류	hậu cần (logistics)
+wholesale	批发	卸売	도매	bán buôn
+retail	零售	小売	소매	bán lẻ
+salary	工资	給料	급여	lương
+bonus	奖金	ボーナス	보너스	tiền thưởng
+social insurance	社会保险	社会保険	사회보험	bảo hiểm xã hội
+bankruptcy	破产	破産	파산	phá sản
+merger and acquisition	并购	合併・買収	인수합병	sáp nhập và mua lại (M&A)
+startup	初创企业	スタートアップ	스타트업	công ty khởi nghiệp
+credit card	信用卡	クレジットカード	신용카드	thẻ tín dụng
+cash	现金	現金	현금	tiền mặt
+profit margin	利润率	利益率	이익률	biên lợi nhuận
+break-even point	盈亏平衡点	損益分岐点	손익분기점	điểm hoà vốn

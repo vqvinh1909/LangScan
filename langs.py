@@ -155,6 +155,97 @@ class Analyzer(object):
             self._en = english.English()
         return self._en
 
+    # ---- thuat ngu chuyen nganh (data/terms/*.tsv)
+    def terms(self):
+        if getattr(self, "_terms", None) is None:
+            import terms
+            self._terms = terms.Terms()
+        return self._terms
+
+    @staticmethod
+    def _norm_word(w):
+        """'studying  (study)' -> 'studying', 'Servers' -> 'servers'."""
+        return re.sub(r"\s+", "", (w or "").split("  (")[0]).lower()
+
+    def _apply_terms(self, text, lang, cards):
+        """Gan nghia chuyen nganh vao the tu.
+
+        - Thuat ngu trung dung mot the (order, 服务器): them '[Kinh te] ...' len
+          dau nghia - KHONG che nghia thuong.
+        - Thuat ngu nhieu tu / bi tach vun (balance sheet, 心肌梗死): mot the
+          rieng co nhan nganh, thay cho cac manh le nam trong no.
+        Ca hai deu kem tu tuong duong o cac thu tieng kia."""
+        try:
+            t = self.terms()
+            found = t.find(text, lang)
+        except Exception as e:
+            print("[!] Loi doc thuat ngu:", e)
+            return cards
+        if not found:
+            return cards
+        import terms as terms_mod
+        cards = list(cards)
+        for surface, e in found:
+            key = self._norm_word(surface)
+            label = t.label(e)
+            eq = t.equivalents(e, lang)
+            note = "  ·  ".join(x for x in (eq, e["note"]) if x)
+            same = next((c for c in cards if self._norm_word(c.word) in
+                         (key, terms_mod._singular(key))), None)
+            if same is not None:
+                same.vi = ["[{}] {}".format(label, e["vi"])] + [
+                    v for v in same.vi if v != e["vi"]]
+                same.note = "  ·  ".join(x for x in (note, same.note) if x)
+                if not same.badge or same.badge.startswith(("ngoài", "thuần", "gốc")):
+                    same.badge = label       # khong co cap do -> hien nhan nganh
+                continue
+            shown = surface
+            if lang != EN:
+                # cach viet trong bo thuat ngu (생산 라인 co dau cach) thay cho chu
+                # da bo dau cach de do (생산라인)
+                forms = [f.strip() for f in e[lang].split("/")]
+                shown = next((f for f in forms if re.sub(r"\s+", "", f) == surface), surface)
+            reading = self._term_reading(shown, lang)
+            card = Card(word=shown, reading=reading, badge=label, vi=[e["vi"]],
+                        en=[e["en"]] if lang != EN and e["en"] else [], note=note,
+                        speak=surface, lang=lang)
+            inside = [i for i, c in enumerate(cards)
+                      if self._norm_word(c.word) and self._norm_word(c.word) in key]
+            pos = inside[0] if inside else 0
+            cards = [c for i, c in enumerate(cards) if i not in inside]
+            cards.insert(min(pos, len(cards)), card)
+        return cards
+
+    def _term_reading(self, word, lang):
+        """Phien am cua thuat ngu: IPA tung tu ghep lai (tieng Anh) hoac pinyin /
+        romaji / phien am Han."""
+        try:
+            if lang == EN:
+                bits = [self.en().phonetic(w).strip("/") for w in word.split()]
+                return "/{}/".format(" ".join(b for b in bits if b)) if any(bits) else ""
+            return self.romanize_sentence(word, lang)
+        except Exception:
+            return ""
+
+    def terms_from_vi(self, query, target):
+        """Go tieng Viet -> thuat ngu chuyen nganh o ngon ngu dich (the tu)."""
+        if target not in (ZH, JA, KO, EN):
+            return []
+        try:
+            t = self.terms()
+        except Exception:
+            return []
+        out = []
+        for e in t.search_vi(query):
+            word = e[target].split("/")[0].strip()
+            if not word:
+                continue
+            reading = self._term_reading(word, target)
+            note ="  ·  ".join(x for x in (t.equivalents(e, target), e["note"]) if x)
+            out.append(Card(word=word, reading=reading, badge=t.label(e), vi=[e["vi"]],
+                            note=note, speak=word, lang=target))
+        return out
+
     # ---- tieng Viet go khong dau ('toi di hoc', 'ngan hang', chu OCR mat dau)
     def _pinyin_syllables(self):
         if getattr(self, "_py_syl", None) is None:
@@ -357,15 +448,18 @@ class Analyzer(object):
                 return lang, self.romanized(raw_text, lang, max_words), ""
             if not text:
                 return lang, [], ""
+            cards = None
             if lang == ZH:
                 import dictionary
-                return lang, dictionary.cards(text, self.zh(), max_words), ""
-            if lang == JA:
-                return lang, self.ja().cards(text, max_words), ""
-            if lang == KO:
-                return lang, self.ko().cards(text, max_words), ""
-            if lang == EN:
-                return lang, self.en().cards(text, max_words), ""
+                cards = dictionary.cards(text, self.zh(), max_words)
+            elif lang == JA:
+                cards = self.ja().cards(text, max_words)
+            elif lang == KO:
+                cards = self.ko().cards(text, max_words)
+            elif lang == EN:
+                cards = self.en().cards(text, max_words)
+            if cards is not None:
+                return lang, self._apply_terms(text, lang, cards), ""
         except ImportError as e:
             return lang, [], "Tiếng {}: {}".format(LANG_NAME[lang], e)
         except FileNotFoundError as e:

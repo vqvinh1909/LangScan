@@ -36,6 +36,23 @@ idempotent     → gọi nhiều lần cho kết quả như gọi một lần
 
 Bắt được cả cụm nhiều từ (`load balancer`, `high availability`, `infrastructure as code`). Muốn thêm từ thì mở `data/it_terms.tsv` bằng Notepad, viết thêm một dòng theo dạng `thuật_ngữ<Tab>nghĩa<Tab>ghi chú`, lưu lại rồi khởi động lại app.
 
+### Thuật ngữ chuyên ngành 4 thứ tiếng
+
+Thư mục `data/terms/` có các bộ thuật ngữ **Anh · Trung · Nhật · Hàn → Việt** theo ngành:
+
+| File | Ngành | Ví dụ |
+|---|---|---|
+| `it.tsv` | IT | server · 服务器 · サーバー · 서버 → máy chủ |
+| `kinhte.tsv` | Kinh tế – tài chính – xuất nhập khẩu | balance sheet · 资产负债表 · 貸借対照表 · 대차대조표 → bảng cân đối kế toán |
+| `ykhoa.tsv` | Y khoa | myocardial infarction · 心肌梗死 · 心筋梗塞 · 심근경색 → nhồi máu cơ tim |
+| `kythuat.tsv` | Kỹ thuật – sản xuất – nhà máy | production line · 生产线 · 生産ライン · 생산 라인 → dây chuyền sản xuất |
+
+- Thuật ngữ nhiều chữ hiện thành một thẻ riêng có **nhãn ngành** (thay cho các mảnh bị tách lẻ), kèm từ tương đương ở 3 thứ tiếng còn lại.
+- Thuật ngữ trùng một từ thường (服务器) thì nghĩa chuyên ngành thêm lên đầu, kiểu `[IT] máy chủ`, không che nghĩa thường.
+- Gõ tiếng Việt (có dấu hay không dấu) tra ngược ra thuật ngữ: `nhồi máu cơ tim` → 心肌梗死 / 心筋梗塞 / 심근경색.
+
+Đây là **bản khởi đầu do máy soạn** (khoảng 260 thuật ngữ), nên nhờ người trong ngành rà lại trước khi tin dùng; phần y khoa chỉ để đọc tài liệu, không thay ý kiến bác sĩ. Thêm hay sửa: mở file bằng Notepad, mỗi dòng `Anh<Tab>Trung<Tab>Nhật<Tab>Hàn<Tab>Việt<Tab>ghi chú` (cột nào trống cũng được, nhiều cách viết thì ngăn bằng `/`), lưu rồi khởi động lại app. Thêm ngành mới: tạo thêm một file `.tsv` trong thư mục đó.
+
 Không thích dòng dịch máy thì mở `langscan.py` sửa `TRANSLATE_VI = False`.
 
 ---
