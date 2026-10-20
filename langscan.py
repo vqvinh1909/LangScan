@@ -1083,24 +1083,9 @@ class Tray(object):
         self.icon = None
 
     def _image(self):
-        from PIL import Image, ImageDraw, ImageFont
-        img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
-        d = ImageDraw.Draw(img)
-        d.rounded_rectangle([0, 0, 63, 63], radius=14, fill="#1c1f26",
-                            outline="#f0b429", width=3)
-        font = None
-        for name in ("msyh.ttc", "simhei.ttf", "malgun.ttf", "simsun.ttc"):
-            try:
-                font = ImageFont.truetype(os.path.join(
-                    os.environ.get("WINDIR", "C:\\Windows"), "Fonts", name), 34)
-                break
-            except Exception:
-                continue
-        if font is None:
-            d.text((32, 32), "LS", fill="#f0b429", anchor="mm")
-        else:
-            d.text((32, 33), "語", fill="#f0b429", font=font, anchor="mm")
-        return img
+        # Khay he thong chi hien 16-24px: dung ban chu "V" cua logo
+        import logo
+        return logo.draw(32)
 
     def _menu(self):
         import pystray

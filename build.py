@@ -43,26 +43,9 @@ INNO_CANDIDATES = [
 
 
 def make_icon():
-    """Icon 語 giong icon khay he thong."""
-    from PIL import Image, ImageDraw, ImageFont
-    os.makedirs(os.path.dirname(ICON), exist_ok=True)
-    size = 256
-    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    d.rounded_rectangle([0, 0, size - 1, size - 1], radius=56, fill="#1c1f26",
-                        outline="#f0b429", width=12)
-    font = None
-    for name in ("msyh.ttc", "simhei.ttf", "malgun.ttf", "simsun.ttc"):
-        try:
-            font = ImageFont.truetype(os.path.join(
-                os.environ.get("WINDIR", "C:\\Windows"), "Fonts", name), 150)
-            break
-        except Exception:
-            continue
-    d.text((size // 2, size // 2 - 6), "語" if font else "LS",
-           fill="#f0b429", font=font, anchor="mm")
-    img.save(ICON, sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64),
-                          (128, 128), (256, 256)])
+    """Logo chu ky "Vinh" (logo.py); co nho trong file .ico la chu V."""
+    import logo
+    logo.save_ico(ICON)
 
 
 def have_module(name):

@@ -78,7 +78,7 @@ Cài tiếng Nhật sau cũng được — nháy đúp **`caidat_tiengnhat.bat`*
 | **`run_hidden.bat`** | Chạy ngầm, không cửa sổ nào. Dùng hằng ngày. |
 | `run.bat` | Có console để xem log khi nghi có lỗi. |
 
-Có **icon 語 ở khay hệ thống** (góc phải taskbar, có thể phải bấm mũi tên `^`). Chuột phải để tra từ, bật/tắt autostart, mở thư mục, xem log, thoát.
+Có **icon chữ V (nền tre xanh) ở khay hệ thống** (góc phải taskbar, có thể phải bấm mũi tên `^`). Chuột phải để tra từ, bật/tắt autostart, mở thư mục, xem log, thoát.
 
 | Phím tắt | Tác dụng |
 |---|---|
