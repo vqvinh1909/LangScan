@@ -1,6 +1,8 @@
 # LangScan — bôi đen là tra từ: Trung · Nhật · Hàn · Anh
 
-> **Chỉ chạy trên Windows 10/11** (cần Python 3.9+). Chưa hỗ trợ macOS và Linux.
+Phiên bản hiện tại: **2.0.0** — xem [CHANGELOG.md](CHANGELOG.md).
+
+> **Chỉ chạy trên Windows 10/11.** Bản cài đặt không cần Python; chạy từ mã nguồn thì cần Python 3.9+. Chưa hỗ trợ macOS và Linux.
 
 Bôi đen chữ ở bất kỳ đâu trên Windows (PDF, trình duyệt, Word, Zalo…), bấm **Ctrl+Alt+D** → popup hiện ngay cạnh con trỏ. App tự nhận ra đó là tiếng Trung, Nhật, Hàn hay Anh rồi tra đúng từ điển.
 
@@ -59,7 +61,7 @@ Không thích dòng dịch máy thì mở `langscan.py` sửa `TRANSLATE_VI = Fa
 
 ## Cài đặt nhanh: file cài đặt (không cần Python)
 
-Tải `LangScan-Setup-x.y.z.exe` ở mục Releases, chạy rồi bấm Next. App cài vào `%LOCALAPPDATA%\Programs\LangScan`, không cần quyền admin, đã kèm sẵn từ điển cả 4 thứ tiếng (kể cả tiếng Nhật). Tick "Khởi động cùng Windows" thì Windows hỏi quyền admin một lần.
+Tải `LangScan-Setup-2.0.0.exe` ở mục Releases, chạy rồi bấm Next. App cài vào `%LOCALAPPDATA%\Programs\LangScan`, không cần quyền admin, đã kèm sẵn từ điển cả 4 thứ tiếng (kể cả tiếng Nhật). Tick "Khởi động cùng Windows" thì Windows hỏi quyền admin một lần.
 
 Windows có thể hiện cảnh báo SmartScreen ("Windows protected your PC") vì file chưa được ký số. Bấm **More info → Run anyway**.
 
@@ -72,7 +74,7 @@ pip install pyinstaller
 python build.py
 ```
 
-Ra `dist\LangScan\LangScan.exe` (chạy thẳng được, không cần cài). Nếu máy có [Inno Setup 6](https://jrsoftware.org/isdl.php) thì ra thêm `dist\LangScan-Setup-x.y.z.exe`. Đổi số phiên bản ở dòng `AppVersion` trong `installer.iss`.
+Ra `dist\LangScan\LangScan.exe` (chạy thẳng được, không cần cài). Nếu máy có [Inno Setup 6](https://jrsoftware.org/isdl.php) thì ra thêm `dist\LangScan-Setup-x.y.z.exe`. Đổi số phiên bản ở `version.py` (app và file cài đặt dùng chung).
 
 ## Cài đặt từ mã nguồn (làm 1 lần)
 

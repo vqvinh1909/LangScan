@@ -92,7 +92,7 @@ def copy_data():
             continue
         os.makedirs(os.path.dirname(os.path.join(dst, name)), exist_ok=True)
         shutil.copy2(path, os.path.join(dst, name))
-    for name in ("README.md",):
+    for name in ("README.md", "CHANGELOG.md"):
         shutil.copy2(os.path.join(ROOT, name), APP_DIST)
 
 
@@ -143,9 +143,13 @@ def inno_setup():
               " Cai tu https://jrsoftware.org/isdl.php roi chay lai build.py)")
         return None
     print("> Inno Setup ...")
-    subprocess.check_call([iscc, "/Q", os.path.join(ROOT, "installer.iss")], cwd=ROOT)
-    out = glob.glob(os.path.join(DIST, "LangScan-Setup*.exe"))
-    return out[0] if out else None
+    from version import __version__
+    for old in glob.glob(os.path.join(DIST, "LangScan-Setup*.exe")):
+        os.remove(old)                         # bo file cai cua phien ban cu
+    subprocess.check_call([iscc, "/Q", "/DAppVersion=" + __version__,
+                           os.path.join(ROOT, "installer.iss")], cwd=ROOT)
+    out = os.path.join(DIST, "LangScan-Setup-{}.exe".format(__version__))
+    return out if os.path.exists(out) else None
 
 
 def main(argv):

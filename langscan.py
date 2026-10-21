@@ -71,6 +71,7 @@ else:
     TONE_COLORS = {1: "#d0342c", 2: "#c96f12", 3: "#23854a", 4: "#2563c9", 5: "#6f7782"}
 
 from paths import APP_DIR, DATA_DIR
+from version import __version__
 AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 LOG_PATH = os.path.join(DATA_DIR, "langscan.log")
 POPUP_PREFS = os.path.join(DATA_DIR, "popup.json")   # kich thuoc popup da keo
@@ -1337,6 +1338,8 @@ class Tray(object):
         import pystray
         Item, Menu = pystray.MenuItem, pystray.Menu
         return Menu(
+            Item("LangScan {}".format(__version__), lambda: None, enabled=False),
+            Menu.SEPARATOR,
             Item("Tra từ đang bôi đen ({})".format(HOTKEY_LOOKUP.upper()),
                  lambda: self.app.on_hotkey(), default=True),
             Item("Ép tra tiếng Nhật ({})".format(HOTKEY_JA.upper()),
@@ -1529,7 +1532,7 @@ class App(object):
         start_ui_pump(self.root)
         print()
         print("=" * 62)
-        print("  LangScan dang chay - Trung / Nhat / Han / Anh")
+        print("  LangScan {} dang chay - Trung / Nhat / Han / Anh".format(__version__))
         print("  {}  tra tu (tu nhan dien ngon ngu)".format(HOTKEY_LOOKUP.upper()))
         print("  {} / {} / {} / {}  ep tra Trung / Nhat / Han / Anh".format(
             HOTKEY_ZH.upper(), HOTKEY_JA.upper(), HOTKEY_KO.upper(), HOTKEY_EN.upper()))
@@ -1611,6 +1614,7 @@ def selftest():
             lines.append("Dịch offline: chưa tải (chuột phải icon khay → Tải bộ dịch offline)")
     except Exception as e:
         lines.append("Dịch offline: lỗi {}".format(e))
+    lines.append("Phien ban: " + __version__)
     lines.append("Thu muc app: " + APP_DIR)
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
