@@ -147,6 +147,8 @@ Thấy vướng thì mở `langscan.py` sửa `DOUBLE_CTRL_SEARCH = False`, lúc
 
 Phần dịch câu **cần mạng** (dùng API dịch máy) và được cache lại. Phần tra từ vẫn offline như cũ. Dịch sang đúng ngôn ngữ bạn chọn ở ô đích — chọn `Việt → Trung` rồi gõ câu tiếng Việt thì ra câu tiếng Trung.
 
+**Mất mạng thì sao:** có mạng app dùng Google Dịch; mất mạng thì dòng dịch cả câu tự chuyển sang **bộ dịch offline** chạy trên máy (Argos Translate) và ghi chú *"dịch offline"*. Bộ này kém Google rõ rệt — Trung / Nhật / Hàn còn phải dịch vòng qua tiếng Anh — nên chỉ để nắm ý. Câu nào đã dịch online trước đó thì vẫn hiện bản Google (đã lưu). Bộ dịch offline không gói sẵn: chuột phải icon khay → **Tải bộ dịch offline** (~380MB, chiều Anh / Trung / Nhật / Hàn → Việt), hoặc chạy `python offline_mt.py download`.
+
 Ô đích quyết định kết quả ra thứ tiếng nào, kể cả khi nguồn để **Tự động**. Gõ `chào` với đích `Anh` ra `hello, greet`; đổi đích sang `Trung` thì ra `你好, 招呼`.
 
 Nút **⇄** ở giữa đảo chiều. Đổi ngôn ngữ là tra lại ngay, không cần bấm Enter. Cặp đang chọn được nhớ cho lần mở sau.

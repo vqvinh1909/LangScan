@@ -36,7 +36,8 @@ TESSERACT_DIRS = [os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files
                                "Tesseract-OCR")]
 # Thu vien co file du lieu / module nap dong ma PyInstaller khong tu thay
 COLLECT_ALL = ["jieba", "janome", "jamdict", "puchikarui", "chirptext",
-               "rapidocr_onnxruntime", "onnxruntime", "gtts", "pystray", "winrt"]
+               "rapidocr_onnxruntime", "onnxruntime", "gtts", "pystray", "winrt",
+               "ctranslate2", "sentencepiece"]   # dich offline (mo hinh tai sau)
 HIDDEN = ["pystray._win32", "PIL._tkinter_finder"]
 INNO_CANDIDATES = [
     os.path.join(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"),

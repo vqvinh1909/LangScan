@@ -166,9 +166,11 @@ def _translate_long(text, lang, target):
             continue
         outs = []
         for part in _split_long(para):
-            o = translate(part, lang, target=target)
-            if not o:
-                return ""                    # mot phan hong: bao that bai, khong ghep do
+            o, engine = translate_detail(part, lang, target=target)
+            if not o or engine == "offline":
+                # mot phan hong / mat mang giua chung: bao that bai, khong ghep
+                # do va khong luu cache - nguoi goi se dich offline ca doan
+                return ""
             outs.append(o)
         out_paras.append(("" if (target in ("zh", "ja") and not cjk) else " ").join(outs))
     out = "\n".join(out_paras)
@@ -177,39 +179,89 @@ def _translate_long(text, lang, target):
     return out
 
 
-def translate(text, lang="ja", use_network=True, target="vi"):
-    """Dich sang 'target' (mac dinh tieng Viet). '' = that bai / khong co mang."""
+# Mat mang: nho 30 giay de khong cho het thoi gian cho cua tung nguon (moi
+# nguon 8 giay) moi lan dich - di thang sang bo dich offline.
+OFFLINE_HOLD = 30
+_offline_until = [0.0]
+
+
+def _is_network_error(e):
+    """Loi do mat mang / khong toi duoc may chu (khac loi HTTP cua may chu)."""
+    import socket
+    import urllib.error
+    if isinstance(e, urllib.error.HTTPError):
+        return False
+    return isinstance(e, (urllib.error.URLError, socket.timeout, TimeoutError,
+                          ConnectionError, OSError))
+
+
+def _offline(text, lang, target):
+    """Bo dich offline (offline_mt.py) - '' neu chua tai mo hinh."""
+    try:
+        import offline_mt
+        return offline_mt.translate(text, lang, target)
+    except Exception as e:
+        print("[!] Khong dich offline duoc:", e)
+        return ""
+
+
+def translate_detail(text, lang="ja", use_network=True, target="vi"):
+    """-> (ban dich, nguon): nguon la 'cache' / 'online' / 'offline' / ''."""
+    import time
     text = (text or "").strip()
     if not text or lang == target:
-        return ""
+        return "", ""
     hit = cached(text, lang, target)
     if hit is not None:
-        return hit
+        return hit, "cache"
     if not use_network:
-        return ""
-    if len(text) > CHUNK:
-        return _translate_long(text, lang, target)
-    for provider in PROVIDERS:
-        try:
-            out = provider(text, lang, target)
-        except Exception:
-            continue                       # nha cung cap loi -> thu cai tiep theo
-        if not out:
-            continue
-        # Ket qua trung het voi dau vao van la ket qua that (ten rieng,
-        # thuat ngu giu nguyen) - truoc day bi coi nham la that bai.
-        remember(text, lang, out, target)
-        return out
-    return ""
+        return "", ""
+    if time.time() >= _offline_until[0]:
+        if len(text) > CHUNK:
+            out = _translate_long(text, lang, target)
+            if out:
+                return out, "online"
+        else:
+            for provider in PROVIDERS:
+                try:
+                    out = provider(text, lang, target)
+                except Exception as e:
+                    if provider is _google and _is_network_error(e):
+                        # khong toi duoc ca Google -> coi nhu mat mang
+                        _offline_until[0] = time.time() + OFFLINE_HOLD
+                        print("[*] Mat mang - dung bo dich offline trong {}s".format(
+                            OFFLINE_HOLD))
+                        break
+                    continue                   # nha cung cap loi -> thu cai tiep theo
+                if not out:
+                    continue
+                # Ket qua trung het voi dau vao van la ket qua that (ten rieng,
+                # thuat ngu giu nguyen) - truoc day bi coi nham la that bai.
+                remember(text, lang, out, target)
+                return out, "online"
+    # Khong co mang / moi nguon deu loi: dich offline. KHONG luu cache de co
+    # mang lai thi lan sau dung ban Google.
+    out = _offline(text, lang, target)
+    return (out, "offline") if out else ("", "")
 
 
-def translate_async(text, lang, callback, target="vi"):
-    """Dich o luong rieng roi goi callback. Popup dung de khong bi treo."""
+def translate(text, lang="ja", use_network=True, target="vi"):
+    """Dich sang 'target' (mac dinh tieng Viet). '' = that bai."""
+    return translate_detail(text, lang, use_network, target)[0]
+
+
+def translate_async(text, lang, callback, target="vi", detail=False):
+    """Dich o luong rieng roi goi callback(ban_dich) - hoac callback(ban_dich,
+    nguon) neu detail=True. Popup dung de khong bi treo."""
     def work():
         try:
-            callback(translate(text, lang, target=target))
+            out, engine = translate_detail(text, lang, target=target)
         except Exception:
-            callback("")
+            out, engine = "", ""
+        try:
+            callback(out, engine) if detail else callback(out)
+        except Exception:
+            pass
     t = threading.Thread(target=work, daemon=True)
     t.start()
     return t

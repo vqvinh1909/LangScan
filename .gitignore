@@ -8,6 +8,7 @@ data/langscan.log
 data/vi_cache.db
 data/audio/
 data/jamdict.db
+data/argos/
 
 # Kich thuoc popup nguoi dung da keo (luu rieng tung may)
 data/popup.json

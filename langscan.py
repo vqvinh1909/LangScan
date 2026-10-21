@@ -688,7 +688,7 @@ class Popup(object):
             return self.analyzer.enforce_terms(
                 _src, _l, out, _t, lambda s: tr.translate(s, _l, target=_t))
         self._fill_async(lbl, mt_text, lang, prefix="", color=FG, target=target,
-                         after=after, fix=fix)
+                         after=after, fix=fix, mark_offline=True)
 
     def _copy(self, lbl, btn=None):
         result = getattr(lbl, "_result", "")
@@ -1006,13 +1006,14 @@ class Popup(object):
         return lbl
 
     def _fill_async(self, label, text, lang, prefix="", color=FG, target="vi", after=None,
-                    fix=None):
+                    fix=None, mark_offline=False):
         """Dich o luong khac roi cap nhat nhan - khong lam treo popup.
         fix(ban_dich) -> ban_dich: sua them (o luong nen) truoc khi hien.
-        after(ban_dich): goi them (o luong nen) khi dich xong, neu co."""
+        after(ban_dich): goi them (o luong nen) khi dich xong, neu co.
+        mark_offline: ban dich tu bo dich offline thi ghi chu ngay duoi."""
         source = text
 
-        def done(vi):
+        def done(vi, engine=""):
             if fix and vi:
                 try:
                     vi = fix(vi) or vi
@@ -1035,13 +1036,24 @@ class Popup(object):
                         label._result = vi
                         label.config(text=prefix + vi, fg=color)
                     else:
-                        label.config(text="(chưa dịch được - có thể đang mất mạng)",
-                                     fg=FG_DIM)
+                        try:
+                            import offline_mt
+                            ready = offline_mt.installed()
+                        except Exception:
+                            ready = []
+                        label.config(text="(chưa dịch được - có thể đang mất mạng)" + (
+                            "" if ready else "\nMuốn dịch cả khi mất mạng: chuột phải "
+                            "icon khay → Tải bộ dịch offline"), fg=FG_DIM)
+                    if mark_offline and engine == "offline" and vi:
+                        tk.Label(label.master, bg=label["bg"], fg=FG_DIM,
+                                 font=("Segoe UI", 8, "italic"),
+                                 text="dịch offline (không có mạng) - kém chính xác, "
+                                      "chỉ để nắm ý").pack(after=label, anchor="w", padx=10)
                     self._regrow()
                 except Exception:
                     pass
             ui_call(apply_)
-        tr.translate_async(text, lang, done, target=target)
+        tr.translate_async(text, lang, done, target=target, detail=True)
 
     # ---- vi tri popup: canh con tro chuot, khong tran ra ngoai man hinh
     def _place(self, win):
@@ -1342,6 +1354,8 @@ class Tray(object):
             Item("Chụp lại vùng cũ ({})".format(HOTKEY_SNIP_AGAIN.upper()),
                  lambda: self.app.open_snip_again()),
             Menu.SEPARATOR,
+            Item(lambda item: self._offline_label(), lambda: self.app.download_offline(),
+                 enabled=lambda item: not self._offline_ready()),
             Item("Khởi động cùng Windows", lambda: self._toggle_autostart(),
                  checked=lambda item: autostart.is_installed()),
             Item("Mở thư mục cài đặt", lambda: self._open(APP_DIR)),
@@ -1355,6 +1369,21 @@ class Tray(object):
             os.startfile(path)
         except Exception as e:
             print("[!] Khong mo duoc {}: {}".format(path, e))
+
+    @staticmethod
+    def _offline_ready():
+        try:
+            import offline_mt
+            return len(offline_mt.installed()) == len(offline_mt.PAIRS)
+        except Exception:
+            return False
+
+    def _offline_label(self):
+        if self._offline_ready():
+            return "Bộ dịch offline: đã có (dùng khi mất mạng)"
+        if getattr(self.app, "_offline_busy", False):
+            return "Đang tải bộ dịch offline..."
+        return "Tải bộ dịch offline (~380MB, dùng khi mất mạng)"
 
     def _toggle_autostart(self):
         def work():
@@ -1407,6 +1436,37 @@ class App(object):
     def open_snip_again(self):
         """Chup lai dung vung lan truoc."""
         self.q.put(("__snip_again__", None))
+
+    def download_offline(self):
+        """Tai mo hinh dich offline o luong nen; bao ket qua bang popup."""
+        if getattr(self, "_offline_busy", False):
+            return
+        self._offline_busy = True
+
+        def say(msg):
+            def show():
+                self.popup.show("")
+                self.popup._message(self.popup._inner, msg)
+            ui_call(show)
+
+        def work():
+            import offline_mt
+            say("Đang tải bộ dịch offline (~380MB) - vài phút, cứ dùng app bình thường. "
+                "Xong sẽ báo ở đây.")
+            n, err = offline_mt.download(progress=print)
+            self._offline_busy = False
+            if err:
+                say("Tải bộ dịch offline chưa xong: {}\nKiểm tra mạng rồi thử lại "
+                    "(chuột phải icon khay → Tải bộ dịch offline).".format(err))
+            else:
+                say("Đã có bộ dịch offline ({} mô hình). Từ giờ mất mạng thì dòng "
+                    "dịch cả câu tự dùng bộ này.".format(n))
+            try:
+                if self.tray.icon is not None:
+                    self.tray.icon.update_menu()
+            except Exception:
+                pass
+        threading.Thread(target=work, daemon=True).start()
 
     def _snip_done(self, text, err):
         """OCR xong: co chu thi hien popup, khong thi bao loi."""
@@ -1539,6 +1599,18 @@ def selftest():
         lines.append("OCR: " + ocr.status_text().replace("\n", " | "))
     except Exception as e:
         lines.append("OCR: loi {}".format(e))
+    try:
+        import offline_mt
+        if not offline_mt.runtime_ready():
+            lines.append("Dịch offline: thiếu thư viện ctranslate2 / sentencepiece")
+        elif offline_mt.installed():
+            out = offline_mt.translate("The server is running.", "en", "vi")
+            lines.append("[{}] Dịch offline: {} mô hình - thử: {}".format(
+                "OK" if out else "X ", len(offline_mt.installed()), out))
+        else:
+            lines.append("Dịch offline: chưa tải (chuột phải icon khay → Tải bộ dịch offline)")
+    except Exception as e:
+        lines.append("Dịch offline: lỗi {}".format(e))
     lines.append("Thu muc app: " + APP_DIR)
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
