@@ -644,6 +644,29 @@ def _read_vietnamese(image, rapid_text=""):
     return _merge_latin(text, rapid_text) if rapid_text else text
 
 
+def tidy_lines(text):
+    """Noi cac dong bi ngat giua cau trong ket qua OCR.
+
+    Tieu de / doan van tren anh xuong dong theo khung hinh, OCR giu nguyen
+    nen thanh 'THE / ENTERPRISE / AI COMPASS: / ...' - moi tu mot dong, dich
+    may cat vun cau. Noi lai, tru khi dong truoc ket thuc cau (. ! ? 。) hoac
+    dong sau la gach dau dong / danh so (1. - •)."""
+    import re
+    lines = [l.strip() for l in (text or "").split("\n") if l.strip()]
+    if len(lines) < 2:
+        return "\n".join(lines)
+    out = [lines[0]]
+    for line in lines[1:]:
+        prev = out[-1]
+        if (re.search(r"[.!?。！？…]['\")\]”’]?$", prev)
+                or re.match(r"^(\d{1,2}[.)]|[-•*–·●▪])\s*", line)):
+            out.append(line)
+            continue
+        cjk = langs.RE_HAN.search(prev[-1:]) or langs.RE_KANA.search(prev[-1:])
+        out[-1] = prev + ("" if cjk else " ") + line
+    return "\n".join(out)
+
+
 def _merge_latin(tess, rapid):
     """Ghep hai ket qua OCR theo tung tu, lay cai tot cua ca hai.
 

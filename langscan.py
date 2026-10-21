@@ -241,6 +241,7 @@ def grab_selection():
 # --------------------------------------------------------------- popup -----
 # Chu co dau / chu d cua tieng Viet -> coi la go tieng Viet
 RE_VI = langs.RE_VI
+_QUOTES = str.maketrans({"’": "'", "‘": "'", "“": '"', "”": '"'})
 
 
 class Popup(object):
@@ -272,6 +273,9 @@ class Popup(object):
         # Vai app dua chu Viet dang to hop (NFD: dau tach rieng): doi ve NFC
         # de nhan dien tieng Viet va tkinter ve dau dung cho
         raw_text = unicodedata.normalize("NFC", raw_text or "")
+        # Dau nhay cong (’ “ ”): font chu Han cua o nhap ve rong nhu mot chu
+        # Han nen trong nhu thua dau cach ("Saturday’ s") -> doi ve dau thuong
+        raw_text = raw_text.translate(_QUOTES)
         self._pos = None
         self._phrase_lbl = None
         if not keep_pos:                # quet / boi den moi -> nguon ve 'Tu dong'
@@ -671,7 +675,15 @@ class Popup(object):
         if target in cjk:                # dich ra tieng Trung/Nhat/Han
             out_rl = roman_label(None)
             after = lambda vi: fill_roman(out_rl, vi, target, after=lbl, pady=(0, 8))
-        self._fill_async(lbl, text, lang, prefix="", color=FG, target=target, after=after)
+        # Chu IN HOA (tieu de, bien bao): dich may dich rat te -> ha ve chu
+        # thuong truoc khi gui di (o nhap van hien chu goc)
+        mt_text = text
+        if lang in (langs.EN, VI):
+            try:
+                mt_text = self.analyzer.calm_caps(text)
+            except Exception:
+                mt_text = text
+        self._fill_async(lbl, mt_text, lang, prefix="", color=FG, target=target, after=after)
 
     def _copy(self, lbl, btn=None):
         result = getattr(lbl, "_result", "")
@@ -1387,6 +1399,8 @@ class App(object):
     def _snip_done(self, text, err):
         """OCR xong: co chu thi hien popup, khong thi bao loi."""
         if text:
+            import ocr
+            text = ocr.tidy_lines(text)      # noi dong bi ngat giua cau (tieu de...)
             print("[*] OCR doc duoc: {}".format(text[:60].replace("\n", " ")))
             self.popup.show(text)
         else:

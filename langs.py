@@ -155,6 +155,41 @@ class Analyzer(object):
             self._en = english.English()
         return self._en
 
+    # ---- chu IN HOA truoc khi dich may
+    def calm_caps(self, text):
+        """'THE ENTERPRISE AI COMPASS: NAVIGATING...' -> 'The enterprise AI
+        compass: navigating...'. Dich may coi chu in hoa nhu ten rieng / viet
+        tat nen dich te ('COMPASS AI DOANH NGHIEP...'); ha ve chu thuong thi ra
+        'La ban AI doanh nghiep...'. Giu viet tat (AI, NASA, TNHH): tu <= 4 chu
+        khong phai tu tieng Anh pho bien."""
+        letters = [c for c in text if c.isalpha() and not RE_HAN.match(c)
+                   and not RE_KANA.match(c) and not RE_HANGUL.match(c)]
+        if len(letters) < 6 or sum(c.isupper() for c in letters) < 0.8 * len(letters):
+            return text
+        try:
+            common = self.en().cefr
+        except Exception:
+            common = {}
+
+        vietnamese = bool(RE_VI.search(text.lower()))
+
+        def word(m):
+            w = m.group(0)
+            low = w.lower()
+            if len(w) > 4:
+                return low
+            if vietnamese:               # cau tieng Viet: am tiet Viet thi ha thuong
+                if w in ("AI", "IT", "TV", "PC", "OK", "CEO", "USB", "GPS", "VIP"):
+                    return w             # viet tat trung am tiet Viet (ai = nguoi nao)
+                import unicodedata
+                plain = "".join(c for c in unicodedata.normalize("NFD", low.replace("đ", "d"))
+                                if not unicodedata.combining(c))
+                return low if RE_VI_SYLLABLE.match(plain) else w   # TNHH, ABC giu
+            return low if low in common else w                    # AI, NASA giu
+        out = re.sub(r"[^\W\d_]+", word, text)
+        # viet hoa dau cau
+        return re.sub(r"(^|[.!?]\s+)([^\W\d_])", lambda m: m.group(1) + m.group(2).upper(), out)
+
     # ---- thuat ngu chuyen nganh (data/terms/*.tsv)
     def terms(self):
         if getattr(self, "_terms", None) is None:
