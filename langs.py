@@ -155,6 +155,112 @@ class Analyzer(object):
             self._en = english.English()
         return self._en
 
+    # ---- lam sach cau truoc khi gui dich may
+    def prepare_for_mt(self, text, lang):
+        """Don cau truoc khi dich may - dich may dich do chu yeu vi cau hong:
+          - noi chu bi gach noi khi xuong dong ('trans-\\nlation' -> 'translation')
+          - noi dong bi ngat giua cau (PDF, OCR, tieu de)
+          - bo khoang trang thua, khoang trang truoc dau cau; them dau cach sau
+            dau cau bi dinh ('word.Next' -> 'word. Next')
+          - chu IN HOA -> chu thuong (calm_caps)"""
+        import ocr
+        t = (text or "").replace("\r\n", "\n").replace("\r", "\n")
+        cjk = bool(RE_HAN.search(t) or RE_KANA.search(t) or RE_HANGUL.search(t))
+        if not cjk:
+            # trans-\nlation -> translation; Self-\nService -> Self-Service
+            t = re.sub(r"([^\W\d_])-[ \t]*\n[ \t]*([^\W\d_])",
+                       lambda m: m.group(1) + ("" if m.group(2).islower() else "-")
+                       + m.group(2), t)
+        t = ocr.tidy_lines(t)
+        t = re.sub(r"[ \t ]+", " ", t)
+        if not cjk:
+            t = re.sub(r" +([,.;:!?)\]])", r"\1", t)
+            t = re.sub(r"([,;])(?=[^\W\d_])", r"\1 ", t)
+            t = re.sub(r"(?<=[a-zà-ỹ])([.!?])(?=[A-ZÀ-Ỹ])", r"\1 ", t)
+        t = "\n".join(l.strip() for l in t.split("\n")).strip()
+        if lang in (EN, "vi") or not cjk:
+            t = self.calm_caps(t)
+        return t
+
+    # ---- ep dich may dung thuat ngu
+    @staticmethod
+    def _meanings(vi):
+        """'container - moi truong dong goi' / 'a; b (c)' -> ['container', 'a', 'b']."""
+        out = []
+        for part in re.split(r"[;/]", vi or ""):
+            part = re.sub(r"\(.*?\)", "", part.split(" - ")[0]).strip(" .,:")
+            if part:
+                out.append(part)
+        return out
+
+    def _glossary_hits(self, text, lang, target):
+        """Thuat ngu xuat hien trong cau -> [(chu trong cau, [cach dich dung])]."""
+        hits = []
+        try:
+            for surface, e in self.terms().find(text, lang):
+                if target == "vi":
+                    good = self._meanings(e["vi"])
+                elif target in ("en", "zh", "ja", "ko") and e[target]:
+                    good = [f.strip() for f in e[target].split("/") if f.strip()]
+                else:
+                    good = []
+                if good:
+                    hits.append((surface, good))
+        except Exception:
+            pass
+        if lang == EN and target == "vi":        # bo IT cu chi co tieng Anh (offline...)
+            try:
+                it = self.en().it
+                toks = [(m.group(0), m.start(), m.end())
+                        for m in re.finditer(r"[A-Za-z][A-Za-z0-9'-]*", text)]
+                taken = {s.lower() for s, _g in hits}
+                i = 0
+                while i < len(toks):
+                    for n in (3, 2, 1):
+                        key = " ".join(t[0].lower() for t in toks[i:i + n])
+                        if len(toks[i:i + n]) == n and key in it:
+                            if key not in taken:
+                                hits.append((text[toks[i][1]:toks[i + n - 1][2]],
+                                             self._meanings(it[key][0])))
+                            i += n
+                            break
+                    else:
+                        i += 1
+            except Exception:
+                pass
+        return hits
+
+    def enforce_terms(self, text, lang, translated, target, translate_fn):
+        """Ban dich may dich sai thuat ngu ('offline' -> 'ngoai tuyen') thi dich
+        lai, thay thuat ngu do bang ma giu cho (ZQ0) roi dien nghia dung vao.
+        Chi lam voi thuat ngu bi dich sai - cau van tu nhien nhat co the.
+        translate_fn(text) -> ban dich. Tra ve ban dich (da sua hoac nhu cu)."""
+        if not translated:
+            return translated
+        low = translated.lower()
+        wrong = [(s, good) for s, good in self._glossary_hits(text, lang, target)
+                 if not any(g.lower() in low for g in good)]
+        if not wrong:
+            return translated
+        masked = text
+        fills = []
+        for k, (surface, good) in enumerate(wrong):
+            ph = "ZQ{}".format(k)
+            pat = re.escape(surface)
+            if lang == EN:
+                pat = r"(?<![A-Za-z])" + pat + r"(?![A-Za-z])"
+            masked, n = re.subn(pat, ph, masked, flags=re.I)
+            if n:
+                fills.append((ph, good[0]))
+        if not fills:
+            return translated
+        out = translate_fn(masked)
+        if not out or not all(ph in out for ph, _g in fills):
+            return translated                  # ma giu cho bi mat: giu ban cu
+        for ph, good in fills:
+            out = out.replace(ph, good)
+        return out
+
     # ---- chu IN HOA truoc khi dich may
     def calm_caps(self, text):
         """'THE ENTERPRISE AI COMPASS: NAVIGATING...' -> 'The enterprise AI

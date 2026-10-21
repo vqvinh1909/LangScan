@@ -29,3 +29,48 @@ def test_tidy_lines(raw, want):
 ])
 def test_calm_caps(analyzer, raw, want):
     assert analyzer.calm_caps(raw) == want
+
+
+@pytest.mark.parametrize("raw, want", [
+    ("Machine trans-\nlation works best when the\ninput text is clean.",
+     "Machine translation works best when the input text is clean."),
+    ("Self-\nService portal", "Self-Service portal"),
+    ("a test ,with bad spacing .And glued.Next one", "a test, with bad spacing. And glued. Next one"),
+    ("Use e.g. the file run_hidden.bat or v1.0.0 , ok?", "Use e.g. the file run_hidden.bat or v1.0.0, ok?"),
+    ("我在银行\n工作，也学习汉语。", "我在银行工作，也学习汉语。"),
+])
+def test_prepare_for_mt(analyzer, raw, want):
+    assert analyzer.prepare_for_mt(raw, "en" if "我" not in raw else "zh") == want
+
+
+def test_enforce_terms_fixes_wrong_term(analyzer):
+    src = "The database is offline."
+    calls = []
+
+    def fake(text):                      # gia lap dich may: giu ma giu cho ZQ0
+        calls.append(text)
+        return "Cơ sở dữ liệu đang ZQ0."
+    out = analyzer.enforce_terms(src, "en", "Cơ sở dữ liệu đang ngoại tuyến.", "vi", fake)
+    assert out == "Cơ sở dữ liệu đang không kết nối mạng."
+    assert calls == ["The database is ZQ0."]
+
+
+def test_enforce_terms_keeps_good_translation(analyzer):
+    out = analyzer.enforce_terms("The firewall blocks traffic.", "en",
+                                 "Tường lửa chặn lưu lượng.", "vi",
+                                 lambda t: pytest.fail("khong duoc dich lai"))
+    assert out == "Tường lửa chặn lưu lượng."
+
+
+def test_enforce_terms_lost_placeholder_keeps_original(analyzer):
+    out = analyzer.enforce_terms("The database is offline.", "en", "ngoại tuyến", "vi",
+                                 lambda t: "mất mã giữ chỗ")
+    assert out == "ngoại tuyến"
+
+
+def test_split_long():
+    import translate
+    para = "The server is running. " * 100
+    parts = translate._split_long(para.strip())
+    assert len(parts) > 1 and all(len(p) <= translate.CHUNK for p in parts)
+    assert " ".join(parts) == para.strip()

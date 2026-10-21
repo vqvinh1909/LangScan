@@ -675,15 +675,20 @@ class Popup(object):
         if target in cjk:                # dich ra tieng Trung/Nhat/Han
             out_rl = roman_label(None)
             after = lambda vi: fill_roman(out_rl, vi, target, after=lbl, pady=(0, 8))
-        # Chu IN HOA (tieu de, bien bao): dich may dich rat te -> ha ve chu
-        # thuong truoc khi gui di (o nhap van hien chu goc)
-        mt_text = text
-        if lang in (langs.EN, VI):
-            try:
-                mt_text = self.analyzer.calm_caps(text)
-            except Exception:
-                mt_text = text
-        self._fill_async(lbl, mt_text, lang, prefix="", color=FG, target=target, after=after)
+        # Lam sach cau truoc khi gui dich may (noi dong / gach noi, dau cau, chu
+        # IN HOA...) - o nhap van hien chu goc
+        try:
+            mt_text = self.analyzer.prepare_for_mt(text, lang)
+        except Exception:
+            mt_text = text
+
+        # Dich may dich sai thuat ngu ('offline' -> 'ngoai tuyen') thi dich lai
+        # voi thuat ngu dung trong bo chuyen nganh
+        def fix(out, _src=mt_text, _l=lang, _t=target):
+            return self.analyzer.enforce_terms(
+                _src, _l, out, _t, lambda s: tr.translate(s, _l, target=_t))
+        self._fill_async(lbl, mt_text, lang, prefix="", color=FG, target=target,
+                         after=after, fix=fix)
 
     def _copy(self, lbl, btn=None):
         result = getattr(lbl, "_result", "")
@@ -1000,12 +1005,19 @@ class Popup(object):
         lbl.pack(anchor="w", pady=(1, 0))
         return lbl
 
-    def _fill_async(self, label, text, lang, prefix="", color=FG, target="vi", after=None):
+    def _fill_async(self, label, text, lang, prefix="", color=FG, target="vi", after=None,
+                    fix=None):
         """Dich o luong khac roi cap nhat nhan - khong lam treo popup.
+        fix(ban_dich) -> ban_dich: sua them (o luong nen) truoc khi hien.
         after(ban_dich): goi them (o luong nen) khi dich xong, neu co."""
         source = text
 
         def done(vi):
+            if fix and vi:
+                try:
+                    vi = fix(vi) or vi
+                except Exception as e:
+                    print("[!] Loi khi ep thuat ngu:", e)
             if after and vi and vi.strip().lower() != str(source).strip().lower():
                 try:
                     after(vi)

@@ -129,6 +129,54 @@ def _lingva(text, src, target="vi"):
 PROVIDERS = (_google, _google_dict, _mymemory, _lingva)
 
 
+CHUNK = 1500         # doan dai hon: chia theo cau, dich tung phan roi ghep lai
+
+
+def _split_long(paragraph, size=CHUNK):
+    """Chia mot doan thanh cac phan <= size ky tu, cat o ranh gioi cau."""
+    import re
+    sentences = re.split(r"(?<=[.!?。！？])\s*", paragraph)
+    parts, cur = [], ""
+    for s in sentences:
+        if not s:
+            continue
+        while len(s) > size:                 # mot cau qua dai: cat o dau phay / cach
+            cut = max(s.rfind(", ", 0, size), s.rfind(" ", 0, size), s.rfind("，", 0, size))
+            cut = cut + 1 if cut > size // 2 else size
+            parts.append((cur + " " + s[:cut]).strip() if cur else s[:cut].strip())
+            cur, s = "", s[cut:].strip()
+        if cur and len(cur) + 1 + len(s) > size:
+            parts.append(cur)
+            cur = s
+        else:
+            cur = (cur + " " + s).strip() if cur else s
+    if cur:
+        parts.append(cur)
+    return parts
+
+
+def _translate_long(text, lang, target):
+    """Doan dai (trang tai lieu chup ve): dich tung phan theo cau, giu xuong doan.
+    Dia chi dich mien phi gioi han do dai va dich doan qua dai kem hon."""
+    cjk = lang in ("zh", "ja", "ko")
+    out_paras = []
+    for para in text.split("\n"):
+        para = para.strip()
+        if not para:
+            continue
+        outs = []
+        for part in _split_long(para):
+            o = translate(part, lang, target=target)
+            if not o:
+                return ""                    # mot phan hong: bao that bai, khong ghep do
+            outs.append(o)
+        out_paras.append(("" if (target in ("zh", "ja") and not cjk) else " ").join(outs))
+    out = "\n".join(out_paras)
+    if out:
+        remember(text, lang, out, target)
+    return out
+
+
 def translate(text, lang="ja", use_network=True, target="vi"):
     """Dich sang 'target' (mac dinh tieng Viet). '' = that bai / khong co mang."""
     text = (text or "").strip()
@@ -139,6 +187,8 @@ def translate(text, lang="ja", use_network=True, target="vi"):
         return hit
     if not use_network:
         return ""
+    if len(text) > CHUNK:
+        return _translate_long(text, lang, target)
     for provider in PROVIDERS:
         try:
             out = provider(text, lang, target)
