@@ -205,7 +205,7 @@ class Analyzer(object):
                 else:
                     good = []
                 if good:
-                    hits.append((surface, good))
+                    hits.append((surface, good, e["domain"]))
         except Exception:
             pass
         if lang == EN and target == "vi":        # bo IT cu chi co tieng Anh (offline...)
@@ -213,7 +213,7 @@ class Analyzer(object):
                 it = self.en().it
                 toks = [(m.group(0), m.start(), m.end())
                         for m in re.finditer(r"[A-Za-z][A-Za-z0-9'-]*", text)]
-                taken = {s.lower() for s, _g in hits}
+                taken = {s.lower() for s, _g, _d in hits}
                 i = 0
                 while i < len(toks):
                     for n in (3, 2, 1):
@@ -221,7 +221,7 @@ class Analyzer(object):
                         if len(toks[i:i + n]) == n and key in it:
                             if key not in taken:
                                 hits.append((text[toks[i][1]:toks[i + n - 1][2]],
-                                             self._meanings(it[key][0])))
+                                             self._meanings(it[key][0]), "it"))
                             i += n
                             break
                     else:
@@ -238,8 +238,18 @@ class Analyzer(object):
         if not translated:
             return translated
         low = translated.lower()
-        wrong = [(s, good) for s, good in self._glossary_hits(text, lang, target)
-                 if not any(g.lower() in low for g in good)]
+        hits = self._glossary_hits(text, lang, target)
+
+        def in_context(surface, domain):
+            # Tu don tieng Anh nhieu nghia (capital: von / thu do, mold: khuon /
+            # nam moc, stock: co phieu / hang ton): chi ep khi cau co them it nhat
+            # mot thuat ngu khac cung nganh. 'the database is offline' -> ep;
+            # 'Hanoi is the capital of Vietnam' -> giu ban dich may.
+            if lang != EN or " " in surface.strip():
+                return True
+            return any(d == domain and s.lower() != surface.lower() for s, _g, d in hits)
+        wrong = [(s, good) for s, good, d in hits
+                 if in_context(s, d) and not any(g.lower() in low for g in good)]
         if not wrong:
             return translated
         masked = text
@@ -258,6 +268,9 @@ class Analyzer(object):
         if not out or not all(ph in out for ph, _g in fills):
             return translated                  # ma giu cho bi mat: giu ban cu
         for ph, good in fills:
+            if target == "vi" and good.split(" ")[0].lower() in ("không", "đang", "đã", "bị"):
+                # 'is offline' -> 'la ZQ0' -> 'la khong ket noi mang': bo 'la' thua
+                out = re.sub(r"\b[Ll]à\s+" + ph, ph, out)
             out = out.replace(ph, good)
         return out
 

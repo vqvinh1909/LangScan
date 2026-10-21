@@ -74,3 +74,20 @@ def test_split_long():
     parts = translate._split_long(para.strip())
     assert len(parts) > 1 and all(len(p) <= translate.CHUNK for p in parts)
     assert " ".join(parts) == para.strip()
+
+
+@pytest.mark.parametrize("src, mt", [
+    ("Hanoi is the capital of Vietnam.", "Hà Nội là thủ đô của Việt Nam."),
+    ("There is mold on the bread.", "Có nấm mốc trên bánh mì."),
+    ("The shop is out of stock.", "Cửa hàng đã hết hàng."),
+])
+def test_enforce_terms_needs_domain_context(analyzer, src, mt):
+    # tu don nhieu nghia, cau khong co thuat ngu nganh nao khac: khong ep
+    assert analyzer.enforce_terms(src, "en", mt, "vi",
+                                  lambda t: pytest.fail("khong duoc dich lai")) == mt
+
+
+def test_enforce_terms_drops_extra_la(analyzer):
+    out = analyzer.enforce_terms("The server is offline.", "en", "Máy chủ đang ngoại tuyến.",
+                                 "vi", lambda t: "Máy chủ là ZQ0.")
+    assert out == "Máy chủ không kết nối mạng."
