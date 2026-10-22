@@ -6,7 +6,7 @@
 #define AppName "LangScan"
 ; So phien ban lay tu version.py (build.py truyen vao bang /DAppVersion=...)
 #ifndef AppVersion
-  #define AppVersion "2.0.0"
+  #define AppVersion "2.1.0"
 #endif
 #define AppExe "LangScan.exe"
 

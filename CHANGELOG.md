@@ -1,5 +1,20 @@
 # Nhật ký thay đổi
 
+## 2.1.0 — 2026-10-22
+
+### Thuật ngữ chuyên ngành: 257 → 659 mục, 4 → 11 ngành
+- **7 ngành mới** (Anh · Trung → Việt): Thể thao – dinh dưỡng – phục hồi, Pháp luật, Xây dựng, Marketing, Logistics – vận tải – xuất nhập khẩu, Giáo dục, Môi trường – năng lượng.
+- **Mở rộng 4 ngành cũ**: Y khoa thêm giấc ngủ – nhịp sinh học (circadian rhythm, melatonin, suprachiasmatic nucleus, giấc ngủ REM…) và bệnh lý, chẩn đoán; IT thêm bảo mật, AI; Kinh tế thêm doanh nghiệp, lao động, vĩ mô; Kỹ thuật thêm quản lý sản xuất, điện, an toàn.
+- *Vẫn là bản do máy soạn — nên nhờ người trong ngành rà lại.*
+
+### Dịch chính xác hơn
+- Ép thuật ngữ thông minh hơn: bản dịch đã gần đúng thì giữ nguyên câu tự nhiên, chỉ sửa thuật ngữ dịch sai hẳn ("Nhân siêu âm" → "Nhân trên giao thoa thị giác"). Từ đơn nhiều nghĩa — kể cả chữ Hán 1–2 chữ như 作业, 模板 — chỉ bị ép khi câu có thuật ngữ cùng ngành.
+- Viết hoa lại đầu câu sau khi thay thuật ngữ.
+
+### Sửa lỗi
+- Không còn mục "Câu pinyin" rác với từ tiếng Anh ("circadian" → 刺儿 搽 点, "melatonin" → 么 拉 T 哦 您) hay chữ IN HOA.
+- Phiên âm thuật ngữ tiếng Anh không còn bị cụt.
+
 ## 2.0.0 — 2026-10-21
 
 Bản đầu tiên có file cài đặt — người dùng không cần cài Python.
