@@ -72,3 +72,35 @@ smartphone	智能手机	スマートフォン	스마트폰	điện thoại thôn
 data backup	数据备份	データバックアップ	데이터 백업	sao lưu dữ liệu
 system administrator	系统管理员	システム管理者	시스템 관리자	quản trị hệ thống
 network security	网络安全	ネットワークセキュリティ	네트워크 보안	an ninh mạng
+# --- Bao mat - AI - san pham (bo sung) ---
+phishing	网络钓鱼	フィッシング	피싱	lừa đảo qua mạng (phishing)
+malware	恶意软件	マルウェア	악성코드	phần mềm độc hại
+ransomware	勒索软件	ランサムウェア	랜섬웨어	mã độc tống tiền
+two-factor authentication	双重认证	二要素認証	2단계 인증	xác thực hai lớp
+virtual private network	虚拟专用网络	仮想プライベートネットワーク	가상 사설망	mạng riêng ảo (VPN)
+cloud storage	云存储	クラウドストレージ	클라우드 스토리지	lưu trữ đám mây
+data migration	数据迁移	データ移行	데이터 마이그레이션	chuyển dữ liệu (migration)
+user experience	用户体验	ユーザーエクスペリエンス	사용자 경험	trải nghiệm người dùng (UX)
+neural network	神经网络	ニューラルネットワーク	신경망	mạng nơ-ron
+large language model	大语言模型	大規模言語モデル	대규모 언어 모델	mô hình ngôn ngữ lớn (LLM)
+training data	训练数据	学習データ	학습 데이터	dữ liệu huấn luyện
+generative AI	生成式人工智能	生成AI	생성형 AI	AI tạo sinh
+deep learning	深度学习	深層学習	딥러닝	học sâu
+data analysis	数据分析	データ分析	데이터 분석	phân tích dữ liệu
+user account	用户账户	ユーザーアカウント	사용자 계정	tài khoản người dùng
+access control	访问控制	アクセス制御	접근 제어	kiểm soát truy cập
+data breach	数据泄露	データ漏洩	데이터 유출	rò rỉ dữ liệu
+privacy policy	隐私政策	プライバシーポリシー	개인정보 처리방침	chính sách quyền riêng tư
+terms of service	服务条款	利用規約	서비스 약관	điều khoản dịch vụ
+software update	软件更新	ソフトウェア更新	소프트웨어 업데이트	cập nhật phần mềm
+system requirements	系统要求	動作環境	시스템 요구 사항	cấu hình yêu cầu
+technical support	技术支持	テクニカルサポート	기술 지원	hỗ trợ kỹ thuật
+digital transformation	数字化转型	デジタルトランスフォーメーション	디지털 전환	chuyển đổi số
+internet of things	物联网	モノのインターネット	사물인터넷	Internet vạn vật (IoT)
+blockchain	区块链	ブロックチェーン	블록체인	chuỗi khối (blockchain)
+QR code	二维码	QRコード	QR 코드	mã QR
+touch screen	触摸屏	タッチスクリーン	터치스크린	màn hình cảm ứng
+battery life	电池续航	バッテリー寿命	배터리 수명	thời lượng pin
+storage capacity	存储容量	ストレージ容量	저장 용량	dung lượng lưu trữ
+file format	文件格式	ファイル形式	파일 형식	định dạng tệp
+user manual	用户手册	取扱説明書	사용 설명서	hướng dẫn sử dụng

@@ -258,7 +258,11 @@ class Reverse(object):
             for j in range(i + 1, min(n, i + 24) + 1):
                 if j not in cuts:
                     continue
-                bucket = idx.get(flat[i:j])
+                # chi tu toan chu Han: tu dien co ca 'T恤', 'T' ... -> 'melatonin'
+                # bi cat ra '么 拉 T 哦 您'
+                bucket = [b for b in idx.get(flat[i:j]) or []
+                          if all("㐀" <= ch <= "鿿" or "豈" <= ch <= "﫿"
+                                 for ch in b[0])]
                 if not bucket:
                     continue
                 word = min((b[0] for b in bucket), key=cost)

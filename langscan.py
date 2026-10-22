@@ -48,6 +48,14 @@ POPUP_MAX_HEIGHT = 600
 POPUP_MIN_SIZE = (340, 160)
 CEFR_BADGES = ("A1", "A2", "B1", "B2", "C1", "C2", "IT")   # tu tieng Anh pho bien
 
+
+def _real_english(card):
+    """Tu tieng Anh that, du dai de khong nham voi pinyin: 'circadian' co
+    trong tu dien -> khong cat thanh ci-r-ca-dian (刺儿 搽 点). Tu ngan
+    ('wo', 'shi', 'ni' cung co trong tu dien) van de doc nhu pinyin."""
+    word = card.word.split("  (")[0].strip()
+    return card.found and len(word) >= 5 and word.isalpha()
+
 # Giao dien popup: "sang" (nen trang nga, xanh tre hop logo) hoac "toi" (ban cu)
 THEME = "sang"
 
@@ -499,7 +507,10 @@ class Popup(object):
                    # tu dien Anh-Viet co ca muc hiem 'wo', 'shi', 'ni' -> 'wo shi',
                    # 'ni hao' van phai doc nhu pinyin
                    and not (self.src_pref == "auto" and lang == langs.EN and cards
-                            and all(c.badge in CEFR_BADGES for c in cards)))
+                            and all(c.badge in CEFR_BADGES or _real_english(c)
+                                    for c in cards))
+                   # Chu IN HOA (tieu de: 'CIRCADIAN') khong ai go pinyin kieu do
+                   and not (self.src_pref == "auto" and py_text.isupper()))
         # Tu dong ma tieng Anh khong ra gi ('taberu', 'annyeong'): thu doc nhu
         # romaji tieng Nhat / phien am tieng Han
         want_rom = (want_py and self.src_pref == "auto" and lang == langs.EN

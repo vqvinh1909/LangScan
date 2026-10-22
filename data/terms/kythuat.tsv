@@ -56,3 +56,39 @@ root cause	根本原因	根本原因	근본 원인	nguyên nhân gốc
 corrective action	纠正措施	是正処置	시정 조치	hành động khắc phục
 5S	5S	5S	5S	5S: Sàng lọc - Sắp xếp - Sạch sẽ - Săn sóc - Sẵn sàng
 production plan	生产计划	生産計画	생산 계획	kế hoạch sản xuất
+# --- Quan ly san xuat - dien - an toan (bo sung) ---
+first-in first-out	先进先出	先入れ先出し	선입선출	nhập trước xuất trước (FIFO)
+just-in-time	准时制生产	ジャストインタイム	적시생산	sản xuất đúng lúc (JIT)
+lean manufacturing	精益生产	リーン生産方式	린 생산	sản xuất tinh gọn
+statistical process control	统计过程控制	統計的工程管理	통계적 공정 관리	kiểm soát quá trình bằng thống kê (SPC)
+failure mode and effects analysis	失效模式与影响分析	故障モード影響解析	고장 모드 영향 분석	phân tích dạng lỗi và tác động (FMEA)
+cycle time	周期时间	サイクルタイム	사이클 타임	thời gian chu kỳ
+takt time	节拍时间	タクトタイム	택트 타임	nhịp sản xuất (takt time)
+bottleneck	瓶颈	ボトルネック	병목	điểm nghẽn
+yield rate	良率	歩留まり	수율	tỷ lệ thành phẩm (hiệu suất)
+rework	返工	手直し	재작업	làm lại hàng lỗi
+batch number	批号	ロット番号	로트 번호	số lô
+serial number	序列号	シリアル番号	일련번호	số sê-ri
+conveyor belt	传送带	ベルトコンベア	컨베이어 벨트	băng chuyền
+air compressor	空气压缩机	エアコンプレッサー	공기 압축기	máy nén khí
+hydraulic system	液压系统	油圧システム	유압 시스템	hệ thống thuỷ lực
+pneumatic system	气动系统	空圧システム	공압 시스템	hệ thống khí nén
+control panel	控制柜	制御盤	제어반	tủ điều khiển
+emergency stop	紧急停止	非常停止	비상 정지	dừng khẩn cấp
+circuit breaker	断路器	ブレーカー	차단기	cầu dao (aptomat)
+ground wire	地线	アース線	접지선	dây tiếp địa
+frequency inverter	变频器	インバーター	인버터	biến tần
+temperature sensor	温度传感器	温度センサー	온도 센서	cảm biến nhiệt độ
+calibration	校准	校正	교정	hiệu chuẩn
+measuring instrument	测量仪器	測定器	측정기	dụng cụ đo
+vernier caliper	游标卡尺	ノギス	버니어 캘리퍼스	thước cặp
+torque wrench	扭矩扳手	トルクレンチ	토크 렌치	cờ lê lực
+fire extinguisher	灭火器	消火器	소화기	bình chữa cháy
+safety helmet	安全帽	安全ヘルメット	안전모	mũ bảo hộ
+safety goggles	护目镜	保護メガネ	보안경	kính bảo hộ
+work accident	工伤事故	労働災害	산업재해	tai nạn lao động
+occupational safety	职业安全	労働安全	산업안전	an toàn lao động
+morning meeting	早会	朝礼	아침 조회	họp đầu ca	chōrei ở nhà máy Nhật
+near miss	未遂事件	ヒヤリハット	아차사고	sự cố suýt xảy ra	hiyari-hatto
+quality standard	质量标准	品質基準	품질 기준	tiêu chuẩn chất lượng
+customer complaint	客户投诉	顧客クレーム	고객 불만	khiếu nại của khách hàng

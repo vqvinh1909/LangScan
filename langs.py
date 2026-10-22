@@ -245,11 +245,21 @@ class Analyzer(object):
             # nam moc, stock: co phieu / hang ton): chi ep khi cau co them it nhat
             # mot thuat ngu khac cung nganh. 'the database is offline' -> ep;
             # 'Hanoi is the capital of Vietnam' -> giu ban dich may.
-            if lang != EN or " " in surface.strip():
-                return True
+            if lang == EN and " " in surface.strip():
+                return True                       # cum nhieu chu: khong nhap nhang
+            if lang != EN and len(surface) > 2:
+                return True                       # tu Han 3+ chu (心肌梗死) cung vay
+            # tieng Trung 1-2 chu (作业: bai tap / thao tac; 模板: cop pha / template)
+            # cung nhu tu don tieng Anh: can them thuat ngu cung nganh trong cau
             return any(d == domain and s.lower() != surface.lower() for s, _g, d in hits)
+        def close_enough(g):
+            # 'nhip sinh hoc' cho 'nhip sinh hoc ngay dem' (3/5 chu) la dat;
+            # 'Nhan sieu am' cho 'nhan tren giao thoa thi giac' (1/6) la sai
+            words = g.lower().split()
+            return bool(words) and sum(w in low for w in words) >= 0.6 * len(words)
         wrong = [(s, good) for s, good, d in hits
-                 if in_context(s, d) and not any(g.lower() in low for g in good)]
+                 if in_context(s, d) and not any(g.lower() in low or close_enough(g)
+                                                 for g in good)]
         if not wrong:
             return translated
         masked = text
@@ -272,6 +282,8 @@ class Analyzer(object):
                 # 'is offline' -> 'la ZQ0' -> 'la khong ket noi mang': bo 'la' thua
                 out = re.sub(r"\b[Ll]à\s+" + ph, ph, out)
             out = out.replace(ph, good)
+        if translated[:1].isupper() and out[:1].islower():
+            out = out[0].upper() + out[1:]          # thuat ngu dung dau cau
         return out
 
     # ---- chu IN HOA truoc khi dich may
@@ -376,7 +388,8 @@ class Analyzer(object):
         try:
             if lang == EN:
                 bits = [self.en().phonetic(w).strip("/") for w in word.split()]
-                return "/{}/".format(" ".join(b for b in bits if b)) if any(bits) else ""
+                # thieu IPA mot tu thi bo han (khoi hien phien am cut 'u:.kli.')
+                return "/{}/".format(" ".join(bits)) if all(bits) else ""
             return self.romanize_sentence(word, lang)
         except Exception:
             return ""

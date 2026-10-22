@@ -91,3 +91,18 @@ def test_enforce_terms_drops_extra_la(analyzer):
     out = analyzer.enforce_terms("The server is offline.", "en", "Máy chủ đang ngoại tuyến.",
                                  "vi", lambda t: "Máy chủ là ZQ0.")
     assert out == "Máy chủ không kết nối mạng."
+
+
+def test_enforce_terms_close_translation_is_kept(analyzer):
+    # Google dich 'circadian rhythm' -> 'nhip sinh hoc' (3/5 chu nghia chuan): dat,
+    # chi ep 'suprachiasmatic nucleus' bi dich sai thanh 'Nhan sieu am'
+    seen = []
+
+    def fake(text):
+        seen.append(text)
+        return "ZQ0 kiểm soát nhịp sinh học và giải phóng melatonin."
+    out = analyzer.enforce_terms(
+        "The suprachiasmatic nucleus controls the circadian rhythm and melatonin release.",
+        "en", "Nhân siêu âm kiểm soát nhịp sinh học và giải phóng melatonin.", "vi", fake)
+    assert out == "Nhân trên giao thoa thị giác kiểm soát nhịp sinh học và giải phóng melatonin."
+    assert "circadian rhythm" in seen[0]                  # khong bi thay bang ma giu cho

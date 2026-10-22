@@ -68,3 +68,74 @@ chronic disease	慢性病	慢性疾患	만성 질환	bệnh mãn tính
 health insurance	医疗保险	健康保険	건강보험	bảo hiểm y tế
 medical record	病历	カルテ	의무기록	bệnh án
 cholesterol	胆固醇	コレステロール	콜레스테롤	cholesterol (mỡ máu)
+# --- Giac ngu - nhip sinh hoc ---
+circadian rhythm	昼夜节律	概日リズム	일주기 리듬	nhịp sinh học ngày đêm (nhịp circadian)
+biological clock	生物钟	体内時計	생체 시계	đồng hồ sinh học
+suprachiasmatic nucleus	视交叉上核	視交叉上核	시교차상핵	nhân trên giao thoa thị giác (SCN)	"đồng hồ chính" của cơ thể, nằm ở vùng dưới đồi
+peripheral clock	外周时钟	末梢時計	말초 시계	đồng hồ ngoại vi (ở gan, cơ, mô mỡ...)
+sleep-wake cycle	睡眠-觉醒周期	睡眠覚醒サイクル	수면-각성 주기	chu kỳ ngủ - thức
+melatonin	褪黑素	メラトニン	멜라토닌	melatonin (hormone điều hoà giấc ngủ)	tiết nhiều khi trời tối
+serotonin	血清素	セロトニン	세로토닌	serotonin
+cortisol	皮质醇	コルチゾール	코르티솔	cortisol (hormone căng thẳng)
+adenosine	腺苷	アデノシン	아데노신	adenosine	tích tụ khi thức, gây buồn ngủ
+tryptophan	色氨酸	トリプトファン	트립토판	tryptophan
+pineal gland	松果体	松果体	송과선	tuyến tùng
+hypothalamus	下丘脑	視床下部	시상하부	vùng dưới đồi
+sleep deprivation	睡眠剥夺	睡眠不足	수면 부족	thiếu ngủ
+sleep quality	睡眠质量	睡眠の質	수면의 질	chất lượng giấc ngủ
+deep sleep	深度睡眠	深い眠り	깊은 잠	giấc ngủ sâu
+REM sleep	快速眼动睡眠	レム睡眠	렘수면	giấc ngủ REM (giai đoạn mắt chuyển động nhanh)
+non-REM sleep	非快速眼动睡眠	ノンレム睡眠	비렘수면	giấc ngủ non-REM
+sleep cycle	睡眠周期	睡眠周期	수면 주기	chu kỳ giấc ngủ
+sleep apnea	睡眠呼吸暂停	睡眠時無呼吸症候群	수면 무호흡증	ngưng thở khi ngủ
+jet lag	时差反应	時差ぼけ	시차증	lệch múi giờ (jet lag)
+shift work disorder	轮班工作障碍	交代勤務睡眠障害	교대근무 수면장애	rối loạn giấc ngủ do làm ca
+blue light	蓝光	ブルーライト	블루라이트	ánh sáng xanh
+light exposure	光照	光曝露	빛 노출	tiếp xúc ánh sáng
+sleep hygiene	睡眠卫生	睡眠衛生	수면 위생	vệ sinh giấc ngủ (thói quen ngủ lành mạnh)
+chronotype	时间型	クロノタイプ	크로노타입	kiểu thời gian sinh học (chronotype)	người dậy sớm / cú đêm
+core body temperature	核心体温	深部体温	심부 체온	thân nhiệt lõi
+stress hormone	压力荷尔蒙	ストレスホルモン	스트레스 호르몬	hormone căng thẳng
+growth hormone	生长激素	成長ホルモン	성장 호르몬	hormone tăng trưởng
+neurotransmitter	神经递质	神経伝達物質	신경전달물질	chất dẫn truyền thần kinh
+metabolism	新陈代谢	代謝	신진대사	trao đổi chất
+insulin sensitivity	胰岛素敏感性	インスリン感受性	인슐린 감수성	độ nhạy insulin
+dietary supplement	膳食补充剂	サプリメント	건강기능식품	thực phẩm bổ sung
+caffeine	咖啡因	カフェイン	카페인	caffeine
+magnesium	镁	マグネシウム	마그네슘	magiê
+fatigue	疲劳	疲労	피로	mệt mỏi
+# --- Benh ly - chan doan - dieu tri (bo sung) ---
+heart failure	心力衰竭	心不全	심부전	suy tim
+arrhythmia	心律失常	不整脈	부정맥	rối loạn nhịp tim
+coronary artery disease	冠状动脉疾病	冠動脈疾患	관상동맥질환	bệnh động mạch vành
+atherosclerosis	动脉粥样硬化	動脈硬化	죽상동맥경화증	xơ vữa động mạch
+kidney failure	肾衰竭	腎不全	신부전	suy thận
+gastritis	胃炎	胃炎	위염	viêm dạ dày
+appendicitis	阑尾炎	虫垂炎	충수염	viêm ruột thừa
+osteoporosis	骨质疏松症	骨粗しょう症	골다공증	loãng xương
+arthritis	关节炎	関節炎	관절염	viêm khớp
+dementia	痴呆症	認知症	치매	sa sút trí tuệ
+Alzheimer's disease	阿尔茨海默病	アルツハイマー病	알츠하이머병	bệnh Alzheimer
+Parkinson's disease	帕金森病	パーキンソン病	파킨슨병	bệnh Parkinson
+epilepsy	癫痫	てんかん	뇌전증	động kinh
+migraine	偏头痛	片頭痛	편두통	đau nửa đầu
+anxiety disorder	焦虑症	不安障害	불안장애	rối loạn lo âu
+tuberculosis	结核病	結核	결핵	bệnh lao
+sepsis	败血症	敗血症	패혈증	nhiễm trùng huyết
+dehydration	脱水	脱水症	탈수	mất nước
+nausea	恶心	吐き気	메스꺼움	buồn nôn
+dizziness	头晕	めまい	어지럼증	chóng mặt
+blood transfusion	输血	輸血	수혈	truyền máu
+intensive care unit	重症监护室	集中治療室	중환자실	phòng chăm sóc đặc biệt (ICU)
+magnetic resonance imaging	磁共振成像	磁気共鳴画像法	자기공명영상	chụp cộng hưởng từ (MRI)
+electrocardiogram	心电图	心電図	심전도	điện tâm đồ (ECG)
+biopsy	活检	生検	생검	sinh thiết
+chemotherapy	化疗	化学療法	항암화학요법	hoá trị
+radiotherapy	放疗	放射線療法	방사선 치료	xạ trị
+physical therapy	物理治疗	理学療法	물리치료	vật lý trị liệu
+rehabilitation	康复治疗	リハビリテーション	재활 치료	phục hồi chức năng
+pregnancy	怀孕	妊娠	임신	mang thai
+blood type	血型	血液型	혈액형	nhóm máu
+body mass index	体重指数	体格指数	체질량지수	chỉ số khối cơ thể (BMI)
+nutrition	营养	栄養	영양	dinh dưỡng
+vitamin D	维生素D	ビタミンD	비타민 D	vitamin D

@@ -20,7 +20,9 @@ TERMS_DIR = os.path.join(DATA_DIR, "terms")
 COLS = ("en", "zh", "ja", "ko", "vi", "note")
 # Ten nganh hien tren the tu (ten file -> nhan)
 DOMAIN_LABEL = {"it": "IT", "kinhte": "Kinh tế", "ykhoa": "Y khoa",
-                "kythuat": "Kỹ thuật"}
+                "kythuat": "Kỹ thuật", "theduc": "Thể thao", "phapluat": "Pháp luật",
+                "xaydung": "Xây dựng", "marketing": "Marketing", "logistics": "Logistics",
+                "giaoduc": "Giáo dục", "moitruong": "Môi trường"}
 LANG_LABEL = {"en": "Anh", "zh": "Trung", "ja": "Nhật", "ko": "Hàn"}
 
 

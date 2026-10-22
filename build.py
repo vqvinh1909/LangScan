@@ -29,7 +29,7 @@ DATA_FILES = ["cedict.txt", "cvdict.u8", "hsk.json", "cefr.json", "en_ipa.tsv",
               "envi.tsv", "it_terms.tsv", "jlpt.json", "kengdic.tsv",
               "jamdict.db",           # tu dien Nhat ~310MB, nen lai con ~50MB
               "tessdata/vie.traineddata",   # OCR tieng Viet (Tesseract, 0.5MB)
-              "terms/it.tsv", "terms/kinhte.tsv", "terms/ykhoa.tsv", "terms/kythuat.tsv"]
+              ] + ["terms/" + f for f in sorted(os.listdir(os.path.join(ROOT, "data", "terms"))) if f.endswith(".tsv")]
 TESSERACT_DIRS = [os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"),
                                "Tesseract-OCR"),
                   os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs",

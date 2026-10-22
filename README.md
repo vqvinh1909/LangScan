@@ -48,12 +48,19 @@ Thư mục `data/terms/` có các bộ thuật ngữ **Anh · Trung · Nhật ·
 | `kinhte.tsv` | Kinh tế – tài chính – xuất nhập khẩu | balance sheet · 资产负债表 · 貸借対照表 · 대차대조표 → bảng cân đối kế toán |
 | `ykhoa.tsv` | Y khoa | myocardial infarction · 心肌梗死 · 心筋梗塞 · 심근경색 → nhồi máu cơ tim |
 | `kythuat.tsv` | Kỹ thuật – sản xuất – nhà máy | production line · 生产线 · 生産ライン · 생산 라인 → dây chuyền sản xuất |
+| `theduc.tsv` | Thể thao – dinh dưỡng – phục hồi | progressive overload · 渐进超负荷 → tăng tải tiến triển |
+| `phapluat.tsv` | Pháp luật | force majeure · 不可抗力 → bất khả kháng |
+| `xaydung.tsv` | Xây dựng | reinforced concrete · 钢筋混凝土 → bê tông cốt thép |
+| `marketing.tsv` | Marketing | conversion rate · 转化率 → tỷ lệ chuyển đổi |
+| `logistics.tsv` | Logistics – vận tải – xuất nhập khẩu | freight forwarder · 货运代理 → công ty giao nhận |
+| `giaoduc.tsv` | Giáo dục | academic credit · 学分 → tín chỉ |
+| `moitruong.tsv` | Môi trường – năng lượng | carbon neutrality · 碳中和 → trung hoà carbon |
 
 - Thuật ngữ nhiều chữ hiện thành một thẻ riêng có **nhãn ngành** (thay cho các mảnh bị tách lẻ), kèm từ tương đương ở 3 thứ tiếng còn lại.
 - Thuật ngữ trùng một từ thường (服务器) thì nghĩa chuyên ngành thêm lên đầu, kiểu `[IT] máy chủ`, không che nghĩa thường.
 - Gõ tiếng Việt (có dấu hay không dấu) tra ngược ra thuật ngữ: `nhồi máu cơ tim` → 心肌梗死 / 心筋梗塞 / 심근경색.
 
-Đây là **bản khởi đầu do máy soạn** (khoảng 260 thuật ngữ), nên nhờ người trong ngành rà lại trước khi tin dùng; phần y khoa chỉ để đọc tài liệu, không thay ý kiến bác sĩ. Thêm hay sửa: mở file bằng Notepad, mỗi dòng `Anh<Tab>Trung<Tab>Nhật<Tab>Hàn<Tab>Việt<Tab>ghi chú` (cột nào trống cũng được, nhiều cách viết thì ngăn bằng `/`), lưu rồi khởi động lại app. Thêm ngành mới: tạo thêm một file `.tsv` trong thư mục đó.
+Đây là **bản khởi đầu do máy soạn** (khoảng 660 thuật ngữ; 4 ngành đầu có đủ Anh · Trung · Nhật · Hàn, các ngành sau chỉ Anh · Trung), nên nhờ người trong ngành rà lại trước khi tin dùng; phần y khoa chỉ để đọc tài liệu, không thay ý kiến bác sĩ. Thêm hay sửa: mở file bằng Notepad, mỗi dòng `Anh<Tab>Trung<Tab>Nhật<Tab>Hàn<Tab>Việt<Tab>ghi chú` (cột nào trống cũng được, nhiều cách viết thì ngăn bằng `/`), lưu rồi khởi động lại app. Thêm ngành mới: tạo thêm một file `.tsv` trong thư mục đó.
 
 Không thích dòng dịch máy thì mở `langscan.py` sửa `TRANSLATE_VI = False`.
 

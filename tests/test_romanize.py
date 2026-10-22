@@ -41,3 +41,9 @@ def test_romaji(analyzer, text, want):
 ])
 def test_korean(analyzer, text, want):
     assert analyzer.romanize_sentence(text, langs.KO) == want
+
+
+def test_pinyin_phrase_rejects_latin_words(analyzer):
+    import reverse
+    # tu dien co 'T', 'T恤'... -> truoc day 'melatonin' ra '么 拉 T 哦 您'
+    assert reverse.Reverse(analyzer).pinyin_phrase("melatonin") == []
