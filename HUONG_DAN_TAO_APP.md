@@ -123,25 +123,26 @@ thoát ngay.
 ## 3. Lấy đoạn chữ đang bôi đen
 
 **Làm gì** (`langscan.py: grab_selection`):
-1. Cất nội dung clipboard hiện tại.
-2. Ghi một "dấu hiệu" lạ vào clipboard (`"\x00__scan__\x00"`).
-3. Nhả các phím đang giữ (Ctrl, Alt, D…), rồi giả lập bấm `Ctrl+C`.
-4. Chờ tối đa ~1 giây xem clipboard có đổi khác dấu hiệu không.
-5. Trả clipboard cũ lại như chưa có gì.
+1. Cất **mọi định dạng** đang có trong clipboard: chữ, ảnh, file (`_clip_save`).
+2. Nhả các phím đang giữ (Ctrl, Alt, D…).
+3. Ghi lại số thứ tự clipboard của Windows, rồi giả lập bấm `Ctrl+C`.
+4. Chờ tối đa ~1 giây xem số thứ tự có đổi không. Không đổi nghĩa là không có gì được bôi đen.
+5. Đọc chữ, rồi trả clipboard cũ lại như chưa có gì (`_clip_restore`).
 
 **Tại sao lại vòng vèo qua clipboard?**
 - Windows **không có** cách chung để hỏi "chữ nào đang được bôi đen?". Có API
   UI Automation nhưng mỗi app hỗ trợ một kiểu, Chrome/Electron/game thường không trả về.
   `Ctrl+C` thì app nào cũng hiểu.
-- **Tại sao cần dấu hiệu:** nếu chỉ so "clipboard có đổi không" thì khi người dùng bôi
-  đen đúng đoạn đang có sẵn trong clipboard, app tưởng là chưa copy được. Ghi một chuỗi
-  không ai gõ ra được rồi chờ nó bị thay → biết chắc Ctrl+C đã chạy.
+- **Tại sao dùng số thứ tự (`GetClipboardSequenceNumber`):** nếu so nội dung thì khi người
+  dùng bôi đen đúng đoạn đang có trong clipboard, app tưởng chưa copy được. Số thứ tự tăng
+  mỗi lần clipboard được ghi, kể cả khi nội dung trùng. Bản đầu dùng một chuỗi "dấu hiệu"
+  ghi vào clipboard, và nó có lỗi: chuỗi bắt đầu bằng ký tự NUL nên thực tế ghi ra rỗng.
 - **Tại sao phải nhả phím trước:** người dùng vẫn đang giữ `Ctrl+Alt+D`. Gửi `Ctrl+C`
   lúc đó thực chất thành `Ctrl+Alt+C` → app khác không copy. Nhả rồi chờ 50ms là hết.
 - **Tại sao chờ vòng lặp chứ không `sleep(0.3)` một lần:** có app copy mất 20ms, có app
   (Word nặng) mất 500ms. Hỏi lại mỗi 50ms vừa nhanh với app nhanh vừa đủ lâu với app chậm.
 - **Tại sao trả clipboard cũ:** người dùng vừa copy một đoạn để dán mà tra từ xong
-  bị mất là rất khó chịu.
+  bị mất là rất khó chịu. Chỉ lưu chữ thì vẫn mất ảnh và file, nên phải chép mọi định dạng.
 
 ---
 
@@ -306,7 +307,7 @@ cache SQLite ─có─► trả luôn
    ▼
 Google (translate.googleapis.com, client=gtx)
    │lỗi mạng ─► đánh dấu "mất mạng" 30 giây
-   │lỗi khác ─► nguồn tiếp theo (Google dict, MyMemory, Lingva)
+   │lỗi khác ─► nguồn tiếp theo (Google dict, MyMemory)
    ▼
 dịch offline (Argos Translate) — KHÔNG lưu cache
 ```
@@ -391,7 +392,8 @@ Một cửa sổ trong suốt phủ cả màn hình, kéo chuột vẽ hình ch�
 bằng `PIL.ImageGrab`.
 
 **Bẫy DPI:** màn hình đặt tỉ lệ 125% thì toạ độ Tk (đơn vị logic) khác toạ độ ảnh chụp
-(điểm ảnh thật) → chụp lệch. Phải đo tỉ lệ và nhân vào. Và việc đo này **phải chạy trên
+(điểm ảnh thật) → chụp lệch. Phải đo tỉ lệ và nhân vào. Hai màn hình có thể khác tỉ lệ, nên `_map_box` tính riêng theo
+màn hình chứa vùng khoanh. Và việc đo này **phải chạy trên
 luồng Tk** (gọi Tk từ luồng phụ trả số sai — lại là quy tắc ở Bước 4).
 
 Vùng vừa chụp lưu vào `data/snip.json` để `Ctrl+Alt+Z` chụp lại đúng chỗ (phụ đề video).
@@ -429,9 +431,10 @@ dùng hai phiên bản `msvcp140.dll`). Sửa: luôn nạp RapidOCR trước.
   Hệ quả: `print` không có chỗ ra → ghi log vào file (`setup_logging`).
 - **Chỉ chạy một bản** (`already_running`): bấm mở hai lần mà chạy hai bản thì mỗi phím
   tắt mở hai popup.
-- **Khởi động cùng Windows bằng Task Scheduler** (`autostart.py`) chứ không phải thư mục
-  Startup: task chạy được với **quyền cao nhất** → phím tắt vẫn bắt được khi đang dùng app
-  chạy quyền admin (Windows chặn app thường "móc" phím của app admin).
+- **Khởi động cùng Windows bằng Task Scheduler** (`autostart.py`), chạy **quyền thường**.
+  Bản cũ chạy quyền cao nhất để phím tắt ăn cả trong app admin, nhưng file của app nằm ở thư
+  mục người dùng ghi được: chương trình độc hại có thể thay file rồi nhận quyền admin không
+  qua UAC. Cái giá phải trả là phím tắt không ăn trong app admin.
 
 ---
 
@@ -483,29 +486,27 @@ Gõ lại file này (đừng copy) là cách nhanh nhất để hiểu Bước 2
 
 ```python
 # mini_langscan.py - boi den chu, bam Ctrl+Alt+D -> popup ban dich tieng Viet
-import json, queue, re, threading, time, urllib.parse, urllib.request
+import ctypes, json, queue, re, threading, time, urllib.parse, urllib.request
 import tkinter as tk
 import keyboard, pyperclip
 
 Q = queue.Queue()                     # luong phu -> luong giao dien
 
 def grab_selection():
-    old = pyperclip.paste()
+    old = pyperclip.paste()           # ban mini chi giu lai chu, ban that giu ca anh
     for k in ("ctrl", "alt", "d"):    # nha phim dang giu cua to hop
         keyboard.release(k)
     time.sleep(0.05)
-    marker = "\x00mini\x00"
-    pyperclip.copy(marker)
+    seq = ctypes.windll.user32.GetClipboardSequenceNumber()
     keyboard.send("ctrl+c")
-    text = ""
     for _ in range(20):               # cho toi da 1 giay
         time.sleep(0.05)
-        cur = pyperclip.paste()
-        if cur != marker:
-            text = cur
-            break
-    pyperclip.copy(old)               # tra clipboard ve nhu cu
-    return text.strip()
+        if ctypes.windll.user32.GetClipboardSequenceNumber() != seq:
+            time.sleep(0.05)
+            text = pyperclip.paste()
+            pyperclip.copy(old)       # tra clipboard ve nhu cu
+            return text.strip()
+    return ""                         # khong boi den gi: clipboard khong doi
 
 def detect(text):
     if re.search(r"[가-힣]", text): return "ko"
@@ -591,6 +592,10 @@ kích thước popup, phát âm…
 | "Hà Nội là vốn của Việt Nam" | Ép thuật ngữ không xét ngữ cảnh | Chỉ ép từ đơn khi có thuật ngữ cùng ngành | Sửa máy dịch phải cẩn thận hơn máy dịch |
 | Bản dịch offline có ký tự `▁` | SentencePiece đánh dấu khoảng trắng bằng `▁` | Ghép mảnh rồi thay `▁` bằng dấu cách | Hiểu định dạng đầu ra của mô hình |
 | Inno Setup hết bộ nhớ | Nén `ultra64` nhiều luồng trên trình 32-bit | `max` + tiến trình nén riêng | Mặc định "mạnh nhất" chưa chắc chạy được |
+| Cứ gửi `Ctrl+C` mà có lúc ra rỗng | Chuỗi dấu hiệu bắt đầu bằng NUL nên ghi vào clipboard thành rỗng | Dùng số thứ tự clipboard | Ký tự NUL cắt chuỗi khi qua API của C |
+| Bấm Alt+Tab bật popup | Thư viện `keyboard` ghi sổ phím đang giữ, mất sự kiện nhả phím thì sổ kẹt | Hỏi lại Windows (`GetAsyncKeyState`) trước khi chạy | Trạng thái tự ghi có thể lệch với thực tế |
+| Bấm nghe lúc mất mạng thì từ đó câm luôn | `gTTS.save` tạo file trước khi tải, lỗi thì để lại file rỗng | Ghi file tạm rồi đổi tên | Đừng coi "file tồn tại" là "file đúng" |
+| Bản dịch mất số và bị cắt | Chữ đã lọc để tra từ điển bị dùng luôn để dịch | Tách hai loại chữ | Một biến không nên làm hai việc |
 | Hướng dẫn cài OCR tiếng Việt báo thành công nhưng không chạy | Windows OCR không có tiếng Việt — giả định sai từ đầu | Chuyển sang Tesseract | **Kiểm chứng trước khi tin** |
 
 ---

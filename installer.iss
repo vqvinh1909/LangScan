@@ -49,7 +49,7 @@ Name: "{group}\Go cai dat {#AppName}"; Filename: "{uninstallexe}"
 Name: "{userdesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 
 [Run]
-; Tao task Task Scheduler (quyen cao nhat -> phim tat an ca trong app chay admin)
+; Tao task Task Scheduler (quyen thuong, xem autostart.py)
 Filename: "{app}\{#AppExe}"; Parameters: "--autostart install"; Tasks: autostart; \
     StatusMsg: "Dang bat khoi dong cung Windows..."; Flags: waituntilterminated
 Filename: "{app}\{#AppExe}"; Description: "Mo LangScan ngay"; Flags: nowait postinstall skipifsilent

@@ -69,7 +69,7 @@ Không thích dòng dịch máy thì mở `langscan.py` sửa `TRANSLATE_VI = Fa
 
 ## Cài đặt nhanh: file cài đặt (không cần Python)
 
-Tải `LangScan-Setup-2.1.0.exe` ở mục Releases, chạy rồi bấm Next. App cài vào `%LOCALAPPDATA%\Programs\LangScan`, không cần quyền admin, đã kèm sẵn từ điển cả 4 thứ tiếng (kể cả tiếng Nhật). Tick "Khởi động cùng Windows" thì Windows hỏi quyền admin một lần.
+Tải `LangScan-Setup-2.1.0.exe` ở mục Releases, chạy rồi bấm Next. App cài vào `%LOCALAPPDATA%\Programs\LangScan`, không cần quyền admin, đã kèm sẵn từ điển cả 4 thứ tiếng (kể cả tiếng Nhật). Tick "Khởi động cùng Windows" thì Windows hỏi quyền admin một lần để tạo task.
 
 Windows có thể hiện cảnh báo SmartScreen ("Windows protected your PC") vì file chưa được ký số. Bấm **More info → Run anyway**.
 
@@ -226,7 +226,7 @@ Chụp một vùng mất khoảng 2 giây để đọc chữ. Vùng càng nhỏ 
 
 Bật: `install_autostart.bat`, hoặc trả lời `y` ở bước 4 của `setup.bat`, hoặc tick trong menu icon khay. Tắt: `uninstall_autostart.bat`.
 
-Cơ chế: tạo task `LangScan` trong Task Scheduler, chạy lúc đăng nhập với **quyền cao nhất** — nhờ vậy phím tắt vẫn ăn khi bạn đang ở trong app chạy quyền admin. Lúc bật/tắt Windows hỏi UAC một lần, bấm Yes.
+Cơ chế: tạo task `LangScan` trong Task Scheduler, chạy lúc đăng nhập với **quyền thường**. App không chạy quyền admin vì file của nó nằm ở thư mục người dùng ghi được; cái giá là **phím tắt không ăn khi bạn đang ở trong app chạy quyền admin**. Lúc bật/tắt Windows hỏi UAC một lần để tạo/xoá task, bấm Yes.
 
 Bản cũ tên `ChineseScan` sẽ tự được gỡ khi bạn cài autostart lần này.
 
@@ -248,6 +248,7 @@ Hai lỗi hay gặp nhất:
 ## Lưu ý
 
 - Cách lấy chữ: app giả lập `Ctrl+C` rồi đọc clipboard, sau đó **trả clipboard về nguyên trạng**. Chỗ nào không copy được (ảnh, PDF scan) thì không tra được — chỗ đó cần OCR.
+- **Riêng tư:** khi dịch cả câu và khi nghe phát âm, chữ bạn bôi đen hoặc chụp được gửi lên dịch vụ ngoài: Google, và MyMemory nếu Google lỗi. Bản dịch lưu nguyên văn ở `data/vi_cache.db`, âm thanh ở `data/audio/`. Đừng bấm phím tắt trên mật khẩu hay tài liệu mật; tra từng từ Trung/Anh trong từ điển thì không gửi đi.
 - Phát âm dùng gTTS (cần mạng), mp3 cache ở `data/audio/`.
 - Tiếng Hàn: kengdic là từ điển cộng đồng, nghĩa tiếng Anh đôi khi cộc lốc hoặc viết hoa lộn xộn. Phần chia động từ (`일해요` → `일하다`) dùng quy tắc đơn giản, không phải bộ phân tích hình thái đầy đủ, nên vài trường hợp hiếm sẽ trượt.
 - Dòng "Hán tự = …" của tiếng Hàn là **nghĩa** của chữ Hán đó, không phải âm Hán–Việt. Ví dụ 每日 hiện "hàng ngày" chứ không phải "mỗi nhật".
@@ -278,12 +279,16 @@ Mở `langscan.py`, sửa mấy dòng đầu file:
 | `korean.py` | Tiếng Hàn: kengdic, phiên âm Latin, Hán tự |
 | `english.py` | Tiếng Anh: từ điển Anh–Việt, IPA, CEFR, thuật ngữ IT, đưa về dạng gốc |
 | `reverse.py` | Tra ngược Việt → Trung/Anh và tra bằng pinyin, có chỉ mục cache |
-| `translate.py` | Dịch Việt online + cache SQLite |
+| `translate.py` | Dịch cả câu online, cache SQLite, tự chuyển sang dịch offline khi mất mạng |
+| `offline_mt.py` | Dịch offline bằng mô hình Argos (CTranslate2) |
+| `terms.py` | Thuật ngữ chuyên ngành (`data/terms/*.tsv`) |
 | `autostart.py` | Bật/tắt khởi động cùng Windows |
-| `setup_data.py` | Tải từ điển về `data/` |
+| `setup_data.py` | Kiểm tra từ điển trong `data/` còn đủ không |
 | `caidat_tiengnhat.py` | Cài từ điển tiếng Nhật (đi vòng qua lỗi pip trên Windows) |
-| `ocr.py` | Đọc chữ từ ảnh bằng OCR của Windows (hoặc Tesseract) |
+| `ocr.py` | Đọc chữ từ ảnh: RapidOCR, OCR của Windows, Tesseract (tiếng Việt) |
 | `chandoan.py` | Kiểm tra thiếu gì, hỏng gì |
+| `build.py`, `installer.iss` | Đóng gói `.exe` và file cài đặt |
+| `paths.py`, `version.py`, `logo.py` | Đường dẫn, số phiên bản, vẽ logo |
 
 Mỗi module chạy độc lập được để kiểm tra nhanh, không cần giao diện:
 

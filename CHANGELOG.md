@@ -1,5 +1,23 @@
 # Nhật ký thay đổi
 
+## Chưa phát hành
+
+### Sửa lỗi
+- **Dịch cả câu giữ nguyên số, dấu câu, chữ Latin và độ dài.** Trước đây `我有3个苹果` bị dịch mất số 3, và đoạn dài chỉ được dịch phần đầu (120 chữ Hán, 240 ký tự tiếng Anh).
+- **Giữ nguyên clipboard**, kể cả ảnh và file; không bôi đen gì thì clipboard không bị đụng tới. App copy chậm không còn ra kết quả rỗng.
+- Chặn popup "ma" khi bấm Alt+Tab do thư viện phím bị kẹt trạng thái.
+- Bấm nghe lúc mất mạng không còn làm câu đó hỏng âm thanh luôn.
+- Một lỗi xử lý không còn làm mọi phím tắt ngừng chạy; chuỗi Latin rất dài không còn gây lỗi đó.
+- Lỗi khi chụp màn hình giờ có hiện thông báo.
+- Popup hiện đúng màn hình chứa con trỏ; lớp chụp phủ mọi màn hình.
+
+### Bảo mật và riêng tư
+- **Khởi động cùng Windows giờ chạy quyền thường**, không còn quyền cao nhất. Phím tắt không ăn trong app chạy quyền admin. Máy đã bật trước đây: tắt rồi bật lại trong menu icon khay để áp dụng.
+- Log không còn ghi nội dung chữ OCR. README nói rõ chữ nào được gửi ra dịch vụ ngoài.
+
+### Dọn dẹp
+- Bỏ nguồn dịch Lingva; `setup_data.py` chỉ còn kiểm tra từ điển vì dữ liệu đã nằm sẵn trong mã nguồn.
+
 ## 2.1.0 — 2026-10-22
 
 ### Thuật ngữ chuyên ngành: 257 → 659 mục, 4 → 11 ngành

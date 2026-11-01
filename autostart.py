@@ -2,8 +2,10 @@
 """
 autostart.py - Bat/tat che do khoi dong cung Windows cho LangScan.
 
-Dung Task Scheduler voi tuy chon "chay voi quyen cao nhat" (/RL HIGHEST),
-nho vay phim tat van hoat dong khi ban dang o trong app chay quyen admin.
+Dung Task Scheduler, chay voi quyen thuong (/RL LIMITED). KHONG dung quyen cao
+nhat: file cua app nam o thu muc nguoi dung ghi duoc, chuong trinh nao cung thay
+duoc file roi nhan quyen admin khong qua UAC. Cai gia: phim tat khong an khi dang
+o trong app chay quyen admin.
 Tao/xoa task can quyen admin -> script tu goi lai chinh no qua UAC.
 
 Dung tu dong lenh:
@@ -85,7 +87,7 @@ def _elevate(action):
 
 
 def install():
-    """Tao task chay luc dang nhap Windows, quyen cao nhat."""
+    """Tao task chay luc dang nhap Windows, quyen thuong."""
     if os.name != "nt":
         print("Chi ho tro Windows.")
         return False
@@ -96,7 +98,7 @@ def install():
     cmd = ('"{}"'.format(sys.executable) if FROZEN
            else '"{}" "{}"'.format(pythonw_exe(), SCRIPT))
     r = _run(["schtasks", "/Create", "/TN", TASK_NAME, "/SC", "ONLOGON",
-              "/RL", "HIGHEST", "/F", "/TR", cmd])
+              "/RL", "LIMITED", "/F", "/TR", cmd])
     if r.returncode != 0:
         print("Loi tao task:", (r.stderr or r.stdout).strip())
         return False
@@ -138,15 +140,6 @@ def uninstall():
 
 def toggle():
     return uninstall() if is_installed() else install()
-
-
-def start_now():
-    """Chay task ngay (dung sau khi vua cai xong)."""
-    try:
-        _run(["schtasks", "/Run", "/TN", TASK_NAME])
-        return True
-    except Exception:
-        return False
 
 
 def main(argv):

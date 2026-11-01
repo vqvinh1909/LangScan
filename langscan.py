@@ -146,6 +146,21 @@ def already_running():
 
 
 # --------------------------------------------------------------- audio -----
+def _save_tts(text, code, path):
+    """Tai mp3 ve path neu chua co. gTTS.save tao file truoc roi moi tai: mat mang
+    thi de lai file rong, cac lan sau tuong da co -> ghi file tam roi moi doi ten."""
+    if os.path.exists(path) and os.path.getsize(path) > 0:
+        return
+    from gtts import gTTS
+    tmp = "{}.{}.tmp".format(path, threading.get_ident())
+    try:
+        gTTS(text=text, lang=code).save(tmp)
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+
+
 class Speaker(object):
     """Phat am: gTTS (online, co cache) -> SAPI (offline) -> tat."""
 
@@ -190,9 +205,7 @@ class Speaker(object):
                 # truoc day cache khong bao gio dung lai, lan nao cung tai lai
                 key = hashlib.md5(text.encode("utf-8")).hexdigest()[:16]
                 path = os.path.join(AUDIO_DIR, "{}_{}.mp3".format(code, key))
-                if not os.path.exists(path):
-                    from gtts import gTTS
-                    gTTS(text=text, lang=code).save(path)
+                _save_tts(text, code, path)
                 self._mixer.music.load(path)
                 self._mixer.music.play()
             elif self.mode == "sapi":
@@ -203,16 +216,101 @@ class Speaker(object):
 
 
 # ----------------------------------------------------------- clipboard -----
+def _clip_api():
+    # WinDLL rieng: khong dung chung ham (va argtypes) voi pyperclip
+    import ctypes
+    from ctypes import wintypes as w
+    u, k = ctypes.WinDLL("user32"), ctypes.WinDLL("kernel32")
+    u.OpenClipboard.argtypes = [w.HWND]
+    u.EnumClipboardFormats.argtypes = [w.UINT]
+    u.EnumClipboardFormats.restype = w.UINT
+    u.GetClipboardData.argtypes = [w.UINT]
+    u.GetClipboardData.restype = w.HANDLE
+    u.SetClipboardData.argtypes = [w.UINT, w.HANDLE]
+    u.SetClipboardData.restype = w.HANDLE
+    k.GlobalSize.argtypes = [w.HGLOBAL]
+    k.GlobalSize.restype = ctypes.c_size_t
+    k.GlobalLock.argtypes = [w.HGLOBAL]
+    k.GlobalLock.restype = ctypes.c_void_p
+    k.GlobalUnlock.argtypes = [w.HGLOBAL]
+    k.GlobalAlloc.argtypes = [w.UINT, ctypes.c_size_t]
+    k.GlobalAlloc.restype = w.HGLOBAL
+    k.GlobalFree.argtypes = [w.HGLOBAL]
+    k.GlobalFree.restype = w.HGLOBAL
+    return ctypes, u, k
+
+
+def _clip_open(u):
+    for _ in range(20):                      # app khac co the dang giu clipboard
+        if u.OpenClipboard(None):
+            return True
+        time.sleep(0.01)
+    return False
+
+
+# Dinh dang khong phai vung nho thuong (bitmap, metafile...): Windows tu tao lai
+# tu dinh dang khac (CF_DIB...) hoac khong sao chep duoc
+_CLIP_SKIP = {2, 3, 9, 14, 0x80, 0x82, 0x83, 0x8E}
+_CLIP_MAX = 64 * 1024 * 1024
+
+
+def _clip_save():
+    """Chep moi dinh dang dang co trong clipboard (chu, anh, file...). None = khong mo duoc.
+    shortcut: bo qua phan vuot 64MB, du lieu lon hon thi khong tra lai du."""
+    ctypes, u, k = _clip_api()
+    if not _clip_open(u):
+        return None
+    saved, total, fmt = [], 0, 0
+    try:
+        while True:
+            fmt = u.EnumClipboardFormats(fmt)
+            if not fmt:
+                return saved
+            if fmt in _CLIP_SKIP or 0x300 <= fmt <= 0x3FF:
+                continue
+            h = u.GetClipboardData(fmt)
+            size = k.GlobalSize(h) if h else 0
+            if not size or total + size > _CLIP_MAX:
+                continue
+            ptr = k.GlobalLock(h)
+            if ptr:
+                saved.append((fmt, ctypes.string_at(ptr, size)))
+                total += size
+                k.GlobalUnlock(h)
+    finally:
+        u.CloseClipboard()
+
+
+def _clip_restore(saved):
+    ctypes, u, k = _clip_api()
+    if not _clip_open(u):
+        return
+    try:
+        u.EmptyClipboard()
+        for fmt, data in saved:
+            h = k.GlobalAlloc(0x0002, len(data))     # GMEM_MOVEABLE
+            ptr = k.GlobalLock(h) if h else None
+            if not ptr:
+                continue
+            ctypes.memmove(ptr, data, len(data))
+            k.GlobalUnlock(h)
+            if not u.SetClipboardData(fmt, h):
+                k.GlobalFree(h)
+    finally:
+        u.CloseClipboard()
+
+
+def _clip_seq():
+    import ctypes
+    return ctypes.windll.user32.GetClipboardSequenceNumber()
+
+
 def grab_selection():
     """Gia lap Ctrl+C de lay doan dang boi den, roi tra clipboard ve nhu cu."""
     import keyboard
     import pyperclip
 
-    try:
-        old = pyperclip.paste()
-    except Exception:
-        old = ""
-
+    saved = _clip_save()
     # Nha cac phim dang giu cua to hop hotkey truoc khi gui Ctrl+C
     for k in ("ctrl", "alt", "shift", "d", "c", "j", "k", "e", "s", "x"):
         try:
@@ -221,29 +319,32 @@ def grab_selection():
             pass
     time.sleep(0.05)
 
-    marker = "\x00__scan__\x00"
-    try:
-        pyperclip.copy(marker)
-    except Exception:
-        pass
-
+    # So thu tu cua Windows tang khi clipboard doi: khong boi den gi thi clipboard
+    # khong bi dung toi. App xoa roi moi ghi nen doc lai vai lan neu con rong.
+    seq = _clip_seq()
     keyboard.send("ctrl+c")
-
-    text = ""
     for _ in range(20):                      # cho toi da ~1 giay
         time.sleep(0.05)
-        try:
-            cur = pyperclip.paste()
-        except Exception:
-            cur = marker
-        if cur != marker:
-            text = cur
+        if _clip_seq() != seq:
             break
+    else:
+        return ""
 
-    try:
-        pyperclip.copy(old)                  # tra clipboard ve nguyen trang
-    except Exception:
-        pass
+    text = ""
+    for _ in range(5):
+        try:
+            text = pyperclip.paste()
+        except Exception:
+            text = ""
+        if text:
+            break
+        time.sleep(0.03)
+
+    if saved is not None:
+        try:
+            _clip_restore(saved)
+        except Exception as e:
+            print("[!] Khong tra lai duoc clipboard:", e)
     return text
 
 
@@ -251,6 +352,99 @@ def grab_selection():
 # Chu co dau / chu d cua tieng Viet -> coi la go tieng Viet
 RE_VI = langs.RE_VI
 _QUOTES = str.maketrans({"’": "'", "‘": "'", "“": '"', "”": '"'})
+
+
+def _work_area(x, y, fallback):
+    """(trai, tren, phai, duoi) cua man hinh chua diem (x, y), khong tinh thanh tac vu."""
+    try:
+        import ctypes
+        from ctypes import wintypes as w
+
+        class MonitorInfo(ctypes.Structure):
+            _fields_ = [("cbSize", w.DWORD), ("rcMonitor", w.RECT),
+                        ("rcWork", w.RECT), ("dwFlags", w.DWORD)]
+        u = ctypes.WinDLL("user32")
+        u.MonitorFromPoint.argtypes = [w.POINT, w.DWORD]
+        u.MonitorFromPoint.restype = w.HANDLE
+        u.GetMonitorInfoW.argtypes = [w.HANDLE, ctypes.POINTER(MonitorInfo)]
+        info = MonitorInfo(cbSize=ctypes.sizeof(MonitorInfo))
+        # 2 = MONITOR_DEFAULTTONEAREST
+        if u.GetMonitorInfoW(u.MonitorFromPoint(w.POINT(x, y), 2), ctypes.byref(info)):
+            r = info.rcWork
+            return r.left, r.top, r.right, r.bottom
+    except Exception:
+        pass
+    return fallback
+
+
+def _fit_popup(px, py, w, h, area):
+    """Vi tri popup canh con tro (px, py), nam trong man hinh area."""
+    l, t, r, b = area
+    x = max(l + 10, min(px + 12, r - w - 10))
+    y = py + 16
+    if y + h > b - 10:
+        y = max(t + 10, py - h - 16)
+    return x, y
+
+
+def route_text(analyzer, raw_text, force_lang, src_pref, max_words=25):
+    """Quyet dinh doan chu la gi, tra tu nao, dich chu nao (khong dung Tk).
+    -> (lang, cards, err, text, phrase, is_vi, vi_plain). text da loc de tra tu
+    dien; phrase la chu dem dich, giu nguyen so, dau cau va do dai."""
+    eff_force = force_lang or (src_pref if src_pref != "auto" else None)
+    has_cjk = bool(langs.RE_HAN.search(raw_text) or langs.RE_KANA.search(raw_text)
+                   or langs.RE_HANGUL.search(raw_text))
+    is_vi = (not force_lang) and (
+        src_pref == VI or
+        (src_pref in ("auto", langs.EN) and not has_cjk
+         and bool(RE_VI.search(raw_text.lower()))))
+    # Tieng Viet go khong dau / chu OCR mat dau ('toi di hoc', 'ngan hang'):
+    # truoc day bi coi la tieng Anh roi dich ra cau vo nghia.
+    # 'maybe' ('xin chao', 'ni hao'): van tra nhu pinyin, them muc tieng Viet.
+    vi_plain = None
+    if not is_vi and not force_lang and src_pref == "auto" and not has_cjk:
+        try:
+            vi_plain = analyzer.vietnamese_plain(raw_text)
+        except Exception:
+            vi_plain = None
+        is_vi = vi_plain == "vi"
+    if is_vi:                       # go tieng Viet: khong tra tu dien ngoai ngu
+        text = " ".join(raw_text.split())
+        return None, [], "", text, text, True, vi_plain
+    lang, cards, err = analyzer.analyze(raw_text, force_lang=eff_force, max_words=max_words)
+    text = langs.clean(raw_text, lang) if lang else ""
+    phrase = raw_text.strip() if text else ""
+    if not text and cards and lang in (langs.JA, langs.KO):
+        # go phien am: dich ca cau tren chu kana / Hangul da doi lai
+        try:
+            text = phrase = analyzer.romanized_text(raw_text, lang)
+        except Exception:
+            text = phrase = ""
+    return lang, cards, err, text, phrase, False, vi_plain
+
+
+def wants_phonetic(py_text, is_vi, src_pref, lang, cards):
+    """-> (doc thu nhu pinyin, doc thu nhu romaji / phien am Han)."""
+    want_py = (not is_vi
+               and bool(re.match(r"^[A-Za-zÀ-ǿ1-5 ']{2,}$", py_text))
+               and len(py_text.split()) <= 10
+               and src_pref in ("auto", langs.ZH)
+               and lang in (None, langs.EN, langs.ZH)
+               # Tu dong + tu tieng Anh that ('bank'): khong doc them nhu pinyin
+               # (ra toan 半空, 扮酷... thua). Muon doc pinyin thi chon nguon Trung.
+               # Chi tinh tu tieng Anh pho bien (co cap CEFR / thuat ngu IT):
+               # tu dien Anh-Viet co ca muc hiem 'wo', 'shi', 'ni' -> 'wo shi',
+               # 'ni hao' van phai doc nhu pinyin
+               and not (src_pref == "auto" and lang == langs.EN and cards
+                        and all(c.badge in CEFR_BADGES or _real_english(c)
+                                for c in cards))
+               # Chu IN HOA (tieu de: 'CIRCADIAN') khong ai go pinyin kieu do
+               and not (src_pref == "auto" and py_text.isupper()))
+    # Tu dong ma tieng Anh khong ra gi ('taberu', 'annyeong'): thu doc nhu
+    # romaji tieng Nhat / phien am tieng Han
+    want_rom = (want_py and src_pref == "auto" and lang == langs.EN
+                and not any(c.found for c in cards))
+    return want_py, want_rom
 
 
 class Popup(object):
@@ -295,36 +489,8 @@ class Popup(object):
             except Exception:
                 self._pos = None
         self.close()
-        eff_force = force_lang or (self.src_pref if self.src_pref != "auto" else None)
-        has_cjk = bool(langs.RE_HAN.search(raw_text) or langs.RE_KANA.search(raw_text)
-                       or langs.RE_HANGUL.search(raw_text))
-        is_vi = (not force_lang) and (
-            self.src_pref == VI or
-            (self.src_pref in ("auto", langs.EN) and not has_cjk
-             and bool(RE_VI.search(raw_text.lower()))))
-        # Tieng Viet go khong dau / chu OCR mat dau ('toi di hoc', 'ngan hang'):
-        # truoc day bi coi la tieng Anh roi dich ra cau vo nghia.
-        # 'maybe' ('xin chao', 'ni hao'): van tra nhu pinyin, them muc tieng Viet.
-        vi_plain = None
-        if not is_vi and not force_lang and self.src_pref == "auto" and not has_cjk:
-            try:
-                vi_plain = self.analyzer.vietnamese_plain(raw_text)
-            except Exception:
-                vi_plain = None
-            is_vi = vi_plain == "vi"
-        if is_vi:                       # go tieng Viet: khong tra tu dien ngoai ngu
-            lang, cards, err = None, [], ""
-            text = " ".join(raw_text.split())
-        else:
-            lang, cards, err = self.analyzer.analyze(
-                raw_text, force_lang=eff_force, max_words=MAX_WORDS)
-            text = langs.clean(raw_text, lang) if lang else ""
-            if not text and cards and lang in (langs.JA, langs.KO):
-                # go phien am: dich ca cau tren chu kana / Hangul da doi lai
-                try:
-                    text = self.analyzer.romanized_text(raw_text, lang)
-                except Exception:
-                    text = ""
+        lang, cards, err, text, phrase, is_vi, vi_plain = route_text(
+            self.analyzer, raw_text, force_lang, self.src_pref, MAX_WORDS)
 
         win = tk.Toplevel(self.root)
         self.win = win
@@ -496,25 +662,7 @@ class Popup(object):
         # Pinyin lay tu chu GOC: chon nguon 'Trung' thi langs.clean() bo het chu
         # Latinh, 'wo shi' thanh rong va truoc day bao "Khong tra duoc tu nao".
         py_text = text if (text and lang != langs.ZH) else " ".join(raw_text.split())
-        want_py = (not is_vi
-                   and bool(re.match(r"^[A-Za-zÀ-ǿ1-5 ']{2,}$", py_text))
-                   and len(py_text.split()) <= 10
-                   and self.src_pref in ("auto", langs.ZH)
-                   and lang in (None, langs.EN, langs.ZH)
-                   # Tu dong + tu tieng Anh that ('bank'): khong doc them nhu pinyin
-                   # (ra toan 半空, 扮酷... thua). Muon doc pinyin thi chon nguon Trung.
-                   # Chi tinh tu tieng Anh pho bien (co cap CEFR / thuat ngu IT):
-                   # tu dien Anh-Viet co ca muc hiem 'wo', 'shi', 'ni' -> 'wo shi',
-                   # 'ni hao' van phai doc nhu pinyin
-                   and not (self.src_pref == "auto" and lang == langs.EN and cards
-                            and all(c.badge in CEFR_BADGES or _real_english(c)
-                                    for c in cards))
-                   # Chu IN HOA (tieu de: 'CIRCADIAN') khong ai go pinyin kieu do
-                   and not (self.src_pref == "auto" and py_text.isupper()))
-        # Tu dong ma tieng Anh khong ra gi ('taberu', 'annyeong'): thu doc nhu
-        # romaji tieng Nhat / phien am tieng Han
-        want_rom = (want_py and self.src_pref == "auto" and lang == langs.EN
-                    and not any(c.found for c in cards))
+        want_py, want_rom = wants_phonetic(py_text, is_vi, self.src_pref, lang, cards)
         if is_vi:
             # Cum khong dau ngan ('ngan hang'): dich may doan bua ("Ngan cave"),
             # phan tra nguoc ben duoi da ra dung - bo dong dich ca cum
@@ -538,7 +686,7 @@ class Popup(object):
             multi_word = (lang not in (langs.ZH, langs.JA)
                           and len(text.split()) >= 2)
             if TRANSLATE_VI and (len(cards) > 1 or multi_word or self.dst_pref != VI):
-                self._phrase_line(inner, text, lang)
+                self._phrase_line(inner, phrase, lang)
             for i, c in enumerate(cards):
                 self._card_block(inner, c, first=(i == 0))
 
@@ -855,10 +1003,11 @@ class Popup(object):
         try:
             h = self._height(win)
             w = self.width + 18
-            sh = win.winfo_screenheight()
             x, y = win.winfo_x(), win.winfo_y()
-            if y + h > sh - 40:
-                y = max(10, sh - h - 40)
+            _l, t, _r, b = _work_area(x, y, (0, 0, win.winfo_screenwidth(),
+                                             win.winfo_screenheight()))
+            if y + h > b - 10:
+                y = max(t + 10, b - h - 10)
             win.geometry("{}x{}+{}+{}".format(w, h, x, y))
         except Exception:
             pass
@@ -1071,18 +1220,15 @@ class Popup(object):
     def _place(self, win):
         h = self._height(win)
         w = self.width + 18
-        sw, sh = win.winfo_screenwidth(), win.winfo_screenheight()
+        fallback = (0, 0, win.winfo_screenwidth(), win.winfo_screenheight())
         if getattr(self, "_pos", None):          # dich lai: giu nguyen cho cu
             x, y = self._pos
-            x = max(0, min(x, sw - w - 10))
-            y = max(0, min(y, sh - h - 40))
-            win.geometry("{}x{}+{}+{}".format(w, h, x, y))
-            return
-        x, y = self.root.winfo_pointerxy()
-        x = max(10, min(x + 12, sw - w - 10))
-        y = y + 16
-        if y + h > sh - 40:
-            y = max(10, y - h - 32)
+            l, t, r, b = _work_area(x, y, fallback)
+            x = max(l, min(x, r - w - 10))
+            y = max(t, min(y, b - h - 10))
+        else:
+            px, py = self.root.winfo_pointerxy()
+            x, y = _fit_popup(px, py, w, h, _work_area(px, py, fallback))
         win.geometry("{}x{}+{}+{}".format(w, h, x, y))
 
 
@@ -1133,6 +1279,59 @@ class DoubleTap(object):
 
 
 # ------------------------------------------------ chup man hinh roi doc chu -
+def _virtual_screen(root):
+    """Hinh hoc Tk cua vung bao trum moi man hinh."""
+    import ctypes
+    metric = ctypes.windll.user32.GetSystemMetrics
+    x, y, w, h = metric(76), metric(77), metric(78), metric(79)
+    if w <= 0 or h <= 0:
+        return "{}x{}+0+0".format(root.winfo_screenwidth(), root.winfo_screenheight())
+    return "{}x{}+{}+{}".format(w, h, x, y)
+
+
+def _monitor_rects():
+    """[(trai, tren, phai, duoi)] cua tung man hinh, theo he toa do cua luong hien tai."""
+    import ctypes
+    from ctypes import wintypes as w
+    u = ctypes.WinDLL("user32")
+    rects = []
+
+    def on_monitor(_mon, _dc, rect, _arg):
+        r = rect.contents
+        rects.append((r.left, r.top, r.right, r.bottom))
+        return True
+    proc = ctypes.WINFUNCTYPE(w.BOOL, w.HANDLE, w.HDC, ctypes.POINTER(w.RECT), w.LPARAM)
+    u.EnumDisplayMonitors.argtypes = [w.HDC, ctypes.c_void_p, proc, w.LPARAM]
+    u.EnumDisplayMonitors(None, None, proc(on_monitor), 0)
+    return rects
+
+
+def _physical_monitor_rects():
+    # -4 = DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2: he toa do cua anh chup
+    import ctypes
+    u = ctypes.WinDLL("user32")
+    u.SetThreadDpiAwarenessContext.argtypes = [ctypes.c_void_p]
+    u.SetThreadDpiAwarenessContext.restype = ctypes.c_void_p
+    old = u.SetThreadDpiAwarenessContext(ctypes.c_void_p(-4))
+    try:
+        return _monitor_rects()
+    finally:
+        u.SetThreadDpiAwarenessContext(old)
+
+
+def _map_box(box, logical, physical, scale):
+    """Doi vung khoanh (toa do tkinter) sang diem anh that, theo man hinh chua tam
+    vung: moi man hinh mot ti le (man chinh 125%, man phu 100%)."""
+    cx, cy = (box[0] + box[2]) / 2.0, (box[1] + box[3]) / 2.0
+    if len(logical) == len(physical):
+        for (l, t, r, b), (pl, pt, pr, pb) in zip(logical, physical):
+            if l <= cx < r and t <= cy < b:
+                sx, sy = (pr - pl) / float(r - l), (pb - pt) / float(b - t)
+                return (int(round(pl + (box[0] - l) * sx)), int(round(pt + (box[1] - t) * sy)),
+                        int(round(pl + (box[2] - l) * sx)), int(round(pt + (box[3] - t) * sy)))
+    return tuple(int(round(v * scale)) for v in box)
+
+
 class Snipper(object):
     """Keo chuot chon mot vung man hinh -> OCR -> dua vao popup nhu binh thuong.
 
@@ -1216,7 +1415,9 @@ class Snipper(object):
 
         win = tk.Toplevel(self.root)
         self.win = win
-        win.attributes("-fullscreen", True)
+        # Phu ca cac man hinh ('-fullscreen' chi phu mot man hinh)
+        win.overrideredirect(True)
+        win.geometry(_virtual_screen(self.root))
         win.attributes("-alpha", 0.25)
         win.attributes("-topmost", True)
         win.configure(bg="black", cursor="crosshair")
@@ -1295,7 +1496,10 @@ class Snipper(object):
         def work():
             try:
                 from PIL import ImageGrab
-                real = tuple(int(round(v * scale)) for v in box)
+                try:
+                    real = _map_box(box, _monitor_rects(), _physical_monitor_rects(), scale)
+                except Exception:
+                    real = tuple(int(round(v * scale)) for v in box)
                 try:
                     img = ImageGrab.grab(bbox=real, all_screens=True)
                 except TypeError:          # ban Pillow cu khong co all_screens
@@ -1314,14 +1518,13 @@ class Snipper(object):
                 else:
                     ui_call(lambda: self.on_text(text, ""))
             except Exception as e:
-                ui_call(lambda: self.on_text("", "lỗi khi chụp / đọc chữ: {}".format(e)))
+                # Tao chuoi ngay: ra khoi except thi Python xoa bien e
+                msg = "lỗi khi chụp / đọc chữ: {}".format(e)
+                ui_call(lambda: self.on_text("", msg))
         threading.Thread(target=work, daemon=True).start()
 
 
 # ------------------------------------------------------ cua so tra tu tay ---
-SEARCH_WIDTH = 620
-SEARCH_HEIGHT = 620
-
 # Thanh chon ngon ngu kieu Google Dich: Nguon -> Dich.
 VI = "vi"
 SRC_CHOICES = (("auto", "Tự động"), (VI, "Việt"), (langs.ZH, "Trung"),
@@ -1426,6 +1629,33 @@ class Tray(object):
 
 
 # ----------------------------------------------------------------- app -----
+_VK = {"ctrl": 0x11, "alt": 0x12, "shift": 0x10}
+
+
+def _key_pressed(name):
+    # 0x8000: dang giu; 0x0001: vua bam tu lan hoi truoc (bam nhanh da nha)
+    import ctypes
+    vk = _VK[name] if name in _VK else ord(name.upper())
+    return bool(ctypes.windll.user32.GetAsyncKeyState(vk) & 0x8001)
+
+
+def _run_if_held(hotkey, fn):
+    """Thu vien keyboard tu ghi so phim dang giu; mat su kien nha phim (man hinh
+    khoa, cua so admin, may ngu) thi so ket va chi can bam Alt la khop Ctrl+Alt+D.
+    Hoi lai Windows: phim khong that su duoc bam thi xoa so va bo qua."""
+    time.sleep(0.015)                        # cho Windows cap nhat phim vua bam
+    if all(_key_pressed(k) for k in hotkey.split("+")):
+        fn()
+        return
+    print("[*] Bo qua phim tat gia:", hotkey)
+    try:
+        import keyboard
+        with keyboard._pressed_events_lock:
+            keyboard._pressed_events.clear()
+    except Exception:
+        pass
+
+
 class App(object):
     def __init__(self):
         self.analyzer = langs.Analyzer()
@@ -1487,7 +1717,7 @@ class App(object):
         if text:
             import ocr
             text = ocr.tidy_lines(text)      # noi dong bi ngat giua cau (tieu de...)
-            print("[*] OCR doc duoc: {}".format(text[:60].replace("\n", " ")))
+            print("[*] OCR doc duoc {} ky tu".format(len(text)))
             self.popup.show(text)
         else:
             fatal_msg = err or "không đọc được chữ nào trong vùng đã chọn"
@@ -1512,33 +1742,40 @@ class App(object):
         try:
             while True:
                 text, force_lang = self.q.get_nowait()
-                if text == "__search__":
-                    self.popup.show_empty()
-                elif text == "__snip__":
-                    self.snipper.start_snip()
-                elif text == "__snip_again__":
-                    # Dong popup cu truoc: no hay nam de len chinh vung can chup
-                    self.popup.close()
-                    self.root.after(150, self.snipper.snip_again)
-                else:
-                    self.popup.show(text, force_lang)
+                # Mot yeu cau loi khong duoc lam chet vong lap (mat het phim tat)
+                try:
+                    if text == "__search__":
+                        self.popup.show_empty()
+                    elif text == "__snip__":
+                        self.snipper.start_snip()
+                    elif text == "__snip_again__":
+                        # Dong popup cu truoc: no hay nam de len chinh vung can chup
+                        self.popup.close()
+                        self.root.after(150, self.snipper.snip_again)
+                    else:
+                        self.popup.show(text, force_lang)
+                except Exception as e:
+                    print("[!] Loi khi xu ly yeu cau:", e)
         except queue.Empty:
             pass
         self.root.after(60, self.pump)
 
     def run(self):
         import keyboard
-        keyboard.add_hotkey(HOTKEY_LOOKUP, lambda: self.on_hotkey(None))
-        keyboard.add_hotkey(HOTKEY_ZH, lambda: self.on_hotkey(langs.ZH))
-        keyboard.add_hotkey(HOTKEY_JA, lambda: self.on_hotkey(langs.JA))
-        keyboard.add_hotkey(HOTKEY_KO, lambda: self.on_hotkey(langs.KO))
-        keyboard.add_hotkey(HOTKEY_EN, lambda: self.on_hotkey(langs.EN))
+        def bind(hotkey, fn):
+            keyboard.add_hotkey(hotkey, lambda: threading.Thread(
+                target=_run_if_held, args=(hotkey, fn), daemon=True).start())
+        bind(HOTKEY_LOOKUP, lambda: self.on_hotkey(None))
+        bind(HOTKEY_ZH, lambda: self.on_hotkey(langs.ZH))
+        bind(HOTKEY_JA, lambda: self.on_hotkey(langs.JA))
+        bind(HOTKEY_KO, lambda: self.on_hotkey(langs.KO))
+        bind(HOTKEY_EN, lambda: self.on_hotkey(langs.EN))
         if DOUBLE_CTRL_SEARCH:
             self._double_ctrl = DoubleTap(self.open_search)
             keyboard.hook(self._double_ctrl.hook)
-        keyboard.add_hotkey(HOTKEY_SNIP, self.open_snip)
-        keyboard.add_hotkey(HOTKEY_SNIP_AGAIN, self.open_snip_again)
-        keyboard.add_hotkey(HOTKEY_QUIT, self.quit)
+        bind(HOTKEY_SNIP, self.open_snip)
+        bind(HOTKEY_SNIP_AGAIN, self.open_snip_again)
+        bind(HOTKEY_QUIT, self.quit)
         self.tray.start()
         start_ui_pump(self.root)
         print()

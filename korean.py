@@ -101,6 +101,8 @@ _R_MAX_PARSES = 400
 def _romaja_parses(text):
     """Moi cach doc chuoi Latin thanh Hangul -> [(diem phat, chuoi Hangul)]."""
     text = re.sub(r"[^a-z]", "", text.lower())
+    if len(text) > 100:                  # khong phai mot tu; walk de quy theo do dai
+        return []
     results = []
 
     def vowel_at(i):

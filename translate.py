@@ -31,9 +31,6 @@ _lock = threading.Lock()
 def _conn():
     os.makedirs(DATA_DIR, exist_ok=True)
     c = sqlite3.connect(CACHE_PATH, check_same_thread=False)
-    c.execute("CREATE TABLE IF NOT EXISTS vi "
-              "(src TEXT, lang TEXT, vi TEXT, PRIMARY KEY (src, lang))")
-    # Bang moi: dich duoc sang bat ky thu tieng nao, khong chi tieng Viet
     c.execute("CREATE TABLE IF NOT EXISTS tr "
               "(src TEXT, sl TEXT, tl TEXT, out TEXT, PRIMARY KEY (src, sl, tl))")
     return c
@@ -109,24 +106,7 @@ def _google_dict(text, src, target="vi"):
     return ""
 
 
-def _lingva(text, src, target="vi"):
-    """Lingva - may chu cong cong lam trung gian goi Google."""
-    for host in ("lingva.ml", "lingva.lunar.icu", "translate.plausibility.cloud"):
-        url = "https://{}/api/v1/{}/{}/{}".format(
-            host, src, target, urllib.parse.quote(text))
-        try:
-            req = urllib.request.Request(url, headers=HEADERS)
-            data = json.loads(
-                urllib.request.urlopen(req, timeout=TIMEOUT).read().decode("utf-8"))
-            out = (data.get("translation") or "").strip()
-            if out:
-                return out
-        except Exception:
-            continue
-    return ""
-
-
-PROVIDERS = (_google, _google_dict, _mymemory, _lingva)
+PROVIDERS = (_google, _google_dict, _mymemory)
 
 
 CHUNK = 1500         # doan dai hon: chia theo cau, dich tung phan roi ghep lai
