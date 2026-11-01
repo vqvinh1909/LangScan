@@ -1,6 +1,6 @@
 # Nhật ký thay đổi
 
-## Chưa phát hành
+## 2.1.1 — 2026-11-01
 
 ### Sửa lỗi
 - **Dịch cả câu giữ nguyên số, dấu câu, chữ Latin và độ dài.** Trước đây `我有3个苹果` bị dịch mất số 3, và đoạn dài chỉ được dịch phần đầu (120 chữ Hán, 240 ký tự tiếng Anh).

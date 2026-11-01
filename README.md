@@ -1,6 +1,6 @@
 # LangScan — bôi đen là tra từ: Trung · Nhật · Hàn · Anh
 
-Phiên bản hiện tại: **2.1.0** — xem [CHANGELOG.md](CHANGELOG.md).
+Phiên bản hiện tại: **2.1.1** — xem [CHANGELOG.md](CHANGELOG.md).
 Muốn hiểu app được làm ra thế nào và vì sao: [HUONG_DAN_TAO_APP.md](HUONG_DAN_TAO_APP.md).
 
 > **Chỉ chạy trên Windows 10/11.** Bản cài đặt không cần Python; chạy từ mã nguồn thì cần Python 3.9+. Chưa hỗ trợ macOS và Linux.
@@ -69,7 +69,7 @@ Không thích dòng dịch máy thì mở `langscan.py` sửa `TRANSLATE_VI = Fa
 
 ## Cài đặt nhanh: file cài đặt (không cần Python)
 
-Tải `LangScan-Setup-2.1.0.exe` ở mục Releases, chạy rồi bấm Next. App cài vào `%LOCALAPPDATA%\Programs\LangScan`, không cần quyền admin, đã kèm sẵn từ điển cả 4 thứ tiếng (kể cả tiếng Nhật). Tick "Khởi động cùng Windows" thì Windows hỏi quyền admin một lần để tạo task.
+Tải `LangScan-Setup-2.1.1.exe` ở mục Releases, chạy rồi bấm Next. App cài vào `%LOCALAPPDATA%\Programs\LangScan`, không cần quyền admin, đã kèm sẵn từ điển cả 4 thứ tiếng (kể cả tiếng Nhật). Tick "Khởi động cùng Windows" thì Windows hỏi quyền admin một lần để tạo task.
 
 Windows có thể hiện cảnh báo SmartScreen ("Windows protected your PC") vì file chưa được ký số. Bấm **More info → Run anyway**.
 
