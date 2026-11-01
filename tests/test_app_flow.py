@@ -190,6 +190,13 @@ def test_box_maps_per_monitor_scale():
     assert langscan._map_box((-1000, 100, -900, 200), logical, physical, 1.25) == (-1000, 69, -900, 169)
 
 
+def test_snip_covers_only_monitor_under_cursor():
+    rects = [(0, 0, 1536, 864), (-1920, -124, 0, 956)]
+    assert langscan._snip_geometry(100, 100, rects, "x") == "1536x864+0+0"
+    assert langscan._snip_geometry(-5, 0, rects, "x") == "1920x1080+-1920+-124"
+    assert langscan._snip_geometry(9999, 0, rects, "x") == "x"
+
+
 def test_box_outside_monitors_falls_back_to_scale():
     assert langscan._map_box((10, 10, 20, 20), [], [], 2.0) == (20, 20, 40, 40)
 

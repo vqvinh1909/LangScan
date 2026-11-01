@@ -9,7 +9,7 @@
 - Bấm nghe lúc mất mạng không còn làm câu đó hỏng âm thanh luôn.
 - Một lỗi xử lý không còn làm mọi phím tắt ngừng chạy; chuỗi Latin rất dài không còn gây lỗi đó.
 - Lỗi khi chụp màn hình giờ có hiện thông báo.
-- Popup hiện đúng màn hình chứa con trỏ; lớp chụp phủ mọi màn hình.
+- Popup và lớp chụp hiện đúng màn hình chứa con trỏ; chụp đúng vùng khi hai màn hình khác tỉ lệ.
 
 ### Bảo mật và riêng tư
 - **Khởi động cùng Windows giờ chạy quyền thường**, không còn quyền cao nhất. Phím tắt không ăn trong app chạy quyền admin. Máy đã bật trước đây: tắt rồi bật lại trong menu icon khay để áp dụng.

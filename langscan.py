@@ -1279,16 +1279,6 @@ class DoubleTap(object):
 
 
 # ------------------------------------------------ chup man hinh roi doc chu -
-def _virtual_screen(root):
-    """Hinh hoc Tk cua vung bao trum moi man hinh."""
-    import ctypes
-    metric = ctypes.windll.user32.GetSystemMetrics
-    x, y, w, h = metric(76), metric(77), metric(78), metric(79)
-    if w <= 0 or h <= 0:
-        return "{}x{}+0+0".format(root.winfo_screenwidth(), root.winfo_screenheight())
-    return "{}x{}+{}+{}".format(w, h, x, y)
-
-
 def _monitor_rects():
     """[(trai, tren, phai, duoi)] cua tung man hinh, theo he toa do cua luong hien tai."""
     import ctypes
@@ -1317,6 +1307,15 @@ def _physical_monitor_rects():
         return _monitor_rects()
     finally:
         u.SetThreadDpiAwarenessContext(old)
+
+
+def _snip_geometry(px, py, rects, fallback):
+    """Hinh hoc Tk cua man hinh chua con tro. Khong trai cua so qua nhieu man hinh:
+    hai man khac ti le thi Windows co gian ca cua so mot ti le, toa do chuot bi lech."""
+    for l, t, r, b in rects:
+        if l <= px < r and t <= py < b:
+            return "{}x{}+{}+{}".format(r - l, b - t, l, t)
+    return fallback
 
 
 def _map_box(box, logical, physical, scale):
@@ -1415,9 +1414,10 @@ class Snipper(object):
 
         win = tk.Toplevel(self.root)
         self.win = win
-        # Phu ca cac man hinh ('-fullscreen' chi phu mot man hinh)
         win.overrideredirect(True)
-        win.geometry(_virtual_screen(self.root))
+        px, py = self.root.winfo_pointerxy()
+        win.geometry(_snip_geometry(px, py, _monitor_rects(), "{}x{}+0+0".format(
+            self.root.winfo_screenwidth(), self.root.winfo_screenheight())))
         win.attributes("-alpha", 0.25)
         win.attributes("-topmost", True)
         win.configure(bg="black", cursor="crosshair")

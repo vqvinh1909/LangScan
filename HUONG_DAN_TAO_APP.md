@@ -595,6 +595,7 @@ kích thước popup, phát âm…
 | Cứ gửi `Ctrl+C` mà có lúc ra rỗng | Chuỗi dấu hiệu bắt đầu bằng NUL nên ghi vào clipboard thành rỗng | Dùng số thứ tự clipboard | Ký tự NUL cắt chuỗi khi qua API của C |
 | Bấm Alt+Tab bật popup | Thư viện `keyboard` ghi sổ phím đang giữ, mất sự kiện nhả phím thì sổ kẹt | Hỏi lại Windows (`GetAsyncKeyState`) trước khi chạy | Trạng thái tự ghi có thể lệch với thực tế |
 | Bấm nghe lúc mất mạng thì từ đó câm luôn | `gTTS.save` tạo file trước khi tải, lỗi thì để lại file rỗng | Ghi file tạm rồi đổi tên | Đừng coi "file tồn tại" là "file đúng" |
+| Chụp lệch, OCR ra chữ rác khi hai màn khác tỉ lệ | Lớp chụp trải qua hai màn, Windows co giãn cả cửa sổ theo một tỉ lệ | Chỉ phủ màn hình có con trỏ | Tính đúng số chưa đủ, phải thử bằng chuột thật |
 | Bản dịch mất số và bị cắt | Chữ đã lọc để tra từ điển bị dùng luôn để dịch | Tách hai loại chữ | Một biến không nên làm hai việc |
 | Hướng dẫn cài OCR tiếng Việt báo thành công nhưng không chạy | Windows OCR không có tiếng Việt — giả định sai từ đầu | Chuyển sang Tesseract | **Kiểm chứng trước khi tin** |
 
