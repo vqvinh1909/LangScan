@@ -1,6 +1,7 @@
 # LangScan — bôi đen là tra từ: Trung · Nhật · Hàn · Anh
 
 Phiên bản hiện tại: **2.1.0** — xem [CHANGELOG.md](CHANGELOG.md).
+Muốn hiểu app được làm ra thế nào và vì sao: [HUONG_DAN_TAO_APP.md](HUONG_DAN_TAO_APP.md).
 
 > **Chỉ chạy trên Windows 10/11.** Bản cài đặt không cần Python; chạy từ mã nguồn thì cần Python 3.9+. Chưa hỗ trợ macOS và Linux.
 
