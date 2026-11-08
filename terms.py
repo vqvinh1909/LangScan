@@ -56,7 +56,7 @@ class Terms(object):
                 e["domain"] = domain
                 self.entries.append(e)
                 for lang in self.index:
-                    for form in e[lang].split("/"):      # nhieu cach viet: 'a/b'
+                    for form in forms(e[lang]):
                         key = self._key(form.strip(), lang)
                         if key:
                             self.index[lang].setdefault(key, []).append(e)
@@ -136,6 +136,15 @@ class Terms(object):
         bits = ["{}: {}".format(LANG_LABEL[l], e[l]) for l in ("en", "zh", "ja", "ko")
                 if l != skip and e[l]]
         return "  ·  ".join(bits)
+
+
+def forms(cell):
+    """'muscle insertion/muscle insertions' -> hai cach viet. Manh 1 ky tu thi
+    dau '/' la mot phan cua thuat ngu ('A/B testing'), khong tach."""
+    parts = [f.strip() for f in (cell or "").split("/")]
+    if any(len(p) < 2 for p in parts):
+        parts = [(cell or "").strip()]
+    return [p for p in parts if p]
 
 
 def _singular(word):

@@ -12,6 +12,11 @@ ZH, JA, KO, EN = "zh", "ja", "ko", "en"
 LANG_NAME = {ZH: "Trung", JA: "Nhật", KO: "Hàn", EN: "Anh"}
 TTS_LANG = {ZH: "zh-CN", JA: "ja", KO: "ko", EN: "en", "vi": "vi"}
 
+
+def terms_forms(cell):
+    import terms
+    return terms.forms(cell)
+
 # Viet bang ma Unicode chu khong dung ky tu truc tiep - vai chu Han tu va chu
 # tuong thich trong nhin giong het nhau nhung ma khac nhau, de viet nham dai.
 RE_HAN = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")   # Han tu / Kanji
@@ -201,7 +206,7 @@ class Analyzer(object):
                 if target == "vi":
                     good = self._meanings(e["vi"])
                 elif target in ("en", "zh", "ja", "ko") and e[target]:
-                    good = [f.strip() for f in e[target].split("/") if f.strip()]
+                    good = terms_forms(e[target])
                 else:
                     good = []
                 if good:
@@ -362,14 +367,14 @@ class Analyzer(object):
                 same.vi = ["[{}] {}".format(label, e["vi"])] + [
                     v for v in same.vi if v != e["vi"]]
                 same.note = "  ·  ".join(x for x in (note, same.note) if x)
-                if not same.badge or same.badge.startswith(("ngoài", "thuần", "gốc")):
+                if not same.badge or same.badge.startswith(("ngoài", "thuần", "gốc", "tên riêng")):
                     same.badge = label       # khong co cap do -> hien nhan nganh
                 continue
             shown = surface
             if lang != EN:
                 # cach viet trong bo thuat ngu (생산 라인 co dau cach) thay cho chu
                 # da bo dau cach de do (생산라인)
-                forms = [f.strip() for f in e[lang].split("/")]
+                forms = terms_forms(e[lang])
                 shown = next((f for f in forms if re.sub(r"\s+", "", f) == surface), surface)
             reading = self._term_reading(shown, lang)
             card = Card(word=shown, reading=reading, badge=label, vi=[e["vi"]],
@@ -404,7 +409,7 @@ class Analyzer(object):
             return []
         out = []
         for e in t.search_vi(query):
-            word = e[target].split("/")[0].strip()
+            word = (terms_forms(e[target]) or [""])[0]
             if not word:
                 continue
             reading = self._term_reading(word, target)

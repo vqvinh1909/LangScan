@@ -30,3 +30,17 @@ demurrage	滞期费			phí lưu container
 bonded warehouse	保税仓库			kho ngoại quan
 dropshipping	代发货			dropshipping (bán hàng không giữ kho)
 cross-border e-commerce	跨境电商			thương mại điện tử xuyên biên giới
+# --- Bo sung 2026-11 ---
+transshipment	货物转运			chuyển tải
+consignee	收货人			người nhận hàng
+consignor	发货人			người gửi hàng
+freight collect	运费到付			cước trả sau
+freight prepaid	运费预付			cước trả trước
+delivery order	提货单			lệnh giao hàng (D/O)
+container yard	集装箱堆场			bãi container (CY)
+container freight station	集装箱货运站			kho hàng lẻ (CFS)
+reverse logistics	逆向物流			logistics ngược
+third-party logistics	第三方物流			logistics bên thứ ba (3PL)
+order fulfillment	订单履行			xử lý đơn hàng
+pallet	托盘			pallet (tấm kê hàng)
+stock keeping unit	库存单位			mã hàng tồn kho (SKU)

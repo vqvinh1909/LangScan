@@ -92,3 +92,19 @@ morning meeting	早会	朝礼	아침 조회	họp đầu ca	chōrei ở nhà má
 near miss	未遂事件	ヒヤリハット	아차사고	sự cố suýt xảy ra	hiyari-hatto
 quality standard	质量标准	品質基準	품질 기준	tiêu chuẩn chất lượng
 customer complaint	客户投诉	顧客クレーム	고객 불만	khiếu nại của khách hàng
+# --- Bo sung 2026-11 ---
+torque	扭矩			mô-men xoắn
+tensile strength	抗拉强度			độ bền kéo
+yield strength	屈服强度			giới hạn chảy
+hardness test	硬度测试			thử độ cứng
+surface roughness	表面粗糙度			độ nhám bề mặt
+heat treatment	热处理			nhiệt luyện
+CNC machining	数控加工			gia công CNC
+computer-aided design	计算机辅助设计			thiết kế có máy tính hỗ trợ (CAD)
+bill of materials	物料清单			định mức vật tư (BOM)
+first article inspection	首件检验			kiểm tra sản phẩm đầu tiên
+overall equipment effectiveness	设备综合效率			hiệu suất thiết bị tổng thể (OEE)
+poka-yoke	防错			chống sai lỗi (poka-yoke)
+three-phase power	三相电			điện ba pha
+servo motor	伺服电机			động cơ servo
+stepper motor	步进电机			động cơ bước

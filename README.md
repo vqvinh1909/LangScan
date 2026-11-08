@@ -61,7 +61,7 @@ Thư mục `data/terms/` có các bộ thuật ngữ **Anh · Trung · Nhật ·
 - Thuật ngữ trùng một từ thường (服务器) thì nghĩa chuyên ngành thêm lên đầu, kiểu `[IT] máy chủ`, không che nghĩa thường.
 - Gõ tiếng Việt (có dấu hay không dấu) tra ngược ra thuật ngữ: `nhồi máu cơ tim` → 心肌梗死 / 心筋梗塞 / 심근경색.
 
-Đây là **bản khởi đầu do máy soạn** (khoảng 660 thuật ngữ; 4 ngành đầu có đủ Anh · Trung · Nhật · Hàn, các ngành sau chỉ Anh · Trung), nên nhờ người trong ngành rà lại trước khi tin dùng; phần y khoa chỉ để đọc tài liệu, không thay ý kiến bác sĩ. Thêm hay sửa: mở file bằng Notepad, mỗi dòng `Anh<Tab>Trung<Tab>Nhật<Tab>Hàn<Tab>Việt<Tab>ghi chú` (cột nào trống cũng được, nhiều cách viết thì ngăn bằng `/`), lưu rồi khởi động lại app. Thêm ngành mới: tạo thêm một file `.tsv` trong thư mục đó.
+Đây là **bản khởi đầu do máy soạn** (khoảng 950 thuật ngữ; 4 ngành đầu có đủ Anh · Trung · Nhật · Hàn, các ngành sau chỉ Anh · Trung), nên nhờ người trong ngành rà lại trước khi tin dùng; phần y khoa chỉ để đọc tài liệu, không thay ý kiến bác sĩ. Thêm hay sửa: mở file bằng Notepad, mỗi dòng `Anh<Tab>Trung<Tab>Nhật<Tab>Hàn<Tab>Việt<Tab>ghi chú` (cột nào trống cũng được, nhiều cách viết thì ngăn bằng `/`), lưu rồi khởi động lại app. Thêm ngành mới: tạo thêm một file `.tsv` trong thư mục đó.
 
 Không thích dòng dịch máy thì mở `langscan.py` sửa `TRANSLATE_VI = False`.
 

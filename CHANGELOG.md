@@ -1,5 +1,12 @@
 # Nhật ký thay đổi
 
+## Chưa phát hành
+
+- Thêm thuật ngữ thể thao: muscle insertion, muscle origin, tendon insertion ("Every Muscle Insertion Explained" không còn dịch thành "chèn cơ").
+- **Thêm 285 thuật ngữ Anh · Trung → Việt** (947 mục): IT – mạng 97 (jitter, packet loss, routing table, keep-alive...), Y khoa 53, Thể thao 37 (tên các nhóm cơ, bài tập), Kinh tế 27, Logistics 13, Kỹ thuật 15, Xây dựng 10, Môi trường 9, Pháp luật 8, Marketing 8, Giáo dục 8.
+- Sửa: bôi đen câu tiếng Anh có chữ "a" hiện nhầm thẻ Marketing "thử nghiệm A/B" (thuật ngữ `A/B testing` bị tách ở dấu `/`).
+- Thẻ thuật ngữ viết hoa (Keep-Alive) hiện nhãn ngành thay cho "tên riêng".
+
 ## 2.1.1 — 2026-11-01
 
 ### Sửa lỗi

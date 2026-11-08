@@ -47,3 +47,22 @@ def test_pieces_replaced_by_term(analyzer):
 ])
 def test_terms_from_vietnamese(analyzer, query, target, word):
     assert analyzer.terms_from_vi(query, target)[0].word == word
+
+
+def test_muscle_insertion_not_translated_as_inject(analyzer):
+    masked = []
+
+    def retranslate(s):
+        masked.append(s)
+        return "Giải thích từng ZQ0"
+    out = analyzer.enforce_terms("Every Muscle Insertion Explained", langs.EN,
+                                 "Mỗi lần chèn cơ được giải thích", "vi", retranslate)
+    assert masked == ["Every ZQ0 Explained"]
+    assert out == "Giải thích từng chỗ bám của cơ"
+
+
+def test_slash_inside_term_is_not_split(analyzer):
+    # 'A/B testing' tung bi tach thanh 'A' -> moi cau co chu 'a' hien the Marketing
+    assert [c.word for c in analyzer.analyze("I have a book", force_lang=langs.EN)[1]] == ["book"]
+    words = [c.word for c in analyzer.analyze("We ran A/B testing", force_lang=langs.EN)[1]]
+    assert "A/B testing" in words

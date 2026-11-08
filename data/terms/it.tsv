@@ -104,3 +104,101 @@ battery life	电池续航	バッテリー寿命	배터리 수명	thời lượng
 storage capacity	存储容量	ストレージ容量	저장 용량	dung lượng lưu trữ
 file format	文件格式	ファイル形式	파일 형식	định dạng tệp
 user manual	用户手册	取扱説明書	사용 설명서	hướng dẫn sử dụng
+# --- Bo sung 2026-11 ---
+jitter	网络抖动			độ biến thiên độ trễ (jitter)
+packet loss	丢包			mất gói tin
+round-trip time	往返时间			thời gian khứ hồi (RTT)
+keep-alive	保活			duy trì kết nối (keep-alive)
+quality of service	服务质量			chất lượng dịch vụ (QoS)
+maximum transmission unit	最大传输单元			đơn vị truyền tối đa (MTU)
+time to live	生存时间			thời gian sống của gói tin (TTL)
+three-way handshake	三次握手			bắt tay ba bước
+Transmission Control Protocol	传输控制协议			giao thức điều khiển truyền tải (TCP)
+User Datagram Protocol	用户数据报协议			giao thức gói dữ liệu người dùng (UDP)
+datagram	数据报			gói dữ liệu (datagram)
+MAC address	MAC地址			địa chỉ MAC
+default gateway	默认网关			cổng mặc định (default gateway)
+routing table	路由表			bảng định tuyến
+routing protocol	路由协议			giao thức định tuyến
+static route	静态路由			tuyến tĩnh
+dynamic routing	动态路由			định tuyến động
+port forwarding	端口转发			chuyển tiếp cổng
+port scanning/port scan	端口扫描			quét cổng
+packet capture	抓包			bắt gói tin
+packet sniffing/packet sniffer	数据包嗅探			nghe lén gói tin
+network interface card/network card	网卡			card mạng
+access point	接入点			điểm truy cập (AP)
+wireless network	无线网络			mạng không dây
+multicast	组播			truyền đa hướng (multicast)
+unicast	单播			truyền đơn hướng (unicast)
+loopback address/loopback	环回地址			địa chỉ vòng lặp (loopback)
+spanning tree protocol	生成树协议			giao thức cây bao trùm (STP)
+link aggregation	链路聚合			gộp liên kết
+network topology	网络拓扑			cấu trúc mạng (topology)
+peer-to-peer	点对点			ngang hàng (P2P)
+intrusion detection system	入侵检测系统			hệ thống phát hiện xâm nhập (IDS)
+intrusion prevention system	入侵防御系统			hệ thống ngăn chặn xâm nhập (IPS)
+access control list	访问控制列表			danh sách kiểm soát truy cập (ACL)
+demilitarized zone	非军事区			vùng phi quân sự (DMZ)
+man-in-the-middle attack	中间人攻击			tấn công xen giữa (MITM)
+denial of service	拒绝服务			tấn công từ chối dịch vụ (DoS)
+SQL injection	SQL注入			tấn công chèn mã SQL
+cross-site scripting	跨站脚本			tấn công chèn mã kịch bản chéo trang (XSS)
+zero-day vulnerability/zero-day	零日漏洞			lỗ hổng zero-day (chưa có bản vá)
+penetration testing	渗透测试			kiểm thử xâm nhập
+packet filtering	包过滤			lọc gói tin
+domain name system	域名系统			hệ thống tên miền (DNS)
+network address translation	网络地址转换			chuyển đổi địa chỉ mạng (NAT)
+voice over IP	网络电话			thoại qua giao thức IP (VoIP)
+real-time transport protocol	实时传输协议			giao thức truyền tải thời gian thực (RTP)
+Request for Comments	征求意见稿			tài liệu chuẩn RFC (Request for Comments)
+codec	编解码器			bộ mã hóa – giải mã (codec)
+sampling rate	采样率			tần số lấy mẫu
+bit rate/bitrate	比特率			tốc độ bit
+signal-to-noise ratio	信噪比			tỷ số tín hiệu trên nhiễu (SNR)
+optical fiber/fiber optic	光纤			cáp quang
+twisted pair	双绞线			cáp xoắn đôi
+Ethernet	以太网			mạng Ethernet
+packet switching	分组交换			chuyển mạch gói
+tunneling	隧道技术			tạo đường hầm (tunneling)
+file descriptor	文件描述符			bộ mô tả tệp
+standard output	标准输出			đầu ra chuẩn (stdout)
+standard input	标准输入			đầu vào chuẩn (stdin)
+standard error	标准错误			luồng lỗi chuẩn (stderr)
+process ID	进程号			mã tiến trình (PID)
+system call	系统调用			lời gọi hệ thống
+kernel module	内核模块			mô-đun nhân
+device driver	设备驱动程序			trình điều khiển thiết bị (driver)
+virtual memory	虚拟内存			bộ nhớ ảo
+swap space	交换空间			vùng hoán đổi (swap)
+page fault	缺页			lỗi trang
+context switch	上下文切换			chuyển ngữ cảnh
+stack overflow	栈溢出			tràn ngăn xếp
+buffer overflow	缓冲区溢出			tràn bộ đệm
+null pointer	空指针			con trỏ rỗng
+segmentation fault	段错误			lỗi phân đoạn (segfault)
+exception handling	异常处理			xử lý ngoại lệ
+unit testing/unit test	单元测试			kiểm thử đơn vị
+integration testing/integration test	集成测试			kiểm thử tích hợp
+regression testing	回归测试			kiểm thử hồi quy
+code review	代码审查			rà soát mã
+continuous integration	持续集成			tích hợp liên tục (CI)
+continuous deployment	持续部署			triển khai liên tục (CD)
+microservices/microservice	微服务			vi dịch vụ (microservice)
+message queue	消息队列			hàng đợi tin nhắn
+load testing	负载测试			kiểm thử tải
+stress testing	压力测试			kiểm thử chịu tải
+single point of failure	单点故障			điểm lỗi duy nhất
+mean time between failures	平均故障间隔时间			thời gian trung bình giữa hai lần hỏng (MTBF)
+recovery time objective	恢复时间目标			mục tiêu thời gian khôi phục (RTO)
+recovery point objective	恢复点目标			mục tiêu điểm khôi phục (RPO)
+primary key	主键			khóa chính
+foreign key	外键			khóa ngoại
+stored procedure	存储过程			thủ tục lưu trữ
+relational database	关系数据库			cơ sở dữ liệu quan hệ
+data warehouse	数据仓库			kho dữ liệu
+object-oriented programming	面向对象编程			lập trình hướng đối tượng
+recursion	递归			đệ quy
+syntax error	语法错误			lỗi cú pháp
+command line/command-line interface	命令行			dòng lệnh
+graphical user interface	图形用户界面			giao diện đồ họa (GUI)
