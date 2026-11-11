@@ -13,6 +13,8 @@ data/argos/
 # Kich thuoc popup nguoi dung da keo (luu rieng tung may)
 data/popup.json
 data/snip.json
+# Khoa Gemini cua nguoi dung - KHONG dua len git
+data/gemini.json
 
 # Ket qua dong goi (python build.py)
 dist/

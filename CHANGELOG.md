@@ -2,6 +2,9 @@
 
 ## Chưa phát hành
 
+- **Dịch cả câu chuyển sang Bing** (không cần khóa), Google và MyMemory làm dự phòng. Bing hiểu ngữ cảnh tốt hơn: "Every Muscle Insertion Explained" ra "Giải thích về mọi điểm bám cơ" thay vì "Mỗi lần chèn cơ được giải thích". Bản dịch Google đã lưu trước đây không còn được dùng lại.
+- **Dịch bằng AI (tuỳ chọn).** Chuột phải icon khay → Dịch câu bằng AI → nhập khóa Gemini, Groq hoặc OpenRouter (đều có gói miễn phí): dòng dịch hiện bản dịch máy trước rồi thay bằng bản AI, hiểu ngữ cảnh hơn. Thử lần lượt Gemini → Groq → OpenRouter, hết lượt thì sang cái sau. Không có khóa thì app chạy như cũ.
+- **Thêm 267 thuật ngữ Anh · Trung → Việt** (tổng 1.214): IT 115 (mạng, quản trị hệ thống, DevOps, helpdesk), Y khoa 66 (giải phẫu, sinh lý), và 2 ngành mới: **Camera** 40 (camera giám sát, nhiếp ảnh) và **Truyện tranh** 46 (manga/manhua/webtoon, cảnh giới tu tiên: 筑基 Trúc Cơ, 金丹 Kim Đan...).
 - Thêm thuật ngữ thể thao: muscle insertion, muscle origin, tendon insertion ("Every Muscle Insertion Explained" không còn dịch thành "chèn cơ").
 - **Thêm 285 thuật ngữ Anh · Trung → Việt** (947 mục): IT – mạng 97 (jitter, packet loss, routing table, keep-alive...), Y khoa 53, Thể thao 37 (tên các nhóm cơ, bài tập), Kinh tế 27, Logistics 13, Kỹ thuật 15, Xây dựng 10, Môi trường 9, Pháp luật 8, Marketing 8, Giáo dục 8.
 - Sửa: bôi đen câu tiếng Anh có chữ "a" hiện nhầm thẻ Marketing "thử nghiệm A/B" (thuật ngữ `A/B testing` bị tách ở dấu `/`).

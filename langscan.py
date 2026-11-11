@@ -848,7 +848,7 @@ class Popup(object):
             return self.analyzer.enforce_terms(
                 _src, _l, out, _t, lambda s: tr.translate(s, _l, target=_t))
         self._fill_async(lbl, mt_text, lang, prefix="", color=FG, target=target,
-                         after=after, fix=fix, mark_offline=True)
+                         after=after, fix=fix, mark_offline=True, ai=True)
 
     def _copy(self, lbl, btn=None):
         result = getattr(lbl, "_result", "")
@@ -1137,7 +1137,7 @@ class Popup(object):
         if not card.found:
             if TRANSLATE_VI:
                 lbl = self._sense(block, "...", FG_DIM, 11, width)
-                self._fill_async(lbl, card.speak, card.lang, color=FG)
+                self._fill_async(lbl, card.speak, card.lang, color=FG, ai=True)
             else:
                 tk.Label(block, text="không có trong từ điển", bg=BG, fg=FG_DIM,
                          font=("Segoe UI", 9)).pack(anchor="w")
@@ -1167,11 +1167,12 @@ class Popup(object):
         return lbl
 
     def _fill_async(self, label, text, lang, prefix="", color=FG, target="vi", after=None,
-                    fix=None, mark_offline=False):
+                    fix=None, mark_offline=False, ai=False):
         """Dich o luong khac roi cap nhat nhan - khong lam treo popup.
         fix(ban_dich) -> ban_dich: sua them (o luong nen) truoc khi hien.
         after(ban_dich): goi them (o luong nen) khi dich xong, neu co.
-        mark_offline: ban dich tu bo dich offline thi ghi chu ngay duoi."""
+        mark_offline: ban dich tu bo dich offline thi ghi chu ngay duoi.
+        ai: co khoa Gemini thi hien ban Google truoc roi thay bang ban Gemini."""
         source = text
 
         def done(vi, engine=""):
@@ -1214,6 +1215,32 @@ class Popup(object):
                 except Exception:
                     pass
             ui_call(apply_)
+            # shortcut: chi dich sang tieng Viet - dich sang Trung/Nhat/Han con dong
+            # phien am di kem ban Google, lam khi can
+            if not (ai and target == "vi" and tr.ai_ready()):
+                return
+            try:
+                glossary = [(s, good[0]) for s, good, _d in
+                            self.analyzer._glossary_hits(source, lang, target)]
+            except Exception:
+                glossary = []
+            better, who = tr.translate_ai(source, lang, target, glossary)
+            if not better or better == vi:
+                return
+
+            def apply_ai():
+                try:
+                    if not label.winfo_exists():
+                        return
+                    label._result = better
+                    label.config(text=prefix + better, fg=color)
+                    tk.Label(label.master, bg=label["bg"], fg=FG_DIM,
+                             font=("Segoe UI", 8, "italic"),
+                             text="dịch bởi " + who).pack(after=label, anchor="w", padx=10)
+                    self._regrow()
+                except Exception:
+                    pass
+            ui_call(apply_ai)
         tr.translate_async(text, lang, done, target=target, detail=True)
 
     # ---- vi tri popup: canh con tro chuot, khong tran ra ngoai man hinh
@@ -1573,6 +1600,8 @@ class Tray(object):
             Menu.SEPARATOR,
             Item(lambda item: self._offline_label(), lambda: self.app.download_offline(),
                  enabled=lambda item: not self._offline_ready()),
+            Item("Dịch câu bằng AI (thử lần lượt từ trên xuống)",
+                 Menu(*[self._ai_item(n) for n in tr.AI_SERVICES])),
             Item("Khởi động cùng Windows", lambda: self._toggle_autostart(),
                  checked=lambda item: autostart.is_installed()),
             Item("Mở thư mục cài đặt", lambda: self._open(APP_DIR)),
@@ -1580,6 +1609,14 @@ class Tray(object):
             Menu.SEPARATOR,
             Item("Thoát ({})".format(HOTKEY_QUIT.upper()), lambda: self.app.quit()),
         )
+
+    def _ai_item(self, name):
+        import pystray
+        label = tr.AI_LABEL[name]
+        return pystray.MenuItem(
+            lambda item: ("{}: đang bật (bấm để đổi / xóa khóa)" if tr.ai_ready(name)
+                          else "Nhập khóa {}...").format(label),
+            lambda: self.app.set_ai_key(name))
 
     def _open(self, path):
         try:
@@ -1711,6 +1748,50 @@ class App(object):
             except Exception:
                 pass
         threading.Thread(target=work, daemon=True).start()
+
+    def set_ai_key(self, name):
+        """Hoi khoa cua mot dich vu AI (menu khay), thu khoa o luong nen roi bao ket qua."""
+        label = tr.AI_LABEL[name]
+
+        def say(msg):
+            def show():
+                self.popup.show("")
+                self.popup._message(self.popup._inner, msg)
+            ui_call(show)
+
+        def check(key):
+            ok, info = tr.ai_check(name, key)
+            if ok:
+                tr.ai_set(name, key=key, model=info)
+                say("Đã bật {} ({}). Dòng dịch hiện bản dịch máy trước rồi thay "
+                    "bằng bản AI.".format(label, info))
+            else:
+                say("Khóa {} chưa dùng được: {}\nKhóa cũ (nếu có) vẫn giữ "
+                    "nguyên.".format(label, info))
+            self._update_tray()
+
+        def ask():
+            import tkinter.simpledialog as sd
+            key = sd.askstring(
+                "Khóa " + label, "Dán khóa API lấy ở {}.\nĐể trống rồi OK = tắt {}.".format(
+                    tr.AI_KEY_URL[name], label), show="*", parent=self.root)
+            if key is None:
+                return
+            if not key.strip():
+                tr.ai_set(name, key="")
+                self._update_tray()
+                say("Đã tắt {} và xóa khóa khỏi máy.".format(label))
+                return
+            say("Đang thử khóa {}...".format(label))
+            threading.Thread(target=check, args=(key.strip(),), daemon=True).start()
+        ui_call(ask)
+
+    def _update_tray(self):
+        try:
+            if self.tray.icon is not None:
+                self.tray.icon.update_menu()
+        except Exception:
+            pass
 
     def _snip_done(self, text, err):
         """OCR xong: co chu thi hien popup, khong thi bao loi."""
