@@ -1,6 +1,6 @@
 # Nhật ký thay đổi
 
-## Chưa phát hành
+## 2.2.0 — 2026-11-11
 
 - **Dịch cả câu chuyển sang Bing** (không cần khóa), Google và MyMemory làm dự phòng. Bing hiểu ngữ cảnh tốt hơn: "Every Muscle Insertion Explained" ra "Giải thích về mọi điểm bám cơ" thay vì "Mỗi lần chèn cơ được giải thích". Bản dịch Google đã lưu trước đây không còn được dùng lại.
 - **Dịch bằng AI (tuỳ chọn).** Chuột phải icon khay → Dịch câu bằng AI → nhập khóa Gemini, Groq hoặc OpenRouter (đều có gói miễn phí): dòng dịch hiện bản dịch máy trước rồi thay bằng bản AI, hiểu ngữ cảnh hơn. Thử lần lượt Gemini → Groq → OpenRouter, hết lượt thì sang cái sau. Không có khóa thì app chạy như cũ.
