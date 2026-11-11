@@ -1,0 +1,43 @@
+# Thuat ngu Camera - giam sat (CCTV) va nhiep anh: Anh / Trung -> Viet (cot Nhat, Han de trong)
+# Dinh dang: Anh <TAB> Trung <TAB> Nhat <TAB> Han <TAB> Viet <TAB> ghi chu. Cot nao trong cung duoc.
+# BAN KHOI DAU (may soan) - nen nho nguoi trong nganh ra lai truoc khi tin dung.
+surveillance camera/security camera/CCTV camera	监控摄像头			camera giám sát
+closed-circuit television	闭路电视			truyền hình mạch kín (CCTV)
+IP camera	网络摄像机			camera IP
+network video recorder	网络硬盘录像机			đầu ghi hình IP (NVR)
+digital video recorder	硬盘录像机			đầu ghi hình (DVR)
+PTZ camera/pan-tilt-zoom camera	云台摄像机			camera quay quét (PTZ)
+dome camera	半球摄像机			camera bán cầu (dome)
+bullet camera	枪式摄像机			camera thân trụ (bullet)
+fisheye lens	鱼眼镜头			ống kính mắt cá
+infrared night vision	红外夜视			hồng ngoại quan sát ban đêm
+motion detection	移动侦测			phát hiện chuyển động
+field of view	视场角			góc nhìn (FOV)
+frame rate	帧率			tốc độ khung hình (fps)
+image sensor	图像传感器			cảm biến hình ảnh
+video compression	视频压缩			nén video
+wide dynamic range	宽动态			dải động rộng (WDR)
+backlight compensation	背光补偿			bù sáng ngược (BLC)
+Real Time Streaming Protocol	实时流协议			giao thức truyền phát thời gian thực (RTSP)
+facial recognition/face recognition	人脸识别			nhận diện khuôn mặt
+license plate recognition	车牌识别			nhận diện biển số xe
+aperture	光圈			khẩu độ
+shutter speed	快门速度			tốc độ màn trập
+ISO sensitivity	ISO感光度			độ nhạy sáng ISO
+exposure compensation	曝光补偿			bù phơi sáng
+depth of field	景深			độ sâu trường ảnh
+focal length	焦距			tiêu cự
+white balance	白平衡			cân bằng trắng
+image stabilization	防抖			chống rung
+autofocus	自动对焦			lấy nét tự động
+manual focus	手动对焦			lấy nét thủ công
+prime lens	定焦镜头			ống kính một tiêu cự (fix)
+zoom lens	变焦镜头			ống kính zoom
+wide-angle lens	广角镜头			ống kính góc rộng
+telephoto lens	长焦镜头			ống kính tele
+full-frame sensor	全画幅传感器			cảm biến full-frame
+mirrorless camera	无反相机			máy ảnh không gương lật
+bokeh	焦外虚化			hiệu ứng xóa phông (bokeh)
+long exposure	长曝光			phơi sáng lâu
+rule of thirds	三分法			bố cục một phần ba
+tripod	三脚架			chân máy (tripod)

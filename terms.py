@@ -22,7 +22,8 @@ COLS = ("en", "zh", "ja", "ko", "vi", "note")
 DOMAIN_LABEL = {"it": "IT", "kinhte": "Kinh tế", "ykhoa": "Y khoa",
                 "kythuat": "Kỹ thuật", "theduc": "Thể thao", "phapluat": "Pháp luật",
                 "xaydung": "Xây dựng", "marketing": "Marketing", "logistics": "Logistics",
-                "giaoduc": "Giáo dục", "moitruong": "Môi trường"}
+                "giaoduc": "Giáo dục", "moitruong": "Môi trường",
+                "camera": "Camera", "truyentranh": "Truyện tranh"}
 LANG_LABEL = {"en": "Anh", "zh": "Trung", "ja": "Nhật", "ko": "Hàn"}
 
 

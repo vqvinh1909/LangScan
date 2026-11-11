@@ -202,3 +202,119 @@ recursion	递归			đệ quy
 syntax error	语法错误			lỗi cú pháp
 command line/command-line interface	命令行			dòng lệnh
 graphical user interface	图形用户界面			giao diện đồ họa (GUI)
+# --- Bo sung 2026-11 ---
+subnetting	子网划分			chia mạng con (subnetting)
+classless inter-domain routing	无类别域间路由			định tuyến liên miền không phân lớp (CIDR)
+broadcast domain	广播域			miền quảng bá
+collision domain	冲突域			miền xung đột
+OSI model	开放系统互连模型			mô hình OSI
+physical layer	物理层			tầng vật lý
+data link layer	数据链路层			tầng liên kết dữ liệu
+network layer	网络层			tầng mạng
+transport layer	传输层			tầng giao vận
+application layer	应用层			tầng ứng dụng
+trunk port	中继端口			cổng trunk
+access port	接入端口			cổng access
+inter-VLAN routing	VLAN间路由			định tuyến giữa các VLAN
+Open Shortest Path First	开放最短路径优先			giao thức định tuyến OSPF
+Border Gateway Protocol	边界网关协议			giao thức định tuyến BGP
+autonomous system	自治系统			hệ tự trị (AS)
+next hop	下一跳			chặng kế tiếp (next hop)
+hop count	跳数			số chặng (hop)
+address resolution protocol	地址解析协议			giao thức phân giải địa chỉ (ARP)
+Internet Control Message Protocol	互联网控制消息协议			giao thức thông điệp điều khiển Internet (ICMP)
+traceroute	路由跟踪			dò đường đi gói tin (traceroute)
+network segment	网段			phân đoạn mạng
+IP address conflict	IP地址冲突			xung đột địa chỉ IP
+static IP address/static IP	静态IP地址			địa chỉ IP tĩnh
+dynamic IP address/dynamic IP	动态IP地址			địa chỉ IP động
+public IP address/public IP	公网IP地址			địa chỉ IP công cộng
+private IP address/private IP	私有IP地址			địa chỉ IP riêng (nội bộ)
+managed switch	网管交换机			switch có quản lý
+Power over Ethernet	以太网供电			cấp nguồn qua cáp mạng (PoE)
+patch panel	配线架			thanh đấu nối mạng (patch panel)
+patch cable	跳线			dây nhảy mạng (patch cord)
+RJ45 connector	水晶头			đầu bấm mạng RJ45
+server rack/network cabinet	机柜			tủ rack
+uplink	上行链路			đường kết nối lên (uplink)
+SSID	无线网络名称			tên mạng Wi-Fi (SSID)
+signal strength	信号强度			cường độ tín hiệu
+mesh network	网状网络			mạng lưới (mesh)
+wireless repeater/Wi-Fi extender	无线中继器			bộ kích sóng Wi-Fi
+site-to-site VPN	站点到站点VPN			VPN kết nối hai chi nhánh (site-to-site)
+split tunneling	分离隧道			tách luồng VPN (split tunneling)
+user group	用户组			nhóm người dùng
+file permissions	文件权限			quyền truy cập tệp
+disk quota	磁盘配额			hạn mức ổ đĩa
+RAID array	磁盘阵列			mảng đĩa RAID
+hot swap/hot-swappable	热插拔			thay nóng (không cần tắt máy)
+scheduled task	计划任务			tác vụ chạy theo lịch
+system log	系统日志			nhật ký hệ thống
+event viewer	事件查看器			trình xem sự kiện (Event Viewer)
+remote desktop	远程桌面			điều khiển máy tính từ xa (Remote Desktop)
+remote access	远程访问			truy cập từ xa
+boot loader/bootloader	引导加载程序			trình nạp khởi động (bootloader)
+safe mode	安全模式			chế độ an toàn (Safe Mode)
+system restore	系统还原			khôi phục hệ thống
+disk cleanup	磁盘清理			dọn dẹp ổ đĩa
+disk space	磁盘空间			dung lượng ổ đĩa
+CPU usage	CPU使用率			mức sử dụng CPU
+memory usage	内存使用率			mức sử dụng bộ nhớ
+load average	平均负载			tải trung bình (load average)
+file server	文件服务器			máy chủ tệp
+print server	打印服务器			máy chủ in
+mail server	邮件服务器			máy chủ thư
+web server	网页服务器			máy chủ web
+domain account	域账户			tài khoản miền (domain)
+local account	本地账户			tài khoản cục bộ
+administrator account	管理员账户			tài khoản quản trị
+password policy	密码策略			chính sách mật khẩu
+account lockout	账户锁定			khóa tài khoản
+organizational unit	组织单位			đơn vị tổ chức (OU)
+shared folder	共享文件夹			thư mục dùng chung
+network drive/mapped drive	网络驱动器			ổ đĩa mạng
+uninterruptible power supply	不间断电源			bộ lưu điện (UPS)
+server room	机房			phòng máy chủ
+blue-green deployment	蓝绿部署			triển khai xanh – lam (blue-green)
+canary release/canary deployment	金丝雀发布			phát hành thử trên nhóm nhỏ (canary)
+rolling update	滚动更新			cập nhật cuốn chiếu (rolling update)
+container image	容器镜像			ảnh container (image)
+container registry	镜像仓库			kho ảnh container (registry)
+service mesh	服务网格			lưới dịch vụ (service mesh)
+health check	健康检查			kiểm tra tình trạng dịch vụ (health check)
+configuration management	配置管理			quản lý cấu hình
+secret management	密钥管理			quản lý thông tin bí mật (secret)
+observability	可观测性			khả năng quan sát hệ thống (observability)
+site reliability engineering	站点可靠性工程			kỹ thuật độ tin cậy hệ thống (SRE)
+error budget	错误预算			ngân sách lỗi (error budget)
+deployment pipeline	部署流水线			quy trình triển khai tự động (pipeline)
+immutable infrastructure	不可变基础设施			hạ tầng bất biến
+merge request	合并请求			yêu cầu gộp mã (merge request)
+code freeze	代码冻结			đóng băng mã
+hotfix	热修复			bản vá nóng (hotfix)
+release branch	发布分支			nhánh phát hành
+semantic versioning	语义化版本			đánh số phiên bản theo ngữ nghĩa (SemVer)
+log aggregation	日志聚合			gom nhật ký tập trung
+alert fatigue	告警疲劳			quá tải cảnh báo
+help desk/helpdesk	服务台			bộ phận hỗ trợ kỹ thuật (helpdesk)
+service desk	IT服务台			bàn dịch vụ IT (service desk)
+ticketing system	工单系统			hệ thống phiếu yêu cầu (ticket)
+support ticket	工单			phiếu hỗ trợ (ticket)
+service level agreement	服务级别协议			cam kết chất lượng dịch vụ (SLA)
+first call resolution	首次解决率			giải quyết ngay lần đầu
+remote support	远程支持			hỗ trợ từ xa
+password reset	密码重置			đặt lại mật khẩu
+blue screen of death/blue screen	蓝屏			màn hình xanh (lỗi BSOD)
+printer driver	打印机驱动			driver máy in
+paper jam	卡纸			kẹt giấy
+toner cartridge	墨粉盒			hộp mực in
+network connectivity	网络连通性			khả năng kết nối mạng
+end user	最终用户			người dùng cuối
+known issue	已知问题			lỗi đã biết
+knowledge base	知识库			cơ sở tri thức (knowledge base)
+IT asset management	IT资产管理			quản lý tài sản IT
+tier 1 support	一线支持			hỗ trợ tuyến 1
+tier 2 support	二线支持			hỗ trợ tuyến 2
+employee onboarding	员工入职			tiếp nhận nhân viên mới (onboarding)
+peripheral device	外围设备			thiết bị ngoại vi
+docking station	扩展坞			đế cắm mở rộng (dock)
