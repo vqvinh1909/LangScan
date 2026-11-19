@@ -23,7 +23,7 @@ DOMAIN_LABEL = {"it": "IT", "kinhte": "Kinh tế", "ykhoa": "Y khoa",
                 "kythuat": "Kỹ thuật", "theduc": "Thể thao", "phapluat": "Pháp luật",
                 "xaydung": "Xây dựng", "marketing": "Marketing", "logistics": "Logistics",
                 "giaoduc": "Giáo dục", "moitruong": "Môi trường",
-                "camera": "Camera", "truyentranh": "Truyện tranh"}
+                "camera": "Camera", "truyentranh": "Truyện tranh", "viettat": "Viết tắt"}
 LANG_LABEL = {"en": "Anh", "zh": "Trung", "ja": "Nhật", "ko": "Hàn"}
 
 
@@ -39,6 +39,7 @@ class Terms(object):
         self.entries = []                      # moi muc: dict theo COLS + 'domain'
         self.index = {l: {} for l in ("en", "zh", "ja", "ko")}
         self.maxlen = {l: 1 for l in self.index}
+        self.strict = set()                    # (khoa, id muc): viet tat chi khop chu HOA
         if os.path.isdir(folder):
             for name in sorted(os.listdir(folder)):
                 if name.lower().endswith(".tsv"):
@@ -57,10 +58,15 @@ class Terms(object):
                 e["domain"] = domain
                 self.entries.append(e)
                 for lang in self.index:
-                    for form in forms(e[lang]):
+                    fs = forms(e[lang])
+                    for form in fs:
                         key = self._key(form.strip(), lang)
                         if key:
                             self.index[lang].setdefault(key, []).append(e)
+                            # 'IT', 'ID', 'SAT' khong duoc khop 'it', 'id', 'sat' trong cau thuong
+                            if lang == "en" and domain == "viettat" and all(
+                                    f.isupper() for f in fs if self._key(f, lang) == key):
+                                self.strict.add((key, id(e)))
                             n = len(key.split()) if lang == "en" else len(key)
                             self.maxlen[lang] = max(self.maxlen[lang], n)
 
@@ -87,9 +93,12 @@ class Terms(object):
             while i < len(spans):
                 for n in range(min(self.maxlen["en"], len(spans) - i), 0, -1):
                     key = " ".join(s[0].lower() for s in spans[i:i + n])
-                    hit = idx.get(key) or (n == 1 and idx.get(_singular(key)))
+                    k = key if key in idx else (_singular(key) if n == 1 else key)
+                    surface = text[spans[i][1]:spans[i + n - 1][2]]
+                    hit = [e for e in idx.get(k, ())
+                           if surface.isupper() or (k, id(e)) not in self.strict]
                     if hit:
-                        found.append((text[spans[i][1]:spans[i + n - 1][2]], hit[0]))
+                        found.append((surface, hit[0]))
                         i += n
                         break
                 else:

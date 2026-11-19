@@ -250,6 +250,8 @@ class Analyzer(object):
             # nam moc, stock: co phieu / hang ton): chi ep khi cau co them it nhat
             # mot thuat ngu khac cung nganh. 'the database is offline' -> ep;
             # 'Hanoi is the capital of Vietnam' -> giu ban dich may.
+            if domain == "viettat":
+                return False                      # may dich viet tat on; ep vao de lam hong cau
             if lang == EN and " " in surface.strip():
                 return True                       # cum nhieu chu: khong nhap nhang
             if lang != EN and len(surface) > 2:

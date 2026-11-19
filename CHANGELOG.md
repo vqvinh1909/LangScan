@@ -1,5 +1,11 @@
 # Nhật ký thay đổi
 
+## Chưa phát hành
+
+- **Thêm 515 từ viết tắt tiếng Anh** (ngành mới **Viết tắt**): văn phòng (ASAP, FYI, EOD, NDA), chat (BTW, IMO, LOL), kinh doanh (KPI, ROI, B2B), công nghệ (PDF, USB, UI/UX, OTP), tổ chức, đơn vị đo, thứ/tháng... Viết tắt chữ HOA chỉ khớp khi chữ gốc cũng viết HOA, nên "it", "us", "id" trong câu thường không bị nhầm. ETA giờ có thêm nghĩa "giờ đến dự kiến".
+- Sửa OCR đọc ngược chữ ngắn: "How to Own an Identity" ra "MOH to Own…", "NOW" ra "MON". Bước tự xoay chữ 180 độ của RapidOCR đoán nhầm nên đã tắt.
+- Bỏ OpenRouter khỏi dịch bằng AI: mô hình miễn phí của nó hay báo quá tải (lỗi 429). Còn Gemini, lỗi hay hết lượt thì sang Groq.
+
 ## 2.2.0 — 2026-11-11
 
 - **Dịch cả câu chuyển sang Bing** (không cần khóa), Google và MyMemory làm dự phòng. Bing hiểu ngữ cảnh tốt hơn: "Every Muscle Insertion Explained" ra "Giải thích về mọi điểm bám cơ" thay vì "Mỗi lần chèn cơ được giải thích". Bản dịch Google đã lưu trước đây không còn được dùng lại.

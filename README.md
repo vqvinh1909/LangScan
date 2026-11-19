@@ -58,12 +58,13 @@ Thư mục `data/terms/` có các bộ thuật ngữ **Anh · Trung · Nhật ·
 | `moitruong.tsv` | Môi trường – năng lượng | carbon neutrality · 碳中和 → trung hoà carbon |
 | `camera.tsv` | Camera giám sát – nhiếp ảnh | network video recorder · 网络硬盘录像机 → đầu ghi hình IP (NVR) |
 | `truyentranh.tsv` | Truyện tranh – truyện tu tiên | Foundation Establishment · 筑基 → Trúc Cơ |
+| `viettat.tsv` | Từ viết tắt (văn phòng, chat, kinh doanh, công nghệ, đơn vị...) | ASAP → càng sớm càng tốt · KPI → chỉ số đánh giá hiệu quả |
 
 - Thuật ngữ nhiều chữ hiện thành một thẻ riêng có **nhãn ngành** (thay cho các mảnh bị tách lẻ), kèm từ tương đương ở 3 thứ tiếng còn lại.
 - Thuật ngữ trùng một từ thường (服务器) thì nghĩa chuyên ngành thêm lên đầu, kiểu `[IT] máy chủ`, không che nghĩa thường.
 - Gõ tiếng Việt (có dấu hay không dấu) tra ngược ra thuật ngữ: `nhồi máu cơ tim` → 心肌梗死 / 心筋梗塞 / 심근경색.
 
-Đây là **bản khởi đầu do máy soạn** (khoảng 1.200 thuật ngữ; 4 ngành đầu có đủ Anh · Trung · Nhật · Hàn, các ngành sau chỉ Anh · Trung), nên nhờ người trong ngành rà lại trước khi tin dùng; phần y khoa chỉ để đọc tài liệu, không thay ý kiến bác sĩ. Thêm hay sửa: mở file bằng Notepad, mỗi dòng `Anh<Tab>Trung<Tab>Nhật<Tab>Hàn<Tab>Việt<Tab>ghi chú` (cột nào trống cũng được, nhiều cách viết thì ngăn bằng `/`), lưu rồi khởi động lại app. Thêm ngành mới: tạo thêm một file `.tsv` trong thư mục đó.
+Đây là **bản khởi đầu do máy soạn** (khoảng 1.700 thuật ngữ và từ viết tắt; 4 ngành đầu có đủ Anh · Trung · Nhật · Hàn, các ngành sau chỉ Anh · Trung), nên nhờ người trong ngành rà lại trước khi tin dùng; phần y khoa chỉ để đọc tài liệu, không thay ý kiến bác sĩ. Thêm hay sửa: mở file bằng Notepad, mỗi dòng `Anh<Tab>Trung<Tab>Nhật<Tab>Hàn<Tab>Việt<Tab>ghi chú` (cột nào trống cũng được, nhiều cách viết thì ngăn bằng `/`), lưu rồi khởi động lại app. Thêm ngành mới: tạo thêm một file `.tsv` trong thư mục đó.
 
 Không thích dòng dịch máy thì mở `langscan.py` sửa `TRANSLATE_VI = False`.
 
@@ -159,7 +160,7 @@ Thấy vướng thì mở `langscan.py` sửa `DOUBLE_CTRL_SEARCH = False`, lúc
 
 Phần dịch câu **cần mạng** (dùng API dịch máy) và được cache lại. Phần tra từ vẫn offline như cũ. Dịch sang đúng ngôn ngữ bạn chọn ở ô đích — chọn `Việt → Trung` rồi gõ câu tiếng Việt thì ra câu tiếng Trung.
 
-**Dịch hay hơn bằng AI (tuỳ chọn):** dịch máy miễn phí đôi khi vẫn hiểu sai ngữ cảnh. Chuột phải icon khay → **Dịch câu bằng AI** → nhập khóa của một hay nhiều dịch vụ, đều có gói miễn phí: Gemini ([aistudio.google.com/apikey](https://aistudio.google.com/apikey)), Groq ([console.groq.com/keys](https://console.groq.com/keys)), OpenRouter ([openrouter.ai/keys](https://openrouter.ai/keys), chỉ dùng mô hình miễn phí). Từ đó dòng dịch hiện bản dịch máy trước, vài giây sau thay bằng bản AI (ghi chú *"dịch bởi Gemini"*...), có kèm thuật ngữ chuyên ngành khớp trong câu. App thử lần lượt Gemini → Groq → OpenRouter: dịch vụ nào hết lượt hay lỗi thì sang cái sau, hết cả thì giữ bản dịch máy. Khóa lưu ở `data/gemini.json` trên máy bạn; nhập ô trống để xóa. Chỉ áp dụng khi dịch sang tiếng Việt.
+**Dịch hay hơn bằng AI (tuỳ chọn):** dịch máy miễn phí đôi khi vẫn hiểu sai ngữ cảnh. Chuột phải icon khay → **Dịch câu bằng AI** → nhập khóa của một hay nhiều dịch vụ, đều có gói miễn phí: Gemini ([aistudio.google.com/apikey](https://aistudio.google.com/apikey)), Groq ([console.groq.com/keys](https://console.groq.com/keys)). Từ đó dòng dịch hiện bản dịch máy trước, vài giây sau thay bằng bản AI (ghi chú *"dịch bởi Gemini"*...), có kèm thuật ngữ chuyên ngành khớp trong câu. App thử Gemini trước, lỗi hay hết lượt thì sang Groq; cả hai đều không được thì giữ bản dịch máy. Khóa lưu ở `data/gemini.json` trên máy bạn; nhập ô trống để xóa. Chỉ áp dụng khi dịch sang tiếng Việt.
 
 **Mất mạng thì sao:** có mạng app dùng Bing Dịch (lỗi thì sang Google); mất mạng thì dòng dịch cả câu tự chuyển sang **bộ dịch offline** chạy trên máy (Argos Translate) và ghi chú *"dịch offline"*. Bộ này kém Google rõ rệt — Trung / Nhật / Hàn còn phải dịch vòng qua tiếng Anh — nên chỉ để nắm ý. Câu nào đã dịch online trước đó thì vẫn hiện bản Google (đã lưu). Bộ dịch offline không gói sẵn: chuột phải icon khay → **Tải bộ dịch offline** (~380MB, chiều Anh / Trung / Nhật / Hàn → Việt), hoặc chạy `python offline_mt.py download`.
 
@@ -252,7 +253,7 @@ Hai lỗi hay gặp nhất:
 ## Lưu ý
 
 - Cách lấy chữ: app giả lập `Ctrl+C` rồi đọc clipboard, sau đó **trả clipboard về nguyên trạng**. Chỗ nào không copy được (ảnh, PDF scan) thì không tra được — chỗ đó cần OCR.
-- **Riêng tư:** khi dịch cả câu và khi nghe phát âm, chữ bạn bôi đen hoặc chụp được gửi lên dịch vụ ngoài: Bing (nguồn dịch chính), Google và MyMemory nếu Bing lỗi, và Gemini / Groq / OpenRouter nếu bạn đã nhập khóa của dịch vụ đó. Bản dịch lưu nguyên văn ở `data/vi_cache.db`, âm thanh ở `data/audio/`. Đừng bấm phím tắt trên mật khẩu hay tài liệu mật; tra từng từ Trung/Anh trong từ điển thì không gửi đi.
+- **Riêng tư:** khi dịch cả câu và khi nghe phát âm, chữ bạn bôi đen hoặc chụp được gửi lên dịch vụ ngoài: Bing (nguồn dịch chính), Google và MyMemory nếu Bing lỗi, và Gemini / Groq nếu bạn đã nhập khóa của dịch vụ đó. Bản dịch lưu nguyên văn ở `data/vi_cache.db`, âm thanh ở `data/audio/`. Đừng bấm phím tắt trên mật khẩu hay tài liệu mật; tra từng từ Trung/Anh trong từ điển thì không gửi đi.
 - Phát âm dùng gTTS (cần mạng), mp3 cache ở `data/audio/`.
 - Tiếng Hàn: kengdic là từ điển cộng đồng, nghĩa tiếng Anh đôi khi cộc lốc hoặc viết hoa lộn xộn. Phần chia động từ (`일해요` → `일하다`) dùng quy tắc đơn giản, không phải bộ phân tích hình thái đầy đủ, nên vài trường hợp hiếm sẽ trượt.
 - Dòng "Hán tự = …" của tiếng Hàn là **nghĩa** của chữ Hán đó, không phải âm Hán–Việt. Ví dụ 每日 hiện "hàng ngày" chứ không phải "mỗi nhật".

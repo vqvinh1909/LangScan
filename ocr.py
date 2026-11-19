@@ -127,6 +127,9 @@ def _rapid_engine():
     if _rapid[0] is None:
         from rapidocr_onnxruntime import RapidOCR
         _rapid[0] = RapidOCR()
+        # Buoc tu xoay 180 do doan nham chu ngan dung thang ('How' -> 'MOH',
+        # 'NOW' -> 'MON'); chu tren man hinh khong bao gio lon nguoc
+        _rapid[0].use_angle_cls = False
     return _rapid[0]
 
 

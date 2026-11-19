@@ -66,3 +66,16 @@ def test_slash_inside_term_is_not_split(analyzer):
     assert [c.word for c in analyzer.analyze("I have a book", force_lang=langs.EN)[1]] == ["book"]
     words = [c.word for c in analyzer.analyze("We ran A/B testing", force_lang=langs.EN)[1]]
     assert "A/B testing" in words
+
+
+@pytest.mark.parametrize("text, word", [("ASAP", "ASAP"), ("send the KPI report", "KPI"),
+                                        ("5 ml", "ml"), ("FYI", "FYI")])
+def test_abbreviation_card(analyzer, text, word):
+    cards = analyzer.analyze(text, force_lang=langs.EN)[1]
+    assert next(c for c in cards if c.word == word).badge == "Viết tắt"
+
+
+def test_uppercase_abbreviation_not_matched_in_lowercase(analyzer):
+    # 'SAT' (ky thi), 'ID', 'ATM' khong duoc gan vao chu thuong trong cau
+    cards = analyzer.analyze("I sat down, gave my id at the bank.", force_lang=langs.EN)[1]
+    assert not any(c.badge == "Viết tắt" for c in cards)

@@ -279,15 +279,13 @@ def translate_detail(text, lang="ja", use_network=True, target="vi"):
 # ---------------------------------------------------------- dich bang AI ----
 # Dich may mien phi (Bing / Google) doi khi hieu sai ngu canh. Nguoi dung nhap
 # khoa rieng (deu co goi mien phi) thi cau duoc dich lai bang mo hinh ngon ngu,
-# thu lan luot: Gemini -> Groq -> OpenRouter. Khong co khoa / het luot / loi
+# thu lan luot: Gemini -> Groq. Khong co khoa / het luot / loi
 # -> thu nguon sau, het thi giu ban dich may.
 GEMINI_API = "https://generativelanguage.googleapis.com/v1beta"
-OPENAI_API = {"groq": "https://api.groq.com/openai/v1",
-              "openrouter": "https://openrouter.ai/api/v1"}
-AI_SERVICES = ("gemini", "groq", "openrouter")          # thu theo thu tu nay
-AI_LABEL = {"gemini": "Gemini", "groq": "Groq", "openrouter": "OpenRouter"}
-AI_KEY_URL = {"gemini": "aistudio.google.com/apikey", "groq": "console.groq.com/keys",
-              "openrouter": "openrouter.ai/keys"}
+OPENAI_API = {"groq": "https://api.groq.com/openai/v1"}
+AI_SERVICES = ("gemini", "groq")                       # thu theo thu tu nay
+AI_LABEL = {"gemini": "Gemini", "groq": "Groq"}
+AI_KEY_URL = {"gemini": "aistudio.google.com/apikey", "groq": "console.groq.com/keys"}
 AI_TIMEOUT = 20
 # shortcut: khoa luu dang chu thuong trong data/ (nhu moi tuy chinh khac), doi
 # sang DPAPI neu may dung chung nhieu nguoi
@@ -382,15 +380,13 @@ def gemini_pick_model(key):
     return names[0]
 
 
-# Mo hinh dich tieng Viet kha tren Groq / OpenRouter, tot nhat truoc. Ten doi
+# Mo hinh dich tieng Viet kha tren Groq, tot nhat truoc. Ten doi
 # theo thoi gian: khong khop cai nao thi lay mo hinh dau tien trong danh sach.
 _OPENAI_PREFER = ("gemma", "gpt-oss-120b", "llama-3.3-70b", "kimi", "qwen", "llama")
 
 
 def openai_pick_model(name, key):
     ids = [m.get("id", "") for m in _openai_call(name, "/models", key).get("data", [])]
-    if name == "openrouter":            # chi dung mo hinh mien phi
-        ids = [i for i in ids if i.endswith(":free")]
     ids = [i for i in ids if not any(a in i.lower() for a in _AVOID)]
     for want in _OPENAI_PREFER:
         hit = sorted((i for i in ids if want in i.lower()), key=lambda i: -_version(i))

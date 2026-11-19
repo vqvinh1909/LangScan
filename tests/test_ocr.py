@@ -60,3 +60,13 @@ def test_split_glued_vietnamese(word, want):
 ])
 def test_merge_latin(tess, rapid, want):
     assert ocr._merge_latin(tess, rapid) == want
+
+
+@pytest.mark.skipif(not ocr.rapid_ready(), reason="chua co RapidOCR")
+@pytest.mark.parametrize("word", ["How", "NOW"])
+def test_short_word_not_flipped_upside_down(word):
+    # Bia sach 'How to Own an Identity' tung ra 'MOH to Own...'
+    from PIL import Image
+    img = render(word, "courbd.ttf", 40).crop((0, 0, 140, 80))
+    img = img.resize((img.width * 3, img.height * 3), Image.LANCZOS)
+    assert ocr._rapid_ocr(img, "en").strip() == word

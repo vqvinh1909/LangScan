@@ -1,0 +1,519 @@
+# Tu viet tat tieng Anh thong dung (van phong, chat, kinh doanh, cong nghe, don vi...)
+# Dinh dang: Anh <TAB> Trung <TAB> Nhat <TAB> Han <TAB> Viet <TAB> ghi chu (ten day du).
+# Viet tat toan chu HOA (IT, ATM, ID...) chi khop khi chu goc cung viet HOA,
+# de 'it', 'us', 'id' trong cau thuong khong bi nham. Muon khop ca chu thuong: them '/kpi'.
+ASAP/asap				càng sớm càng tốt; gấp	As Soon As Possible
+FYI/fyi				để bạn biết; thông tin thêm cho bạn	For Your Information
+FAQ/FAQs				câu hỏi thường gặp	Frequently Asked Questions
+ETA				giờ đến dự kiến; thời gian dự kiến hoàn thành	Estimated Time of Arrival
+ETD				giờ khởi hành dự kiến	Estimated Time of Departure
+EOD				cuối ngày làm việc	End Of Day
+EOW				cuối tuần (làm việc)	End Of Week
+EOM				cuối tháng	End Of Month
+EOY				cuối năm	End Of Year
+COB				hết giờ làm việc	Close Of Business
+OOO				vắng mặt; không ở văn phòng	Out Of Office
+WFH				làm việc tại nhà	Work From Home
+PTO				nghỉ phép có lương	Paid Time Off
+TBD				sẽ quyết định sau; chưa xác định	To Be Determined
+TBA				sẽ thông báo sau	To Be Announced
+TBC				sẽ xác nhận sau	To Be Confirmed
+N/A				không áp dụng; không có	Not Applicable / Not Available
+RSVP				vui lòng hồi đáp (có tham dự hay không)	Répondez s'il vous plaît
+AKA/a.k.a.				còn gọi là; tức là	Also Known As
+NDA				thỏa thuận bảo mật thông tin	Non-Disclosure Agreement
+MOU				biên bản ghi nhớ	Memorandum Of Understanding
+SOP				quy trình thao tác chuẩn	Standard Operating Procedure
+KPI/KPIs				chỉ số đánh giá hiệu quả công việc	Key Performance Indicator
+OKR/OKRs				mục tiêu và kết quả then chốt	Objectives and Key Results
+ROI				tỷ suất hoàn vốn; lợi tức đầu tư	Return On Investment
+P&L				báo cáo lãi lỗ	Profit and Loss
+Q&A				hỏi đáp	Questions and Answers
+AOB				các vấn đề khác (trong cuộc họp)	Any Other Business
+PS/P.S.				tái bút	Postscript
+PPS/P.P.S.				tái bút thêm	Post-postscript
+CC				đồng gửi (thư)	Carbon Copy
+BCC				đồng gửi ẩn danh (thư)	Blind Carbon Copy
+Re				trả lời; về việc (tiêu đề thư)	Reply / Regarding
+Fwd/FW				chuyển tiếp (thư)	Forward
+Attn				gửi tới; kính gửi	Attention
+encl				tài liệu đính kèm	Enclosure
+cf				so sánh với; tham khảo	Confer (Latin)
+e.g./eg				ví dụ	exempli gratia (Latin)
+i.e./ie				tức là; nghĩa là	id est (Latin)
+etc				vân vân	et cetera (Latin)
+et al				và cộng sự	et alii (Latin)
+vs				đấu với; so với	versus
+viz				cụ thể là	videlicet (Latin)
+approx				xấp xỉ; khoảng	approximately
+min				tối thiểu; phút	minimum / minute
+max				tối đa	maximum
+avg				trung bình	average
+qty				số lượng	quantity
+dept				phòng ban; bộ phận	department
+govt				chính phủ	government
+intl				quốc tế	international
+natl				quốc gia	national
+mgmt				ban quản lý; quản lý	management
+mgr				người quản lý	manager
+asst				trợ lý	assistant
+admin				quản trị; hành chính	administration / administrator
+info				thông tin	information
+ref				tham chiếu; mã tham chiếu	reference
+temp				tạm thời; nhiệt độ	temporary / temperature
+misc				linh tinh; khác	miscellaneous
+pls/plz				làm ơn; vui lòng	please
+thx/thnx				cảm ơn	thanks
+pp				trang (số nhiều)	pages
+vol				tập; quyển; âm lượng	volume
+ch				chương	chapter
+sec				giây; mục	second / section
+mins				phút	minutes
+wk				tuần	week
+yr/yrs				năm	year(s)
+mo				tháng	month
+tel				điện thoại	telephone
+ext				số máy lẻ	extension
+dob/DOB				ngày sinh	Date Of Birth
+POC				người liên hệ; bản thử nghiệm khái niệm	Point Of Contact / Proof Of Concept
+CV				sơ yếu lý lịch	Curriculum Vitae
+HR				nhân sự; phòng nhân sự	Human Resources
+PR				quan hệ công chúng	Public Relations
+R&D				nghiên cứu và phát triển	Research and Development
+QA				đảm bảo chất lượng	Quality Assurance
+QC				kiểm soát chất lượng	Quality Control
+CEO				tổng giám đốc; giám đốc điều hành	Chief Executive Officer
+CFO				giám đốc tài chính	Chief Financial Officer
+CTO				giám đốc công nghệ	Chief Technology Officer
+COO				giám đốc vận hành	Chief Operating Officer
+CMO				giám đốc marketing	Chief Marketing Officer
+CIO				giám đốc công nghệ thông tin	Chief Information Officer
+CISO				giám đốc an ninh thông tin	Chief Information Security Officer
+CHRO				giám đốc nhân sự	Chief Human Resources Officer
+VP				phó chủ tịch; phó giám đốc	Vice President
+SVP				phó chủ tịch cấp cao	Senior Vice President
+EVP				phó chủ tịch điều hành	Executive Vice President
+GM				tổng giám đốc; quản lý chung	General Manager
+PM				quản lý dự án; quản lý sản phẩm	Project / Product Manager
+PO				đơn đặt hàng; chủ sở hữu sản phẩm	Purchase Order / Product Owner
+BA				chuyên viên phân tích nghiệp vụ; cử nhân	Business Analyst / Bachelor of Arts
+HQ				trụ sở chính	Headquarters
+B2B				doanh nghiệp với doanh nghiệp	Business to Business
+B2C				doanh nghiệp với người tiêu dùng	Business to Consumer
+C2C				người tiêu dùng với người tiêu dùng	Consumer to Consumer
+D2C/DTC				bán thẳng tới người tiêu dùng	Direct to Consumer
+SME/SMEs				doanh nghiệp vừa và nhỏ; chuyên gia nghiệp vụ	Small and Medium Enterprises / Subject Matter Expert
+SMB				doanh nghiệp nhỏ và vừa	Small and Medium Business
+MNC				công ty đa quốc gia	Multinational Corporation
+IPO				phát hành cổ phiếu lần đầu ra công chúng	Initial Public Offering
+M&A				mua bán và sáp nhập	Mergers and Acquisitions
+GDP				tổng sản phẩm quốc nội	Gross Domestic Product
+GNP				tổng sản phẩm quốc dân	Gross National Product
+CPI				chỉ số giá tiêu dùng	Consumer Price Index
+FDI				đầu tư trực tiếp nước ngoài	Foreign Direct Investment
+VAT				thuế giá trị gia tăng	Value Added Tax
+GST				thuế hàng hóa và dịch vụ	Goods and Services Tax
+YoY				so với cùng kỳ năm trước	Year over Year
+MoM				so với tháng trước	Month over Month
+QoQ				so với quý trước	Quarter over Quarter
+YTD				từ đầu năm đến nay	Year To Date
+MTD				từ đầu tháng đến nay	Month To Date
+FY				năm tài chính	Fiscal Year
+Q1				quý 1	First Quarter
+Q2				quý 2	Second Quarter
+Q3				quý 3	Third Quarter
+Q4				quý 4	Fourth Quarter
+H1				nửa đầu năm	First Half
+H2				nửa cuối năm	Second Half
+EBIT				lợi nhuận trước lãi vay và thuế	Earnings Before Interest and Taxes
+EPS				lợi nhuận trên mỗi cổ phiếu	Earnings Per Share
+P/E				hệ số giá trên thu nhập	Price to Earnings ratio
+ROE				tỷ suất lợi nhuận trên vốn chủ sở hữu	Return On Equity
+ROA				tỷ suất lợi nhuận trên tài sản	Return On Assets
+CAGR				tốc độ tăng trưởng kép hằng năm	Compound Annual Growth Rate
+ARR				doanh thu định kỳ hằng năm	Annual Recurring Revenue
+MRR				doanh thu định kỳ hằng tháng	Monthly Recurring Revenue
+CAC				chi phí thu hút một khách hàng	Customer Acquisition Cost
+LTV/CLV				giá trị vòng đời khách hàng	Customer Lifetime Value
+AOV				giá trị đơn hàng trung bình	Average Order Value
+GMV				tổng giá trị hàng hóa giao dịch	Gross Merchandise Value
+COGS				giá vốn hàng bán	Cost Of Goods Sold
+OPEX/OpEx				chi phí vận hành	Operating Expenses
+CAPEX/CapEx				chi phí đầu tư tài sản cố định	Capital Expenditure
+AR				khoản phải thu; thực tế tăng cường	Accounts Receivable / Augmented Reality
+AP				khoản phải trả	Accounts Payable
+CPA				kế toán viên công chứng; chi phí mỗi hành động	Certified Public Accountant / Cost Per Action
+CFA				chuyên viên phân tích tài chính được cấp chứng chỉ	Chartered Financial Analyst
+MBA				thạc sĩ quản trị kinh doanh	Master of Business Administration
+USD				đô la Mỹ	United States Dollar
+EUR				đồng euro	Euro
+GBP				bảng Anh	Great Britain Pound
+JPY				yên Nhật	Japanese Yen
+CNY/RMB				nhân dân tệ	Chinese Yuan / Renminbi
+VND				đồng Việt Nam	Vietnamese Dong
+KRW				won Hàn Quốc	Korean Won
+ATM				máy rút tiền tự động	Automated Teller Machine
+PIN				mã PIN; mã số cá nhân	Personal Identification Number
+IBAN				số tài khoản ngân hàng quốc tế	International Bank Account Number
+SWIFT				mã SWIFT (mã định danh ngân hàng)	Society for Worldwide Interbank Financial Telecommunication
+COD				thanh toán khi nhận hàng	Cash On Delivery
+RRP/MSRP				giá bán lẻ đề xuất	Recommended / Manufacturer's Suggested Retail Price
+SKU/SKUs				mã hàng; đơn vị lưu kho	Stock Keeping Unit
+MOQ				số lượng đặt hàng tối thiểu	Minimum Order Quantity
+RFQ				yêu cầu báo giá	Request For Quotation
+RFP				hồ sơ mời thầu	Request For Proposal
+T&C/T&Cs				điều khoản và điều kiện	Terms and Conditions
+ToS/TOS				điều khoản dịch vụ	Terms of Service
+EULA				thỏa thuận cấp phép người dùng cuối	End User License Agreement
+SLA				thỏa thuận mức độ dịch vụ	Service Level Agreement
+SEO				tối ưu hóa công cụ tìm kiếm	Search Engine Optimization
+SEM				marketing trên công cụ tìm kiếm	Search Engine Marketing
+PPC				quảng cáo trả tiền theo lượt nhấp	Pay Per Click
+CPC				chi phí mỗi lượt nhấp	Cost Per Click
+CPM				chi phí mỗi nghìn lượt hiển thị	Cost Per Mille
+CTR				tỷ lệ nhấp	Click-Through Rate
+CTA				lời kêu gọi hành động	Call To Action
+CRM				quản lý quan hệ khách hàng	Customer Relationship Management
+ERP				hoạch định nguồn lực doanh nghiệp	Enterprise Resource Planning
+USP				điểm bán hàng độc nhất	Unique Selling Proposition
+KOL/KOLs				người có sức ảnh hưởng	Key Opinion Leader
+UGC				nội dung do người dùng tạo	User-Generated Content
+DM/DMs				tin nhắn riêng; nhắn riêng	Direct Message
+PM'd				đã nhắn riêng	Private Messaged
+RT				đăng lại (Twitter)	Retweet
+OP				người đăng bài gốc	Original Poster
+TL;DR/tldr				tóm lại; dài quá không đọc	Too Long; Didn't Read
+AMA				hỏi gì cũng trả lời (buổi hỏi đáp)	Ask Me Anything
+PSA				thông báo chung; nhắc nhở cộng đồng	Public Service Announcement
+NSFW				nội dung nhạy cảm, không phù hợp nơi công cộng	Not Safe For Work
+SFW				an toàn, xem được nơi công cộng	Safe For Work
+FOMO/fomo				sợ bỏ lỡ	Fear Of Missing Out
+YOLO/yolo				sống một lần thôi	You Only Live Once
+LOL/lol				cười lớn; buồn cười quá	Laughing Out Loud
+LMAO/lmao				cười chết mất	Laughing My Ass Off
+ROFL/rofl				cười lăn lộn	Rolling On the Floor Laughing
+BTW/btw				nhân tiện; tiện thể	By The Way
+IMO/imo				theo ý tôi	In My Opinion
+IMHO/imho				theo ý kiến khiêm tốn của tôi	In My Humble Opinion
+TBH/tbh				nói thật thì	To Be Honest
+IDK/idk				tôi không biết	I Don't Know
+IDC/idc				tôi không quan tâm	I Don't Care
+IKR/ikr				đúng thế nhỉ; chuẩn luôn	I Know, Right?
+OMG/omg				trời ơi	Oh My God
+OMW/omw				đang trên đường tới	On My Way
+BRB/brb				quay lại ngay	Be Right Back
+AFK/afk				đang rời bàn phím; vắng mặt	Away From Keyboard
+GTG/gtg/G2G				phải đi đây	Got To Go
+TTYL/ttyl				nói chuyện sau nhé	Talk To You Later
+NVM/nvm				thôi bỏ đi; không sao	Never Mind
+JK/jk				đùa thôi	Just Kidding
+SMH/smh				lắc đầu ngán ngẩm	Shaking My Head
+FTW/ftw				tuyệt nhất; muôn năm	For The Win
+GG/gg				chơi hay lắm; thua rồi	Good Game
+GL/gl				chúc may mắn	Good Luck
+HF				chơi vui nhé	Have Fun
+WP				chơi hay	Well Played
+AFAIK/afaik				theo như tôi biết	As Far As I Know
+IIRC/iirc				nếu tôi nhớ không nhầm	If I Recall Correctly
+IRL/irl				ngoài đời thực	In Real Life
+ICYMI/icymi				phòng khi bạn bỏ lỡ	In Case You Missed It
+FWIW/fwiw				dù sao thì cũng để tham khảo	For What It's Worth
+DIY				tự làm; tự tay làm	Do It Yourself
+BFF/bff				bạn thân nhất	Best Friends Forever
+BF/bf				bạn trai	Boyfriend
+GF/gf				bạn gái	Girlfriend
+ILY/ily				anh yêu em; em yêu anh	I Love You
+XOXO/xoxo				hôn và ôm (lời chào thân mật)	Hugs and Kisses
+HMU/hmu				liên lạc với tôi nhé	Hit Me Up
+WDYM/wdym				ý bạn là sao	What Do You Mean
+WYD/wyd				bạn đang làm gì đấy	What (are) You Doing
+HBU/hbu				còn bạn thì sao	How About You
+WBU/wbu				còn bạn thì sao	What About You
+RN/rn				ngay bây giờ	Right Now
+atm				lúc này	At The Moment
+NGL/ngl				nói thật lòng	Not Gonna Lie
+OFC/ofc				tất nhiên	Of Course
+TY/ty				cảm ơn	Thank You
+TYSM/tysm				cảm ơn rất nhiều	Thank You So Much
+YW/yw				không có chi	You're Welcome
+NP/np				không vấn đề gì	No Problem
+PPL/ppl				mọi người	People
+CUZ/cuz				bởi vì; anh em họ	Because / Cousin
+TMI/tmi				kể chi tiết quá rồi	Too Much Information
+POV				góc nhìn	Point Of View
+GOAT				vĩ đại nhất mọi thời đại	Greatest Of All Time
+MVP				cầu thủ xuất sắc nhất; sản phẩm khả dụng tối thiểu	Most Valuable Player / Minimum Viable Product
+WTF/wtf				cái quái gì vậy	What The F*** (thô tục)
+FFS/ffs				trời đất ơi (bực mình)	For F***'s Sake (thô tục)
+STFU/stfu				im mồm đi	Shut The F*** Up (thô tục)
+GLHF/glhf				chúc may mắn, chơi vui	Good Luck Have Fun
+ELI5				giải thích như cho trẻ 5 tuổi	Explain Like I'm 5
+OOTD				trang phục hôm nay	Outfit Of The Day
+TBT/tbt				hồi tưởng ngày thứ Năm (đăng ảnh cũ)	Throwback Thursday
+PDF				tệp PDF (định dạng tài liệu di động)	Portable Document Format
+USB				cổng USB; thiết bị USB	Universal Serial Bus
+UI				giao diện người dùng	User Interface
+UX				trải nghiệm người dùng	User Experience
+GUI				giao diện đồ họa	Graphical User Interface
+CLI				giao diện dòng lệnh	Command-Line Interface
+IoT				Internet vạn vật	Internet of Things
+OTP				mã xác thực dùng một lần	One-Time Password
+2FA				xác thực hai lớp	Two-Factor Authentication
+MFA				xác thực đa yếu tố	Multi-Factor Authentication
+SSO				đăng nhập một lần	Single Sign-On
+AI				trí tuệ nhân tạo	Artificial Intelligence
+AGI				trí tuệ nhân tạo tổng quát	Artificial General Intelligence
+ML				học máy	Machine Learning
+LLM/LLMs				mô hình ngôn ngữ lớn	Large Language Model
+NLP				xử lý ngôn ngữ tự nhiên	Natural Language Processing
+OCR				nhận dạng ký tự quang học	Optical Character Recognition
+VR				thực tế ảo	Virtual Reality
+XR				thực tế mở rộng	Extended Reality
+QR				mã QR	Quick Response (code)
+GPS				hệ thống định vị toàn cầu	Global Positioning System
+NFC				kết nối trường gần	Near-Field Communication
+SIM				thẻ SIM	Subscriber Identity Module
+eSIM				SIM điện tử	Embedded SIM
+SMS				tin nhắn văn bản	Short Message Service
+MMS				tin nhắn đa phương tiện	Multimedia Messaging Service
+OS				hệ điều hành	Operating System
+PC				máy tính cá nhân	Personal Computer
+CPU				bộ xử lý trung tâm	Central Processing Unit
+GPU				bộ xử lý đồ họa	Graphics Processing Unit
+RAM				bộ nhớ RAM (bộ nhớ truy cập ngẫu nhiên)	Random Access Memory
+ROM				bộ nhớ chỉ đọc	Read-Only Memory
+SSD				ổ cứng thể rắn	Solid State Drive
+HDD				ổ cứng cơ	Hard Disk Drive
+HDMI				cổng HDMI	High-Definition Multimedia Interface
+LCD				màn hình tinh thể lỏng	Liquid Crystal Display
+LED				đèn LED; điốt phát quang	Light-Emitting Diode
+OLED				màn hình OLED	Organic Light-Emitting Diode
+FPS/fps				số khung hình mỗi giây; game bắn súng góc nhìn thứ nhất	Frames Per Second / First-Person Shooter
+HD				độ nét cao	High Definition
+UHD/4K				độ nét siêu cao	Ultra High Definition
+Wi-Fi/WiFi/wifi				mạng không dây Wi-Fi	Wireless Fidelity
+ISP				nhà cung cấp dịch vụ Internet	Internet Service Provider
+IP				địa chỉ IP; sở hữu trí tuệ	Internet Protocol / Intellectual Property
+URL				địa chỉ trang web	Uniform Resource Locator
+HTML				ngôn ngữ đánh dấu siêu văn bản	HyperText Markup Language
+CSS				ngôn ngữ định kiểu trang web	Cascading Style Sheets
+JS				JavaScript	JavaScript
+JSON				định dạng dữ liệu JSON	JavaScript Object Notation
+XML				ngôn ngữ đánh dấu mở rộng	eXtensible Markup Language
+CSV				tệp CSV (giá trị ngăn cách bằng dấu phẩy)	Comma-Separated Values
+SQL				ngôn ngữ truy vấn có cấu trúc	Structured Query Language
+SDK				bộ công cụ phát triển phần mềm	Software Development Kit
+IDE				môi trường phát triển tích hợp	Integrated Development Environment
+SaaS				phần mềm dạng dịch vụ	Software as a Service
+PaaS				nền tảng dạng dịch vụ	Platform as a Service
+IaaS				hạ tầng dạng dịch vụ	Infrastructure as a Service
+app/apps				ứng dụng	application
+JPG/JPEG				ảnh JPEG	Joint Photographic Experts Group
+PNG				ảnh PNG	Portable Network Graphics
+GIF				ảnh động GIF	Graphics Interchange Format
+MP3				tệp nhạc MP3	MPEG Audio Layer 3
+MP4				tệp video MP4	MPEG-4
+ASCII				bảng mã ASCII	American Standard Code for Information Interchange
+UTF-8				bảng mã UTF-8	Unicode Transformation Format 8-bit
+BIOS				BIOS (phần mềm khởi động máy)	Basic Input/Output System
+DPI/dpi				số điểm ảnh mỗi inch	Dots Per Inch
+PPI/ppi				số điểm ảnh mỗi inch (màn hình)	Pixels Per Inch
+RGB				hệ màu đỏ-lục-lam	Red Green Blue
+CMYK				hệ màu in ấn	Cyan Magenta Yellow Key
+CAPTCHA				mã kiểm tra người thật	Completely Automated Public Turing test to tell Computers and Humans Apart
+FOSS				phần mềm tự do nguồn mở	Free and Open-Source Software
+EOL				ngừng hỗ trợ; ký tự xuống dòng	End Of Life / End Of Line
+WIP				đang thực hiện; chưa xong	Work In Progress
+LGTM/lgtm				trông ổn đấy (duyệt mã)	Looks Good To Me
+RTFM/rtfm				đọc hướng dẫn đi	Read The F*** Manual
+ETL				trích xuất, biến đổi, nạp dữ liệu	Extract, Transform, Load
+BI				phân tích kinh doanh	Business Intelligence
+KYC				xác minh danh tính khách hàng	Know Your Customer
+GDPR				quy định bảo vệ dữ liệu chung của EU	General Data Protection Regulation
+PII				thông tin nhận dạng cá nhân	Personally Identifiable Information
+NFT/NFTs				token không thể thay thế	Non-Fungible Token
+BTC				Bitcoin	Bitcoin
+ETH				Ethereum	Ethereum
+GPA				điểm trung bình tích lũy	Grade Point Average
+BSc/B.Sc.				cử nhân khoa học	Bachelor of Science
+MSc/M.Sc.				thạc sĩ khoa học	Master of Science
+PhD/Ph.D.				tiến sĩ	Doctor of Philosophy
+Prof				giáo sư	Professor
+Assoc Prof				phó giáo sư	Associate Professor
+TA				trợ giảng	Teaching Assistant
+STEM				khoa học, công nghệ, kỹ thuật và toán học	Science, Technology, Engineering, Mathematics
+IELTS				kỳ thi tiếng Anh IELTS	International English Language Testing System
+TOEFL				kỳ thi tiếng Anh TOEFL	Test Of English as a Foreign Language
+TOEIC				kỳ thi tiếng Anh TOEIC	Test Of English for International Communication
+SAT				kỳ thi SAT (xét tuyển đại học Mỹ)	Scholastic Assessment Test
+ESL				tiếng Anh như ngôn ngữ thứ hai	English as a Second Language
+EFL				tiếng Anh như ngoại ngữ	English as a Foreign Language
+MOOC/MOOCs				khóa học trực tuyến mở đại trà	Massive Open Online Course
+K-12				giáo dục phổ thông (mẫu giáo đến lớp 12)	Kindergarten to 12th grade
+ISBN				mã số sách tiêu chuẩn quốc tế	International Standard Book Number
+DOI				mã định danh số của tài liệu	Digital Object Identifier
+ibid				như trên (trích dẫn)	ibidem (Latin)
+NB/N.B.				lưu ý	nota bene (Latin)
+Mr				ông; anh	Mister
+Mrs				bà (đã có chồng)	Mistress
+Ms				cô; bà	
+Dr				tiến sĩ; bác sĩ	Doctor
+Jr				con (cùng tên cha); cấp dưới	Junior
+Sr				cha (cùng tên con); cấp cao	Senior
+Capt				đại úy; thuyền trưởng	Captain
+Lt				trung úy	Lieutenant
+Col				đại tá	Colonel
+Sgt				trung sĩ	Sergeant
+Gov				thống đốc	Governor
+Sen				thượng nghị sĩ	Senator
+Pres				tổng thống; chủ tịch	President
+Inc				công ty cổ phần (Mỹ)	Incorporated
+Ltd				công ty trách nhiệm hữu hạn	Limited
+LLC				công ty trách nhiệm hữu hạn (Mỹ)	Limited Liability Company
+PLC				công ty đại chúng (Anh)	Public Limited Company
+Corp				tập đoàn	Corporation
+Bros				anh em (tên công ty)	Brothers
+Assn				hiệp hội	Association
+Univ				trường đại học	University
+St				phố; thánh	Street / Saint
+Ave				đại lộ	Avenue
+Rd				đường	Road
+Blvd				đại lộ	Boulevard
+Ln				ngõ; đường nhỏ	Lane
+Bldg				tòa nhà	Building
+Fl				tầng	Floor
+Mt				núi	Mount
+P.O. Box				hộp thư bưu điện	Post Office Box
+ZIP				mã bưu chính (Mỹ); tệp nén ZIP	Zone Improvement Plan
+UN				Liên Hợp Quốc	United Nations
+EU				Liên minh châu Âu	European Union
+UK				Vương quốc Anh	United Kingdom
+USA/U.S.A.				Hoa Kỳ	United States of America
+U.S.				Hoa Kỳ (thuộc Mỹ)	United States
+UAE				Các Tiểu vương quốc Ả Rập Thống nhất	United Arab Emirates
+ASEAN				Hiệp hội các quốc gia Đông Nam Á	Association of Southeast Asian Nations
+APEC				Diễn đàn Hợp tác Kinh tế châu Á – Thái Bình Dương	Asia-Pacific Economic Cooperation
+NATO				Tổ chức Hiệp ước Bắc Đại Tây Dương	North Atlantic Treaty Organization
+UNESCO				Tổ chức Giáo dục, Khoa học và Văn hóa Liên Hợp Quốc	United Nations Educational, Scientific and Cultural Organization
+UNICEF				Quỹ Nhi đồng Liên Hợp Quốc	United Nations Children's Fund
+WTO				Tổ chức Thương mại Thế giới	World Trade Organization
+IMF				Quỹ Tiền tệ Quốc tế	International Monetary Fund
+OPEC				Tổ chức các nước xuất khẩu dầu mỏ	Organization of the Petroleum Exporting Countries
+FIFA				Liên đoàn Bóng đá Quốc tế	Fédération Internationale de Football Association
+NASA				Cơ quan Hàng không và Vũ trụ Mỹ	National Aeronautics and Space Administration
+FBI				Cục Điều tra Liên bang Mỹ	Federal Bureau of Investigation
+CIA				Cơ quan Tình báo Trung ương Mỹ	Central Intelligence Agency
+NGO/NGOs				tổ chức phi chính phủ	Non-Governmental Organization
+NPO				tổ chức phi lợi nhuận	Non-Profit Organization
+IOC				Ủy ban Olympic Quốc tế	International Olympic Committee
+FDA				Cục Quản lý Thực phẩm và Dược phẩm Mỹ	Food and Drug Administration
+CDC				Trung tâm Kiểm soát và Phòng ngừa Dịch bệnh	Centers for Disease Control and Prevention
+EPA				Cơ quan Bảo vệ Môi trường Mỹ	Environmental Protection Agency
+ISO				Tổ chức Tiêu chuẩn hóa Quốc tế; tiêu chuẩn ISO	International Organization for Standardization
+BBC				đài BBC (Anh)	British Broadcasting Corporation
+CNN				kênh tin tức CNN	Cable News Network
+ER				phòng cấp cứu	Emergency Room
+ICU				phòng hồi sức tích cực	Intensive Care Unit
+GP				bác sĩ đa khoa	General Practitioner
+BMI				chỉ số khối cơ thể	Body Mass Index
+BP				huyết áp	Blood Pressure
+ECG/EKG				điện tâm đồ	Electrocardiogram
+MRI				chụp cộng hưởng từ	Magnetic Resonance Imaging
+DNA				ADN	Deoxyribonucleic Acid
+RNA				ARN	Ribonucleic Acid
+HIV				virus HIV	Human Immunodeficiency Virus
+CPR				hồi sức tim phổi	Cardiopulmonary Resuscitation
+PPE				đồ bảo hộ cá nhân	Personal Protective Equipment
+OTC				thuốc không kê đơn; giao dịch phi tập trung	Over The Counter
+Rx				đơn thuốc	Prescription
+ADHD				rối loạn tăng động giảm chú ý	Attention Deficit Hyperactivity Disorder
+OCD				rối loạn ám ảnh cưỡng chế	Obsessive-Compulsive Disorder
+PTSD				rối loạn căng thẳng sau sang chấn	Post-Traumatic Stress Disorder
+STD/STI				bệnh lây truyền qua đường tình dục	Sexually Transmitted Disease / Infection
+mg				miligam	milligram
+ml/mL				mililít	millilitre
+km				kilômét	kilometre
+cm				xentimét	centimetre
+mm				milimét	millimetre
+kg				kilôgam	kilogram
+lb/lbs				pao (≈0,45 kg)	pound (libra)
+oz				ao-xơ (≈28 g)	ounce
+ft				feet (≈30,5 cm)	foot / feet
+sq ft				feet vuông	square feet
+mph				dặm một giờ	miles per hour
+km/h				kilômét một giờ	kilometres per hour
+rpm				vòng mỗi phút	revolutions per minute
+kWh				kilôoát giờ (số điện)	kilowatt-hour
+GB				gigabyte; Vương quốc Anh	gigabyte / Great Britain
+MB				megabyte	megabyte
+KB				kilobyte	kilobyte
+TB				terabyte; bệnh lao	terabyte / tuberculosis
+Mbps				megabit mỗi giây	megabits per second
+Gbps				gigabit mỗi giây	gigabits per second
+GHz				gigahertz	gigahertz
+MHz				megahertz	megahertz
+mAh				miliampe giờ (dung lượng pin)	milliampere-hour
+a.m.				giờ sáng (trước 12 giờ trưa)	ante meridiem
+p.m.				giờ chiều, tối (sau 12 giờ trưa)	post meridiem
+AD/A.D.				sau Công nguyên	Anno Domini
+BC/B.C.				trước Công nguyên	Before Christ
+BCE				trước Công nguyên	Before Common Era
+CE				Công nguyên	Common Era
+GMT				giờ chuẩn Greenwich	Greenwich Mean Time
+UTC				giờ phối hợp quốc tế	Coordinated Universal Time
+ICT				giờ Đông Dương (UTC+7); công nghệ thông tin và truyền thông	Indochina Time
+EST				giờ miền Đông nước Mỹ	Eastern Standard Time
+PST				giờ Thái Bình Dương (Mỹ)	Pacific Standard Time
+Mon				thứ Hai	Monday
+Tue/Tues				thứ Ba	Tuesday
+Thu/Thurs				thứ Năm	Thursday
+Fri				thứ Sáu	Friday
+Jan				tháng Một	January
+Feb				tháng Hai	February
+Apr				tháng Tư	April
+Jun				tháng Sáu	June
+Jul				tháng Bảy	July
+Aug				tháng Tám	August
+Sep/Sept				tháng Chín	September
+Oct				tháng Mười	October
+Nov				tháng Mười một	November
+BBQ				tiệc nướng; đồ nướng	Barbecue
+B&B				nhà nghỉ có bữa sáng	Bed and Breakfast
+VIP				khách quan trọng	Very Important Person
+ID				giấy tờ tùy thân; mã định danh	Identification / Identity
+DOA				chết khi đến nơi; hỏng ngay khi nhận	Dead On Arrival
+SOS				tín hiệu cầu cứu	Save Our Souls
+RIP				an nghỉ	Rest In Peace
+PTA				hội phụ huynh và giáo viên	Parent-Teacher Association
+DJ				người chơi nhạc (DJ)	Disc Jockey
+MC				người dẫn chương trình	Master of Ceremonies
+TV				tivi; truyền hình	Television
+CD				đĩa CD	Compact Disc
+DVD				đĩa DVD	Digital Versatile Disc
+AC				điều hòa nhiệt độ; dòng điện xoay chiều	Air Conditioning / Alternating Current
+DC				dòng điện một chiều; Washington D.C.	Direct Current / District of Columbia
+SUV				xe thể thao đa dụng	Sport Utility Vehicle
+EV/EVs				xe điện	Electric Vehicle
+MPG/mpg				số dặm mỗi gallon (mức tiêu hao nhiên liệu)	Miles Per Gallon
+DUI				lái xe khi say rượu	Driving Under the Influence
+BYOB				tự mang đồ uống	Bring Your Own Bottle
+BOGO				mua một tặng một	Buy One Get One
+FCFS				ai đến trước phục vụ trước	First Come, First Served
+TLC				sự chăm sóc chu đáo	Tender Loving Care
+R&R				nghỉ ngơi thư giãn	Rest and Relaxation
+Xmas				Giáng sinh	Christmas
+B-day/bday				sinh nhật	Birthday
+TSA				Cục An ninh Vận tải Mỹ	Transportation Security Administration
+FAA				Cục Hàng không Liên bang Mỹ	Federal Aviation Administration
+IATA				Hiệp hội Vận tải Hàng không Quốc tế	International Air Transport Association
+LCC				hãng hàng không giá rẻ	Low-Cost Carrier
+B/L				vận đơn	Bill of Lading
+AWB				vận đơn hàng không	Air Waybill
+FOB				giao hàng lên tàu (giá FOB)	Free On Board
+CIF				giá gồm hàng, bảo hiểm và cước	Cost, Insurance and Freight
+LCL				hàng lẻ (ghép container)	Less than Container Load
+FCL				hàng nguyên container	Full Container Load
+TEU				đơn vị container 20 feet	Twenty-foot Equivalent Unit
+kph				kilômét một giờ	kilometres per hour
+n/a				không áp dụng; không có	Not Applicable / Not Available
+TIL				hôm nay tôi mới biết	Today I Learned

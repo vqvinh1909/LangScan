@@ -63,13 +63,11 @@ def test_ai_uses_glossary_caches_and_falls_through_services(tmp_path, monkeypatc
     assert not t.ai_ready("gemini") and t.ai_ready("groq")
 
 
-def test_openrouter_only_picks_free_models(monkeypatch):
+def test_pick_model_for_groq(monkeypatch):
     import translate as t
-    ids = ["openai/gpt-9", "google/gemma-4-31b-it:free", "google/gemma-4-26b-a4b-it:free",
-           "cohere/north-mini-code:free", "liquid/lfm-3-1.7b:free"]
     monkeypatch.setattr(t, "_openai_call", lambda name, path, key, body=None, timeout=0: {
-        "data": [{"id": i} for i in ids]})
-    assert t.openai_pick_model("openrouter", "k") == "google/gemma-4-31b-it:free"
+        "data": [{"id": i} for i in ("whisper-large-v3", "llama3.1-8b", "gpt-oss-120b")]})
+    assert t.openai_pick_model("groq", "k") == "gpt-oss-120b"
 
 
 def test_bing_first_then_google_when_bing_fails(tmp_path, monkeypatch):
